@@ -797,7 +797,11 @@ int main (int argc, char *argv[])
         edm::EventBase const & myEvent = ev;
 
 
-        // --------------------------------------- I guess the following is weightes for MC???
+        // --------------------------------------------- several procedures follow
+        // --------------------------------------- I guess the following is weightes for MC
+        // however, they are mixed and not clear -- TODO: figure out how all these weighting is done
+
+        // --------------------------------------------- TODO:???
         // Take into account the negative weights from some NLO generators (otherwise some phase space will be double counted)
         double weightGen(1.);
         if(isNLOMC)
@@ -833,10 +837,10 @@ int main (int argc, char *argv[])
         std::vector < TString > tags (1, "all"); // Inclusive inclusiveness
         
         //
-        // DERIVE WEIGHTS TO APPLY TO SAMPLE
+        // --------------------------------------------- DERIVE WEIGHTS TO APPLY TO SAMPLE
         //
         
-        //pileup weight
+        // --------------------------------------------- initialize pileup weight
         double weight           (1.0);
         double rawWeight        (1.0);
         double TotalWeight_plus (1.0);
@@ -853,8 +857,10 @@ int main (int argc, char *argv[])
         //     if (lheEPHandle->hepeup ().NUP > 5)  continue;
         //     mon.fillHisto ("nupfilt", "", lheEPHandle->hepeup ().NUP, 1);
         //   }
-        
-        // HT-binned samples stitching: https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples
+
+        //  --------------------------------------------- TODO:???
+        // HT-binned samples stitching:
+        // https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples
         if(isV0JetsMC)
           {
             // access generator level HT               
@@ -876,17 +882,17 @@ int main (int argc, char *argv[])
             if(debug) cout << "Sample: " << dtag << ", lheHt: " << lheHt << ", scale factor from spreadsheet: " << patUtils::getHTScaleFactor(dtag, lheHt) << endl;
             weightGen *=   patUtils::getHTScaleFactor(dtag, lheHt);
           }         
-        
+
         weight *= weightGen;
         rawWeight *=weightGen;
-        
+
         reco::VertexCollection vtx;
         reco::Vertex goodPV;
         unsigned int nGoodPV(0);
         fwlite::Handle<reco::VertexCollection> vtxHandle;
         vtxHandle.getByLabel(ev, "offlineSlimmedPrimaryVertices");
         if(vtxHandle.isValid() ) vtx = *vtxHandle;
-        // Clean up vertex collection
+        // --------------------------------------------- Clean up vertex collection
         for(size_t ivtx=0; ivtx<vtx.size(); ++ivtx)
           {
             if(utils::isGoodVertex(vtx[ivtx]))
@@ -896,7 +902,7 @@ int main (int argc, char *argv[])
               }
           }
 
-        // Apply pileup reweighting
+        // --------------------------------------------- Apply pileup reweighting
         if(isMC)
           {
             int ngenITpu = 0;
@@ -924,16 +930,17 @@ int main (int argc, char *argv[])
 
         //##############################################   EVENT LOOP STARTS   ##############################################
 
-        // Orthogonalize Run2015B PromptReco+17Jul15 mix
+        // --------------------------------------------- Orthogonalize Run2015B PromptReco+17Jul15 mix
         if(isRun2015B)
           {
             if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
           }
         
-        // Skip bad lumi
+        // --------------------------------------------- Skip bad lumi
         if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
         
-        //apply trigger and require compatibilitiy of the event with the PD
+        // --------------------------------------------- apply trigger
+        // and require compatibilitiy of the event with the PD
         edm::TriggerResultsByName tr = ev.triggerResultsByName ("HLT");
         if (!tr.isValid ()){
           cout << "Trigger is not valid" << endl;
@@ -948,7 +955,8 @@ int main (int argc, char *argv[])
           return 0;
         }
 
-        // Need either to simulate the HLT (https://twiki.cern.ch/twiki/bin/view/CMS/TopTrigger#How_to_easily_emulate_HLT_paths) to match triggers.
+        // Need either to simulate the HLT
+        // (https://twiki.cern.ch/twiki/bin/view/CMS/TopTrigger#How_to_easily_emulate_HLT_paths) to match triggers.
         bool eTrigger    (
                           isMC ? 
                           utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")
@@ -969,11 +977,14 @@ int main (int argc, char *argv[])
         
         if (!(eTrigger || muTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
 
-        // ------------ Apply MET filters ------------
+
+
+        // --------------------------------------------- Apply MET filters ------------
         if( !isMC && !metFiler.passMetFilter( ev)) continue;
  
-        //load all the objects we will need to access
+        // --------------------------------------------- load all the objects we will need to access
 
+        // TODO: what are these?
         double rho = 0;
         fwlite::Handle<double> rhoHandle;
         rhoHandle.getByLabel(ev, "fixedGridRhoFastjetAll");
@@ -1081,9 +1092,9 @@ int main (int argc, char *argv[])
         //          wgtTopPtUp /= wgtTopPt;
         //          wgtTopPtDown /= wgtTopPt;
         //        }
-        
-        
-        
+
+        // --------------------------------------------- initialize particle collections
+
         pat::MuonCollection muons;
         fwlite::Handle<pat::MuonCollection> muonsHandle;
         muonsHandle.getByLabel(ev, "slimmedMuons");
@@ -1122,7 +1133,7 @@ int main (int argc, char *argv[])
         fwlite::Handle<pat::TauCollection> tausHandle;
         tausHandle.getByLabel(ev, "slimmedTaus");
         if(tausHandle.isValid() ) taus = *tausHandle;
-        
+
 
         //
         //
@@ -1133,10 +1144,10 @@ int main (int argc, char *argv[])
         
         
         //
-        // LEPTON ANALYSIS
+        // --------------------------------------------- LEPTON ANALYSIS
         //
         
-        //start by merging electrons and muons
+        // --------------------------------------------- start by merging electrons and muons
         std::vector<patUtils::GenericLepton> leptons;
         for(size_t l=0; l<electrons.size(); ++l) leptons.push_back(patUtils::GenericLepton (electrons[l] ));
         for(size_t l=0; l<muons.size(); ++l)     leptons.push_back(patUtils::GenericLepton (muons[l]     ));
@@ -1212,7 +1223,7 @@ int main (int argc, char *argv[])
       LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
       
       
-      //select the taus
+      // --------------------------------------------- select the taus
       pat::TauCollection selTaus;
       int ntaus (0);
       for (size_t itau = 0; itau < taus.size(); ++itau)
@@ -1257,7 +1268,7 @@ int main (int argc, char *argv[])
       std::sort (selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
       
       //
-      //JET/MET ANALYSIS
+      // --------------------------------------------- JET/MET ANALYSIS
       //
       if(debug) cout << "Now update Jet Energy Corrections" << endl;
       //add scale/resolution uncertainties and propagate to the MET      
@@ -1267,7 +1278,8 @@ int main (int argc, char *argv[])
       met=newMet[utils::cmssw::METvariations::NOMINAL];
       if(debug) cout << "Jet Energy Corrections updated" << endl;
       
-      // Select the jets. I need different collections because of tau cleaning, but this is needed only for the single lepton channels, so the tau cleaning is performed later.
+      // --------------------------------------------- Select the jets.
+      // I need different collections because of tau cleaning, but this is needed only for the single lepton channels, so the tau cleaning is performed later.
       pat::JetCollection
         selJets, selBJets;
       double mindphijmet (9999.);
@@ -1348,7 +1360,8 @@ int main (int argc, char *argv[])
       if(selLeptons.size()>0)
         slepId=selLeptons[0].pdgId();
       
-      // Event classification. Single lepton triggers are used for offline selection of dilepton events. The "else if"s guarantee orthogonality
+      // --------------------------------------------- Event classification.
+      // Single lepton triggers are used for offline selection of dilepton events. The "else if"s guarantee orthogonality
       bool 
         isSingleMu(false),
         isSingleE(false),
