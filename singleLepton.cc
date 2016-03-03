@@ -416,37 +416,30 @@ int main (int argc, char *argv[])
   
   std::vector < std::string > allWeightsURL = runProcess.getParameter < std::vector < std::string > >("weightsFile");
   std::string weightsDir (allWeightsURL.size ()? allWeightsURL[0] : "");
-  
-  //  //shape uncertainties for dibosons
-  //  std::vector<TGraph *> vvShapeUnc;
-  //  if(isMC_ZZ || isMC_WZ)
-  //    {
-  //      TString weightsFile=weightsDir+"/zzQ2unc.root";
-  //      TString dist("zzpt");
-  //      if(isMC_WZ) { weightsFile.ReplaceAll("zzQ2","wzQ2"); dist.ReplaceAll("zzpt","wzpt"); }
-  //      gSystem->ExpandPathName(weightsFile);
-  //      TFile *q2UncF=TFile::Open(weightsFile);
-  //      if(q2UncF){
-  //    vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_up") ) );
-  //    vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_down") ) );
-  //    q2UncF->Close();
-  //      }
-  //    }
+
+
+  // ----------------------------
+  // So here we got all the parameters from the config
+  // FIXME: not yet!!!! there is runProcess pile-up below!!!
+  // also jet energies
+  // and MET filter is hardcoded
+
 
 
   //##############################################
   //########    INITIATING HISTOGRAMS     ########
   //##############################################
-  SmartSelectionMonitor mon;
 
-  //generator level control : add an underflow entry to make sure the histo is kept
-  //((TH1F*)mon.addHistogram( new TH1D( "higgsMass_raw",     ";Higgs Mass [GeV];Events", 500,0,1500) ))->Fill(-1.0,0.0001);
+  // removing the SmartSelectionMonitor
+  // SmartSelectionMonitor mon;
+
 
   TH1D* singlelep_ttbar_initialevents  = (TH1D*) new TH1D("singlelep_ttbar_init",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
   TH1D* singlelep_ttbar_preselectedevents = (TH1D*) new TH1D("singlelep_ttbar_presele",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
   TH1D* singlelep_ttbar_selected_mu_events = (TH1D*) new TH1D("singlelep_ttbar_sele_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
   TH1D* singlelep_ttbar_selected_el_events = (TH1D*) new TH1D("singlelep_ttbar_sele_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-  
+
+/**/
   // ensure proper normalization
   TH1D* normhist = (TH1D*) mon.addHistogram(new TH1D("initNorm", ";;Events", 5, 0., 5.));
   normhist->GetXaxis()->SetBinLabel (1, "Gen. Events");
@@ -671,6 +664,16 @@ int main (int argc, char *argv[])
       mon.addHistogram(new TH1D("finalmutaumass"      +var, ";M_{#mu#tau_{h}} [GeV];Events",       50,  0., 500.   ));
 
     }
+
+/**/
+
+  // -------------------------------
+  // Here the output histograms and other object should be initialized
+
+
+
+
+
   
   //##############################################
   //######## GET READY FOR THE EVENT LOOP ########
@@ -679,47 +682,24 @@ int main (int argc, char *argv[])
 
   TFile* summaryFile = NULL;
   TTree* summaryTree = NULL; //ev->;
-  //  
-  //  if(saveSummaryTree)
-  //    {
-  //      TDirectory* cwd = gDirectory;
-  //      std::string summaryFileName(outUrl); 
-  //      summaryFileName.replace(summaryFileName.find(".root", 0), 5, "_summary.root");
-  //      
-  //      summaryFile = new TFile(summaryFileName.c_str() "recreate");
-  //      
-  //      summaryTree = new TTree("Events", "Events");
-  //    KEY: TTreeMetaData;1
-  //                         KEY: TTreeParameterSets;1
-  //                                                   KEY: TTreeParentage;1
-  //                                                                         KEY: TTreeEvents;1
-  //                                                                                            KEY: TTreeLuminosityBlocks;1
-  //                                                                                                                         KEY: TTreeRuns;
-  //      summaryTree->SetDirectory(summaryFile);  // This line is probably not needed
-  //      
-  //      summmaryTree->Branch(
-  //
-  //      cwd->cd();
-  //    }
-  //
   
   
   //MC normalization (to 1/pb)
   if(debug) cout << "DEBUG: xsec: " << xsec << endl;
 
-  //jet energy scale and uncertainties 
+  // --------------------------------------- jet energy scale and uncertainties 
   TString jecDir = runProcess.getParameter < std::string > ("jecDir");
   gSystem->ExpandPathName (jecDir);
   FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector (jecDir, isMC);
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK4PFchs.txt").Data ());
   
-  //muon energy scale and uncertainties
+  // --------------------------------------- muon energy scale and uncertainties
   MuScleFitCorrector *muCor = NULL; // FIXME: MuScle fit corrections for 13 TeV not available yet (more Zs are needed) getMuonCorrector (jecDir, dtag);
 
-  //lepton efficiencies
+  // --------------------------------------- lepton efficiencies
   LeptonEfficiencySF lepEff;
   
-  // b-tagging 
+  // --------------------------------------- b-tagging 
   // Prescriptions taken from: https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation74X
 
   // b-tagging working points for 50ns 
@@ -751,7 +731,7 @@ int main (int argc, char *argv[])
     electronIdMainTag("cutBasedElectronID-Spring15-25ns-V1-standalone-loose"),
     electronIdVetoTag("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
 
-  //pileup weighting
+  // --------------------------------------- pileup weighting
   edm::LumiReWeighting * LumiWeights = NULL;
   utils::cmssw::PuShifter_t PuShifters;
   double PUNorm[] = { 1, 1, 1 };
@@ -778,6 +758,7 @@ int main (int argc, char *argv[])
   //higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
  
 
+  // --------------------------------------- hardcoded MET filter
   patUtils::MetFilter metFiler;
   if(!isMC) { 
         metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_csc2015.txt");
@@ -817,6 +798,9 @@ int main (int argc, char *argv[])
           }
 
         edm::EventBase const & myEvent = ev;
+
+
+        // --------------------------------------- I guess it is weightes for MC???
         // Take into account the negative weights from some NLO generators (otherwise some phase space will be double counted)
         double weightGen(1.);
         if(isNLOMC)
