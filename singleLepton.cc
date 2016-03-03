@@ -431,7 +431,7 @@ int main (int argc, char *argv[])
   //##############################################
 
   // removing the SmartSelectionMonitor
-  SmartSelectionMonitor mon;
+  // SmartSelectionMonitor mon;
 
 
   TH1D* singlelep_ttbar_initialevents  = (TH1D*) new TH1D("singlelep_ttbar_init",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
@@ -439,7 +439,7 @@ int main (int argc, char *argv[])
   TH1D* singlelep_ttbar_selected_mu_events = (TH1D*) new TH1D("singlelep_ttbar_sele_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
   TH1D* singlelep_ttbar_selected_el_events = (TH1D*) new TH1D("singlelep_ttbar_sele_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
 
-/**/
+/*
   // ensure proper normalization
   TH1D* normhist = (TH1D*) mon.addHistogram(new TH1D("initNorm", ";;Events", 5, 0., 5.));
   normhist->GetXaxis()->SetBinLabel (1, "Gen. Events");
@@ -665,7 +665,7 @@ int main (int argc, char *argv[])
 
     }
 
-/**/
+*/
 
   // -------------------------------
   // Here the output histograms and other object should be initialized
@@ -916,14 +916,15 @@ int main (int argc, char *argv[])
             TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
             TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
           }
-        
-        
+
+        /*
         mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
         mon.fillHisto("initNorm", tags, 1., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
         mon.fillHisto("initNorm", tags, 2., puWeight);
         mon.fillHisto("initNorm", tags, 3., TotalWeight_plus);
         mon.fillHisto("initNorm", tags, 4., TotalWeight_minus);
-        
+        */
+
         //##############################################   EVENT LOOP STARTS   ##############################################
 
         // Orthogonalize Run2015B PromptReco+17Jul15 mix
@@ -961,9 +962,11 @@ int main (int argc, char *argv[])
                           utils::passTriggerPatterns (tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*")
                           );
 
+/*
         if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, nGoodPV, 1.);
         if(!isMC && eTrigger)  mon.fillHisto("nvtx_singlee_pileup",  tags, nGoodPV, 1.);
-        
+*/
+
         if(filterOnlySINGLEMU) {                    eTrigger = false; }
         if(filterOnlySINGLEE)  { muTrigger = false;                   }
         
@@ -1411,8 +1414,9 @@ int main (int argc, char *argv[])
         std::sort(selSingleLepJets.begin(),  selSingleLepJets.end(),  utils::sort_CandidatesByPt);
         std::sort(selSingleLepBJets.begin(), selSingleLepBJets.end(), utils::sort_CandidatesByPt);
         
-        
+/*
         mon.fillHisto("nvtx_pileup", tags, nGoodPV, weight);
+*/
         
         if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
         //int id (abs (selLeptons[0].pdgId()));
@@ -1428,6 +1432,8 @@ int main (int argc, char *argv[])
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats;
         ctrlCats.clear ();
+
+/*
                                                                                                       { ctrlCats.push_back ("step1"); mon.fillHisto("xseceventflowslep", tags, 0, weight); mon.fillHisto("chhiggseventflowslep", tags, 0, weight); }
         if(passJetSelection   )                                                                       { ctrlCats.push_back ("step2"); mon.fillHisto("xseceventflowslep", tags, 1, weight); mon.fillHisto("chhiggseventflowslep", tags, 1, weight); }
         if(passJetSelection && passMetSelection )                                                     { ctrlCats.push_back ("step3"); mon.fillHisto("xseceventflowslep", tags, 2, weight); mon.fillHisto("chhiggseventflowslep", tags, 2, weight); }
@@ -1437,12 +1443,13 @@ int main (int argc, char *argv[])
            if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
            else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
         }
-        
+*/
 
         bool passBtagsSelection_0(selSingleLepBJets.size()==0);
         bool passBtagsSelection_1(selSingleLepBJets.size()==1);
         bool passBtagsSelection_2(selSingleLepBJets.size()>1);
 
+/*
                                                                                     { ctrlCats.push_back("altstep1"); mon.fillHisto("xsecalteventflowslep", tags, 0, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 0, weight); }
         if(passMetSelection)                                                        { ctrlCats.push_back("altstep2"); mon.fillHisto("xsecalteventflowslep", tags, 1, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 1, weight); }
         if(passMetSelection && passTauSelection)                                    { ctrlCats.push_back("altstep3"); mon.fillHisto("xsecalteventflowslep", tags, 2, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 2, weight); }
@@ -1450,7 +1457,9 @@ int main (int argc, char *argv[])
         if(passMetSelection && passTauSelection && passOS && passBtagsSelection_0)  { ctrlCats.push_back("altstep5"); mon.fillHisto("xsecalteventflowslep", tags, 4, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 4, weight); }
         if(passMetSelection && passTauSelection && passOS && passBtagsSelection_1)  { ctrlCats.push_back("altstep6"); mon.fillHisto("xsecalteventflowslep", tags, 5, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 5, weight); }
         if(passMetSelection && passTauSelection && passOS && passBtagsSelection_2)  { ctrlCats.push_back("altstep7"); mon.fillHisto("xsecalteventflowslep", tags, 6, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 6, weight); }
+*/
 
+/*
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
           
@@ -1502,6 +1511,8 @@ int main (int argc, char *argv[])
               mon.fillHisto ("csv" + jetFlav, tags, csv, weight);
             }
         }
+*/
+
         //
         // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
         //
@@ -1628,7 +1639,8 @@ int main (int argc, char *argv[])
                 LorentzVector mutauSystem (0, 0, 0, 0);
                 mutauSystem += selLeptons[0].p4();
                 mutauSystem += tau.p4();
-                
+
+/*
                 mon.fillHisto("finalnbjets"         +var, tags, finalSelSingleLepBJets.size(), iweight);
                 mon.fillHisto("finaltaur"           +var, tags, tauR, iweight);
                 mon.fillHisto("finaltaupolarization"+var, tags, tauY, iweight);
@@ -1637,6 +1649,7 @@ int main (int argc, char *argv[])
                 mon.fillHisto("finaldphileptau"     +var, tags, fabs(deltaPhi(selLeptons[0].phi(), selTaus[0].phi())), iweight);
                 mon.fillHisto("finaltaupt"          +var, tags, selTaus[0].pt(), iweight);
                 mon.fillHisto("finalmutaumass"      +var, tags, mutauSystem.mass(), iweight);
+*/
 
                 if(saveSummaryTree)
                   {
@@ -1677,7 +1690,7 @@ int main (int argc, char *argv[])
 
   //save all to the file
   TFile *ofile = TFile::Open (outUrl, "recreate");
-  mon.Write();
+  // mon.Write();
 
   singlelep_ttbar_initialevents->Write();
   singlelep_ttbar_preselectedevents->Write();
