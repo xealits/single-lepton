@@ -797,7 +797,7 @@ int main (int argc, char *argv[])
         edm::EventBase const & myEvent = ev;
 
 
-        // --------------------------------------- I guess it is weightes for MC???
+        // --------------------------------------- I guess the following is weightes for MC???
         // Take into account the negative weights from some NLO generators (otherwise some phase space will be double counted)
         double weightGen(1.);
         if(isNLOMC)
@@ -1441,6 +1441,13 @@ int main (int argc, char *argv[])
            else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
         }
 */
+
+        if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS ) {
+          //ctrlCats.push_back ("step6"); mon.fillHisto("xseceventflowslep", tags, 5, weight); mon.fillHisto("chhiggseventflowslep", tags, 5, weight);
+           if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
+           else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
+        }
+
 
         bool passBtagsSelection_0(selSingleLepBJets.size()==0);
         bool passBtagsSelection_1(selSingleLepBJets.size()==1);
