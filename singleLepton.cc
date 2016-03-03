@@ -417,12 +417,104 @@ int main (int argc, char *argv[])
   std::vector < std::string > allWeightsURL = runProcess.getParameter < std::vector < std::string > >("weightsFile");
   std::string weightsDir (allWeightsURL.size ()? allWeightsURL[0] : "");
 
+  // --------------------------------------- jet energy scale and uncertainties 
+  TString jecDir = runProcess.getParameter < std::string > ("jecDir");
+  gSystem->ExpandPathName (jecDir);
+  FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector (jecDir, isMC);
+  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK4PFchs.txt").Data ());
+
+
+  //##############################################
+  //######## GET READY FOR THE EVENT LOOP ########
+  //##############################################
+  size_t totalEntries(0);
+
+  TFile* summaryFile = NULL;
+  TTree* summaryTree = NULL; //ev->;
+  
+  
+  //MC normalization (to 1/pb)
+  if(debug) cout << "DEBUG: xsec: " << xsec << endl;
+
+  // --------------------------------------- muon energy scale and uncertainties
+  MuScleFitCorrector *muCor = NULL; // FIXME: MuScle fit corrections for 13 TeV not available yet (more Zs are needed) getMuonCorrector (jecDir, dtag);
+
+  // --------------------------------------- lepton efficiencies
+  LeptonEfficiencySF lepEff;
+  
+  // --------------------------------------- b-tagging 
+  // Prescriptions taken from: https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation74X
+
+  // b-tagging working points for 50ns 
+  //   (pfC|c)ombinedInclusiveSecondaryVertexV2BJetTags
+  //      v2CSVv2L 0.605
+  //      v2CSVv2M 0.890
+  //      v2CSVv2T 0.970
+  double
+    btagLoose(0.605),
+    btagMedium(0.890),
+    btagTight(0.970);
+
+  //b-tagging: scale factors
+  //beff and leff must be derived from the MC sample using the discriminator vs flavor
+  //the scale factors are taken as average numbers from the pT dependent curves see:
+  //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC_EPS13_prescript
+  BTagSFUtil btsfutil;
+  double beff(0.68), sfb(0.99), sfbunc(0.015);
+  double leff(0.13), sfl(1.05), sflunc(0.12);
+
+
+  // Btag SF and eff from https://indico.cern.ch/event/437675/#preview:1629681
+  sfb = 0.861;
+  // sbbunc =;
+  beff = 0.559;
+
+
+  TString
+    electronIdMainTag("cutBasedElectronID-Spring15-25ns-V1-standalone-loose"),
+    electronIdVetoTag("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
+
+  // --------------------------------------- pileup weighting
+  edm::LumiReWeighting * LumiWeights = NULL;
+  utils::cmssw::PuShifter_t PuShifters;
+  double PUNorm[] = { 1, 1, 1 };
+  if (isMC)
+    {
+      std::vector<double> dataPileupDistributionDouble = runProcess.getParameter < std::vector < double >>("datapileup");
+      std::vector<float> dataPileupDistribution;
+      for (unsigned int i = 0; i < dataPileupDistributionDouble.size (); i++)
+        {
+          dataPileupDistribution.push_back (dataPileupDistributionDouble[i]);
+        }
+      std::vector<float> mcPileupDistribution;
+      utils::getMCPileupDistributionFromMiniAOD(urls, dataPileupDistribution.size (), mcPileupDistribution);
+      while(mcPileupDistribution.size() < dataPileupDistribution.size()) mcPileupDistribution.push_back(0.0);
+      while(mcPileupDistribution.size() > dataPileupDistribution.size()) dataPileupDistribution.push_back(0.0);
+      gROOT->cd ();             //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
+      LumiWeights = new edm::LumiReWeighting(mcPileupDistribution, dataPileupDistribution);
+      PuShifters = utils::cmssw::getPUshifters(dataPileupDistribution, 0.05);
+      utils::getPileupNormalization(mcPileupDistribution, PUNorm, LumiWeights, PuShifters);
+    }
+  
+  gROOT->cd ();                 //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
+  
+  //higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
+ 
+
+  // --------------------------------------- hardcoded MET filter
+  patUtils::MetFilter metFiler;
+  if(!isMC) { 
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_csc2015.txt");
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_ecalscn1043093.txt");
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_csc2015.txt");
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_ecalscn1043093.txt");
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_csc2015.txt");
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt");
+  }
+
 
   // ----------------------------
-  // So here we got all the parameters from the config
-  // FIXME: not yet!!!! there is runProcess pile-up below!!!
-  // also jet energies
-  // and MET filter is hardcoded
+  // So here we got all the parameters from the config and the hardcoded ones
 
 
 
@@ -673,101 +765,6 @@ int main (int argc, char *argv[])
 
 
 
-
-  
-  //##############################################
-  //######## GET READY FOR THE EVENT LOOP ########
-  //##############################################
-  size_t totalEntries(0);
-
-  TFile* summaryFile = NULL;
-  TTree* summaryTree = NULL; //ev->;
-  
-  
-  //MC normalization (to 1/pb)
-  if(debug) cout << "DEBUG: xsec: " << xsec << endl;
-
-  // --------------------------------------- jet energy scale and uncertainties 
-  TString jecDir = runProcess.getParameter < std::string > ("jecDir");
-  gSystem->ExpandPathName (jecDir);
-  FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector (jecDir, isMC);
-  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK4PFchs.txt").Data ());
-  
-  // --------------------------------------- muon energy scale and uncertainties
-  MuScleFitCorrector *muCor = NULL; // FIXME: MuScle fit corrections for 13 TeV not available yet (more Zs are needed) getMuonCorrector (jecDir, dtag);
-
-  // --------------------------------------- lepton efficiencies
-  LeptonEfficiencySF lepEff;
-  
-  // --------------------------------------- b-tagging 
-  // Prescriptions taken from: https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation74X
-
-  // b-tagging working points for 50ns 
-  //   (pfC|c)ombinedInclusiveSecondaryVertexV2BJetTags
-  //      v2CSVv2L 0.605
-  //      v2CSVv2M 0.890
-  //      v2CSVv2T 0.970
-  double
-    btagLoose(0.605),
-    btagMedium(0.890),
-    btagTight(0.970);
-
-  //b-tagging: scale factors
-  //beff and leff must be derived from the MC sample using the discriminator vs flavor
-  //the scale factors are taken as average numbers from the pT dependent curves see:
-  //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC_EPS13_prescript
-  BTagSFUtil btsfutil;
-  double beff(0.68), sfb(0.99), sfbunc(0.015);
-  double leff(0.13), sfl(1.05), sflunc(0.12);
-
-
-  // Btag SF and eff from https://indico.cern.ch/event/437675/#preview:1629681
-  sfb = 0.861;
-  // sbbunc =;
-  beff = 0.559;
-
-
-  TString
-    electronIdMainTag("cutBasedElectronID-Spring15-25ns-V1-standalone-loose"),
-    electronIdVetoTag("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
-
-  // --------------------------------------- pileup weighting
-  edm::LumiReWeighting * LumiWeights = NULL;
-  utils::cmssw::PuShifter_t PuShifters;
-  double PUNorm[] = { 1, 1, 1 };
-  if (isMC)
-    {
-      std::vector<double> dataPileupDistributionDouble = runProcess.getParameter < std::vector < double >>("datapileup");
-      std::vector<float> dataPileupDistribution;
-      for (unsigned int i = 0; i < dataPileupDistributionDouble.size (); i++)
-        {
-          dataPileupDistribution.push_back (dataPileupDistributionDouble[i]);
-        }
-      std::vector<float> mcPileupDistribution;
-      utils::getMCPileupDistributionFromMiniAOD(urls, dataPileupDistribution.size (), mcPileupDistribution);
-      while(mcPileupDistribution.size() < dataPileupDistribution.size()) mcPileupDistribution.push_back(0.0);
-      while(mcPileupDistribution.size() > dataPileupDistribution.size()) dataPileupDistribution.push_back(0.0);
-      gROOT->cd ();             //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
-      LumiWeights = new edm::LumiReWeighting(mcPileupDistribution, dataPileupDistribution);
-      PuShifters = utils::cmssw::getPUshifters(dataPileupDistribution, 0.05);
-      utils::getPileupNormalization(mcPileupDistribution, PUNorm, LumiWeights, PuShifters);
-    }
-  
-  gROOT->cd ();                 //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
-  
-  //higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
- 
-
-  // --------------------------------------- hardcoded MET filter
-  patUtils::MetFilter metFiler;
-  if(!isMC) { 
-        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_csc2015.txt");
-        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_ecalscn1043093.txt");
-        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_csc2015.txt");
-        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_ecalscn1043093.txt");
-        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_csc2015.txt");
-        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt");
-  }
 
 
   //##############################################
