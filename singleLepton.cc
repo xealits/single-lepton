@@ -431,7 +431,7 @@ int main (int argc, char *argv[])
   //##############################################
 
   // removing the SmartSelectionMonitor
-  // SmartSelectionMonitor mon;
+  SmartSelectionMonitor mon;
 
 
   TH1D* singlelep_ttbar_initialevents  = (TH1D*) new TH1D("singlelep_ttbar_init",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
