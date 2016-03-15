@@ -414,8 +414,27 @@ int main (int argc, char *argv[])
 
   size_t nSystVars(systVars.size());
   
+
+  // TODO: what is this: allWeightsURL ... "weightsFile"??
   std::vector < std::string > allWeightsURL = runProcess.getParameter < std::vector < std::string > >("weightsFile");
   std::string weightsDir (allWeightsURL.size ()? allWeightsURL[0] : "");
+  // weightsDir is not used
+
+  //  //shape uncertainties for dibosons
+  //  std::vector<TGraph *> vvShapeUnc;
+  //  if(isMC_ZZ || isMC_WZ)
+  //    {
+  //      TString weightsFile=weightsDir+"/zzQ2unc.root";
+  //      TString dist("zzpt");
+  //      if(isMC_WZ) { weightsFile.ReplaceAll("zzQ2","wzQ2"); dist.ReplaceAll("zzpt","wzpt"); }
+  //      gSystem->ExpandPathName(weightsFile);
+  //      TFile *q2UncF=TFile::Open(weightsFile);
+  //      if(q2UncF){
+  //    vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_up") ) );
+  //    vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_down") ) );
+  //    q2UncF->Close();
+  //      }
+  //    }
 
 
   // ----------------------------
@@ -684,8 +703,32 @@ int main (int argc, char *argv[])
 
   TFile* summaryFile = NULL;
   TTree* summaryTree = NULL; //ev->;
-  
-  
+
+  //  
+  //  if(saveSummaryTree)
+  //    {
+  //      TDirectory* cwd = gDirectory;
+  //      std::string summaryFileName(outUrl); 
+  //      summaryFileName.replace(summaryFileName.find(".root", 0), 5, "_summary.root");
+  //      
+  //      summaryFile = new TFile(summaryFileName.c_str() "recreate");
+  //      
+  //      summaryTree = new TTree("Events", "Events");
+  //    KEY: TTreeMetaData;1
+  //                         KEY: TTreeParameterSets;1
+  //                                                   KEY: TTreeParentage;1
+  //                                                                         KEY: TTreeEvents;1
+  //                                                                                            KEY: TTreeLuminosityBlocks;1
+  //                                                                                                                         KEY: TTreeRuns;
+  //      summaryTree->SetDirectory(summaryFile);  // This line is probably not needed
+  //      
+  //      summmaryTree->Branch(
+  //
+  //      cwd->cd();
+  //    }
+  //
+
+
   //MC normalization (to 1/pb)
   if(debug) cout << "DEBUG: xsec: " << xsec << endl;
 
