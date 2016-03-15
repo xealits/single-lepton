@@ -438,6 +438,8 @@ int main (int argc, char *argv[])
   TH1D* singlelep_ttbar_preselectedevents = (TH1D*) new TH1D("singlelep_ttbar_presele",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
   TH1D* singlelep_ttbar_selected_mu_events = (TH1D*) new TH1D("singlelep_ttbar_sele_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
   TH1D* singlelep_ttbar_selected_el_events = (TH1D*) new TH1D("singlelep_ttbar_sele_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
+  TH1D* singlelep_ttbar_selected2_mu_events = (TH1D*) new TH1D("singlelep_ttbar_sele2_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
+  TH1D* singlelep_ttbar_selected2_el_events = (TH1D*) new TH1D("singlelep_ttbar_sele2_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
 
 /**/
   // ensure proper normalization
@@ -1374,7 +1376,7 @@ int main (int argc, char *argv[])
 
       // Dilepton full analysis
       // No dilepton analysis
-      if( isDoubleE || isEMu || isDoubleMu){ continue; }
+      //if( isDoubleE || isEMu || isDoubleMu){ continue; }
 
       // Single lepton full analysis
       //if(tags[1] == "singlemu" || tags[1] == "singlee"){
@@ -1429,7 +1431,10 @@ int main (int argc, char *argv[])
         std::vector < TString > ctrlCats;
         ctrlCats.clear ();
                                                                                                       { ctrlCats.push_back ("step1"); mon.fillHisto("xseceventflowslep", tags, 0, weight); mon.fillHisto("chhiggseventflowslep", tags, 0, weight); }
-        if(passJetSelection   )                                                                       { ctrlCats.push_back ("step2"); mon.fillHisto("xseceventflowslep", tags, 1, weight); mon.fillHisto("chhiggseventflowslep", tags, 1, weight); }
+        if(passJetSelection   )                                                                       { ctrlCats.push_back ("step2"); mon.fillHisto("xseceventflowslep", tags, 1, weight); mon.fillHisto("chhiggseventflowslep", tags, 1, weight);
+           if(isSingleMu) singlelep_ttbar_selected2_mu_events->Fill(1);
+           else if (isSingleE) singlelep_ttbar_selected2_el_events->Fill(1);
+        }
         if(passJetSelection && passMetSelection )                                                     { ctrlCats.push_back ("step3"); mon.fillHisto("xseceventflowslep", tags, 2, weight); mon.fillHisto("chhiggseventflowslep", tags, 2, weight); }
         if(passJetSelection && passMetSelection && passBtagsSelection )                               { ctrlCats.push_back ("step4"); mon.fillHisto("xseceventflowslep", tags, 3, weight); mon.fillHisto("chhiggseventflowslep", tags, 3, weight); }
         if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection )           { ctrlCats.push_back ("step5"); mon.fillHisto("xseceventflowslep", tags, 4, weight); mon.fillHisto("chhiggseventflowslep", tags, 4, weight); }
@@ -1683,6 +1688,8 @@ int main (int argc, char *argv[])
   singlelep_ttbar_preselectedevents->Write();
   singlelep_ttbar_selected_mu_events->Write();
   singlelep_ttbar_selected_el_events->Write();
+  singlelep_ttbar_selected2_mu_events->Write();
+  singlelep_ttbar_selected2_el_events->Write();
 
   ofile->Close();
 
