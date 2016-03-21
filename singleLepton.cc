@@ -925,7 +925,10 @@ int main (int argc, char *argv[])
               }                                        
             }
             if(debug) cout << "Sample: " << dtag << ", lheHt: " << lheHt << ", scale factor from spreadsheet: " << patUtils::getHTScaleFactor(dtag, lheHt) << endl;
-            weightGen *=   patUtils::getHTScaleFactor(dtag, lheHt);
+            // getHTScaleFactor works on combining several LO datasets with NLO
+            // now one 1 NLO dataset is used for both WJets and DYJets
+            // thus it is commented out here
+            //weightGen *=   patUtils::getHTScaleFactor(dtag, lheHt);
           }         
         
         weight *= weightGen;
