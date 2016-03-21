@@ -801,7 +801,9 @@ int main (int argc, char *argv[])
   gROOT->cd ();                 //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
   
   //higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
- 
+
+  std::vector<double> direct_pileup_reweight = runProcess.getParameter < std::vector < double >>("pileup_reweight_direct");
+
 
   // --------------------------------------- hardcoded MET filter
   patUtils::MetFilter metFiler;
@@ -956,7 +958,14 @@ int main (int argc, char *argv[])
               }
             
             //ngenITpu = nGoodPV; // based on nvtx
-            puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
+            //puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
+            // So, in Pietro's approach ngenITpu is number of vertices in the beam crossing?
+            //puWeight = direct_pileup_reweight[ngenITpu];
+            // Mara does:
+            unsigned int num_inters = puInfoH->at(0).getTrueNumInteractions();
+            // TOFIX: hopefully the length of the array is enough. Increse to 100 bins.
+            if (num_inters<40) {puWeight = direct_pileup_reweight[num_inters];}
+            else {puWeight = 1.5e-16;}
             weight *= puWeight;//Weight; //* puWeight;
             TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
             TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
