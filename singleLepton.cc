@@ -476,13 +476,13 @@ int main (int argc, char *argv[])
   //MC normalization (to 1/pb)
   if(debug) cout << "DEBUG: xsec: " << xsec << endl;
 
-  // --------------------------------------- jet energy scale and uncertainties 
+  // ------------------------------------- jet energy scale and uncertainties 
   TString jecDir = runProcess.getParameter < std::string > ("jecDir");
   gSystem->ExpandPathName (jecDir);
   FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector (jecDir, isMC);
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK4PFchs.txt").Data ());
   
-  // --------------------------------------- muon energy scale and uncertainties
+  // ------------------------------------- muon energy scale and uncertainties
   MuScleFitCorrector *muCor = NULL; // FIXME: MuScle fit corrections for 13 TeV not available yet (more Zs are needed) getMuonCorrector (jecDir, dtag);
 
   // --------------------------------------- lepton efficiencies
@@ -848,7 +848,8 @@ int main (int argc, char *argv[])
         edm::EventBase const & myEvent = ev;
 
 
-        // --------------------------------------- I guess it is weightes for MC???
+        // ---------------------------------- these are weird NLO -1 weights
+        // TODO: figure out what are these really
         // Take into account the negative weights from some NLO generators (otherwise some phase space will be double counted)
         double weightGen(1.);
         if(isNLOMC)
@@ -887,7 +888,7 @@ int main (int argc, char *argv[])
         // DERIVE WEIGHTS TO APPLY TO SAMPLE
         //
         
-        //pileup weight
+        // ---------------------------------- pileup weight
         double weight           (1.0);
         double rawWeight        (1.0);
         double TotalWeight_plus (1.0);
@@ -906,6 +907,8 @@ int main (int argc, char *argv[])
         //   }
         
         // HT-binned samples stitching: https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples
+        // -------------- it should be the creeppish merging of LO and NLO sets
+        // not used now at all?
         if(isV0JetsMC)
           {
             // access generator level HT               
@@ -934,6 +937,8 @@ int main (int argc, char *argv[])
         weight *= weightGen;
         rawWeight *=weightGen;
         
+        // ------------------------------- count N good verteces
+        // needed for particle selection/event classification later
         reco::VertexCollection vtx;
         reco::Vertex goodPV;
         unsigned int nGoodPV(0);
@@ -950,7 +955,7 @@ int main (int argc, char *argv[])
               }
           }
 
-        // Apply pileup reweighting
+        // ----------------------------------------- Apply pileup reweighting
         if(isMC)
           {
             int ngenITpu = 0;
@@ -981,19 +986,21 @@ int main (int argc, char *argv[])
         mon.fillHisto("initNorm", tags, 2., puWeight);
         mon.fillHisto("initNorm", tags, 3., TotalWeight_plus);
         mon.fillHisto("initNorm", tags, 4., TotalWeight_minus);
+        // probably, these are N events after re-forming MC
         
-        //##############################################   EVENT LOOP STARTS   ##############################################
+        // ############################################   EVENT LOOP STARTS
 
-        // Orthogonalize Run2015B PromptReco+17Jul15 mix
+        // ---------------------- Orthogonalize Run2015B PromptReco+17Jul15 mix
         if(isRun2015B)
           {
             if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
           }
         
-        // Skip bad lumi
+        // -------------------------------------------------- Skip bad lumi
         if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
         
-        //apply trigger and require compatibilitiy of the event with the PD
+        // --------------------------------------------- apply trigger
+        // ---------------- and require compatibilitiy of the event with the PD
         edm::TriggerResultsByName tr = ev.triggerResultsByName ("HLT");
         if (!tr.isValid ()){
           cout << "Trigger is not valid" << endl;
@@ -1025,12 +1032,14 @@ int main (int argc, char *argv[])
         if(filterOnlySINGLEMU) {                    eTrigger = false; }
         if(filterOnlySINGLEE)  { muTrigger = false;                   }
         
-        if (!(eTrigger || muTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
+        if (!(eTrigger || muTrigger)) continue;   //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
 
-        // ------------ Apply MET filters ------------
+        // ------------------------------------------------- Apply MET filters
         if( !isMC && !metFiler.passMetFilter( ev)) continue;
  
-        //load all the objects we will need to access
+
+
+        //------------------------- load all the objects we will need to access
 
         double rho = 0;
         fwlite::Handle<double> rhoHandle;
@@ -1042,7 +1051,7 @@ int main (int argc, char *argv[])
         genHandle.getByLabel(ev, "prunedGenParticles");
         if(genHandle.isValid() ) gen = *genHandle;
         
-        // Save time and don't load the rest of the objects when selecting by mctruthmode :)
+        // FIXME: Save time and don't load the rest of the objects when selecting by mctruthmode :)
         bool hasTop(false);
         int
           ngenLeptonsStatus3(0),
@@ -1051,6 +1060,8 @@ int main (int argc, char *argv[])
           ngenQuarksStatus3(0);
         //double tPt(0.), tbarPt(0.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop
         //float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
+        // TODO: what is this??
+        // there was some wague answer from Pietro.....
         if(isMC)
           {
             // FIXME: Considering add support for different generators (based on PYTHIA6) for comparison.
@@ -1139,8 +1150,9 @@ int main (int argc, char *argv[])
         //          wgtTopPtUp /= wgtTopPt;
         //          wgtTopPtDown /= wgtTopPt;
         //        }
-        
-        
+
+
+        // ------------------------------------ actual particles?
         
         pat::MuonCollection muons;
         fwlite::Handle<pat::MuonCollection> muonsHandle;
@@ -1194,12 +1206,14 @@ int main (int argc, char *argv[])
         // LEPTON ANALYSIS
         //
         
-        //start by merging electrons and muons
+        // ------------------------------------ merging electrons and muons
         std::vector<patUtils::GenericLepton> leptons;
         for(size_t l=0; l<electrons.size(); ++l) leptons.push_back(patUtils::GenericLepton (electrons[l] ));
         for(size_t l=0; l<muons.size(); ++l)     leptons.push_back(patUtils::GenericLepton (muons[l]     ));
         std::sort(leptons.begin(), leptons.end(), utils::sort_CandidatesByPt);
 
+
+        // ---------------------------------- leptons selection
         LorentzVector muDiff(0., 0., 0., 0.);
         std::vector<patUtils::GenericLepton> selLeptons;
         unsigned int nVetoE(0), nVetoMu(0);
@@ -1236,16 +1250,16 @@ int main (int argc, char *argv[])
           // no need to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
           // no need to mess with photon ID //   minDRlg=TMath::Min(minDRlg,deltaR(leptons[ilep].p4(),selPhotons[ipho].p4()));
           // no need to mess with photon ID // if(minDRlg<0.1) continue;
-          
-          //kinematics
+
+          // ---------------------------- kinematics
           double leta(fabs(lid==11 ? lepton.el.superCluster()->eta() : lepton.eta()));
           
-          // Main leptons kin
+          // ---------------------- Main lepton kin
           if(lepton.pt() < 30.)                      passKin = false;
           if(leta > 2.1)                                    passKin = false;
           if(lid == 11 && (leta > 1.4442 && leta < 1.5660)) passKin = false; // Crack veto
           
-          // Veto leptons kin
+          // ---------------------- Veto lepton kin
           if (lepton.pt () < 20)                      passVetoKin = false;
           if (leta > 2.1)                                    passVetoKin = false;
           if (lid == 11 && (leta > 1.4442 && leta < 1.5660)) passVetoKin = false; // Crack veto
@@ -1253,12 +1267,12 @@ int main (int argc, char *argv[])
           //Cut based identification 
           
           //std::vector<pat::Electron> dummyShit; dummyShit.push_back(leptons[ilep].el);
-          
-          
+
+          // ------------------------- lepton IDs
           passId     = lid == 11 ? patUtils::passId(electronVidMainId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdTight);
           passVetoId = lid == 11 ? patUtils::passId(electronVidVetoId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdLoose);
 
-          //isolation
+          // ------------------------- lepton isolation
           passIso     = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Tight); // Electron iso is included within the ID
           passVetoIso = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Loose); // Electron iso is included within the ID
 
@@ -1270,7 +1284,7 @@ int main (int argc, char *argv[])
       LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
       
       
-      //select the taus
+      // ------------------------------------------ select the taus
       pat::TauCollection selTaus;
       int ntaus (0);
       for (size_t itau = 0; itau < taus.size(); ++itau)
@@ -1315,7 +1329,7 @@ int main (int argc, char *argv[])
       std::sort (selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
       
       //
-      //JET/MET ANALYSIS
+      // ----------------------------------------------- JET/MET ANALYSIS
       //
       if(debug) cout << "Now update Jet Energy Corrections" << endl;
       //add scale/resolution uncertainties and propagate to the MET      
@@ -1386,7 +1400,7 @@ int main (int argc, char *argv[])
       std::sort (selBJets.begin(), selBJets.end(), utils::sort_CandidatesByPt);
       
       //
-      // ASSIGN CHANNEL
+      // -------------------------------------------------- ASSIGN CHANNEL
       //
       std::vector < TString > chTags; chTags.clear();
       int 
@@ -1434,7 +1448,7 @@ int main (int argc, char *argv[])
       // No dilepton analysis
       //if( isDoubleE || isEMu || isDoubleMu){ continue; }
 
-      // Single lepton full analysis
+      // ------------------------------------------ Single lepton full analysis
       //if(tags[1] == "singlemu" || tags[1] == "singlee"){
       if(isSingleMu || isSingleE){
         singlelep_ttbar_preselectedevents->Fill(1);
