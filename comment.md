@@ -41,6 +41,7 @@ singleLepton is the single-lepton part of it.
 
     // Reactivate for diboson shapes  
     // bool isMC_ZZ      (isMC && (string (dtag.Data ()).find ("TeV_ZZ") != string::npos));
+    // ...
 
     bool isTTbarMC    (isMC && (dtag.Contains("TTJets") || dtag.Contains("_TT_") )); // Is this still useful?
     bool isPromptReco (!isMC && dtag.Contains("PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
@@ -96,6 +97,31 @@ channel selection & selection steps.
 
 
 ## Event loop, application of config parameters and selection
+
+* weird NLO -1 weights
+* pileup weight (with plus-minus)
+* creeppish merging of LO and NLO sets
+* count N good verteces
+* Apply pileup reweighting
+* save distributions of weights
+* ?(all weight is applied -- there should be an overall integral here)
+* Orthogonalize Run2015B PromptReco+17Jul15 mix
+* Skip bad lumi
+* apply trigger
+* Apply MET filters
+* load all the objects we will need to access
+* "TODO: what is this??" thing
+* actual particles
+* merging electrons and muons
+* leptons selection
+  + kinematics, main and veto
+  + lepton IDs and isolation
+* select the taus
+* JET/MET ANALYSIS
+* ASSIGN CHANNEL
+* Single lepton full analysis
+  + Clean jet collection from selected taus
+  + only selections and filling histograms
 
 
 

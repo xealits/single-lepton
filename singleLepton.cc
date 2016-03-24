@@ -321,7 +321,7 @@ bool hasTauAsMother(const reco::GenParticle  p)
 int main (int argc, char *argv[])
 {
   //##############################################
-  //########    GLOBAL INITIALIZATION     ########
+  //########2    GLOBAL INITIALIZATION     ########
   //##############################################
 
   // check arguments
@@ -979,8 +979,8 @@ int main (int argc, char *argv[])
             TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
             TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
           }
-        
-        
+
+        // --------------------- save distributions of weights
         mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
         mon.fillHisto("initNorm", tags, 1., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
         mon.fillHisto("initNorm", tags, 2., puWeight);
@@ -1453,7 +1453,7 @@ int main (int argc, char *argv[])
       if(isSingleMu || isSingleE){
         singlelep_ttbar_preselectedevents->Fill(1);
         
-        // Clean jet collection from selected taus
+        // ---------------------------- Clean jet collection from selected taus
         pat::JetCollection
           selSingleLepJets, selSingleLepBJets;
         for (size_t ijet = 0; ijet < selJets.size(); ++ijet)
@@ -1475,21 +1475,21 @@ int main (int argc, char *argv[])
                 else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
                 else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
               }
-            
+
             if(!hasCSVtag) continue;
             if(minDRtj>0.4) selSingleLepBJets.push_back(jets[ijet]);
           }
-        
+
         std::sort(selSingleLepJets.begin(),  selSingleLepJets.end(),  utils::sort_CandidatesByPt);
         std::sort(selSingleLepBJets.begin(), selSingleLepBJets.end(), utils::sort_CandidatesByPt);
-        
-        
+
+
         mon.fillHisto("nvtx_pileup", tags, nGoodPV, weight);
-        
+
         if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
         //int id (abs (selLeptons[0].pdgId()));
         //weight *= isMC ? lepEff.getLeptonEfficiency(selLeptons[0].pt(), selLeptons[0].eta(), id, id == 11 ? "loose" : "tight").first : 1.0;        
-        
+
         // Event selection booleans
         bool passJetSelection(selSingleLepJets.size()>1);
         bool passMetSelection(met.pt()>40.);
