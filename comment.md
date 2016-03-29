@@ -143,31 +143,31 @@ channel selection & selection steps.
 
 The steps of Pietro's code with changes.
 
-* weird NLO -1 weights -> **leave as is**
+* weird NLO -1 weights -> **0 leave as is**
 * pileup weight (with plus-minus) -> *manual weights Y*
 * *removed*[creeppish merging of LO and NLO sets (HT binning)]
 * count N good verteces
 * Apply pileup reweighting -> *manual reweight Y*
-* save distributions of weights
+* save distributions of weights -> **1**
 * ?(all weight is applied -- there should be an overall integral here)
-* remove Run2015B altogether[Orthogonalize Run2015B PromptReco+17Jul15 mix]
-* Skip bad lumi
+* remove Run2015B[Orthogonalize Run2015B PromptReco+17Jul15 mix] **0**
+* Skip bad lumi -> **check for lumicert for new datasets 1**
 * apply trigger -> new triggers **1**
-* Apply MET filters -> bug in metFilter, running bug-less *
+* Apply MET filters -> **bug in metFilter, running bug-less * cleanLepton**
 * load all the objects we will need to access
-* "TODO: what is this??" thing -> **commented out**
+* "TODO: what is this??" thing -> **0 commented out**
 * actual particles
 * merging electrons and muons
 * leptons selection
   + kinematics, main and veto -> new threshold **1**
   + lepton IDs and isolation -> new isolation **1**
-* select the taus -> **?? leave as is**
-* JET/MET ANALYSIS -> **?? leave as is** -> update b-jets
+* select the taus -> **0 ?? leave as is**
+* JET/MET ANALYSIS -> **0 ?? leave as is** -> update b-jets
 * ASSIGN CHANNEL
 * Single lepton full analysis
   + Clean jet collection from selected taus
   + only selections and filling histograms
-  + 6 selection steps -> **TODO one selection: 1 lepton, 4 jets, 2btags**
+  + 6 selection steps -> **0 + Mara's selection: 1 lepton, 4 jets, 2btags**
 
 -- there were more steps, smearing muon momentum,
 steps in taus and jets.
