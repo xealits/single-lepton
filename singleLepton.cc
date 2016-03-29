@@ -516,6 +516,7 @@ int main (int argc, char *argv[])
   beff = 0.559;
 
 
+  // --------------------------------------- electron IDs, main and veto
   TString
     electronIdMainTag("cutBasedElectronID-Spring15-25ns-V1-standalone-loose"),
     electronIdVetoTag("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");

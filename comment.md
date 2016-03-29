@@ -74,7 +74,7 @@ singleLepton is the single-lepton part of it.
     // --------------------------------------- lepton efficiencies
 
     // --------------------------------------- b-tagging
-
+    // --------------------------------------- electron IDs, main and veto
     // --------------------------------------- pileup weighting
 
     // --------------------------------------- hardcoded MET filter
@@ -100,7 +100,7 @@ channel selection & selection steps.
 
 * weird NLO -1 weights
 * pileup weight (with plus-minus)
-* creeppish merging of LO and NLO sets
+* creeppish merging of LO and NLO sets (HT binning)
 * count N good verteces
 * Apply pileup reweighting
 * save distributions of weights
@@ -126,5 +126,56 @@ channel selection & selection steps.
 
 
 
+## Plotter
 
 
+
+
+
+
+
+
+# Rewriting the code
+
+## Clean-lepton, converging to Mara's config
+
+## Event loop, application of config parameters and selection
+
+The steps of Pietro's code with changes.
+
+* weird NLO -1 weights -> **?**
+* pileup weight (with plus-minus) -> *manual weights Y*
+* *removed*[creeppish merging of LO and NLO sets (HT binning)]
+* count N good verteces
+* Apply pileup reweighting -> *manual reweight Y*
+* save distributions of weights
+* ?(all weight is applied -- there should be an overall integral here)
+* remove Run2015B altogether[Orthogonalize Run2015B PromptReco+17Jul15 mix]
+* Skip bad lumi
+* apply trigger -> new triggers **1**
+* Apply MET filters -> bug in metFilter, running bug-less *
+* load all the objects we will need to access
+* "TODO: what is this??" thing -> **?**
+* actual particles
+* merging electrons and muons
+* leptons selection
+  + kinematics, main and veto -> new threshold **1**
+  + lepton IDs and isolation -> new isolation **1**
+* select the taus
+* JET/MET ANALYSIS
+* ASSIGN CHANNEL
+* Single lepton full analysis
+  + Clean jet collection from selected taus
+  + only selections and filling histograms
+  + 6 selection steps -> one selection: 1 lepton, 4 jets, 2btags **1**
+
+-- there were more steps, smearing muon momentum,
+steps in taus and jets.
+
+Other Mara's steps:
+
+* in MC normalization
+  + MC weights twiki/bin/viewauth/CMS/LHEReaderCMSSW#How_to_use_weights
+  + Muon eff, isolation, ID, trigger (??)
+  + b-tagging efficiencies twiki/bin/viewauth/CMS/BtagRecommendation76X
+* different datasets
