@@ -143,7 +143,7 @@ channel selection & selection steps.
 
 The steps of Pietro's code with changes.
 
-* weird NLO -1 weights -> **?**
+* weird NLO -1 weights -> **leave as is**
 * pileup weight (with plus-minus) -> *manual weights Y*
 * *removed*[creeppish merging of LO and NLO sets (HT binning)]
 * count N good verteces
@@ -155,19 +155,19 @@ The steps of Pietro's code with changes.
 * apply trigger -> new triggers **1**
 * Apply MET filters -> bug in metFilter, running bug-less *
 * load all the objects we will need to access
-* "TODO: what is this??" thing -> **?**
+* "TODO: what is this??" thing -> **commented out**
 * actual particles
 * merging electrons and muons
 * leptons selection
   + kinematics, main and veto -> new threshold **1**
   + lepton IDs and isolation -> new isolation **1**
-* select the taus
-* JET/MET ANALYSIS
+* select the taus -> **?? leave as is**
+* JET/MET ANALYSIS -> **?? leave as is** -> update b-jets
 * ASSIGN CHANNEL
 * Single lepton full analysis
   + Clean jet collection from selected taus
   + only selections and filling histograms
-  + 6 selection steps -> one selection: 1 lepton, 4 jets, 2btags **1**
+  + 6 selection steps -> **TODO one selection: 1 lepton, 4 jets, 2btags**
 
 -- there were more steps, smearing muon momentum,
 steps in taus and jets.
@@ -176,6 +176,9 @@ Other Mara's steps:
 
 * in MC normalization
   + MC weights twiki/bin/viewauth/CMS/LHEReaderCMSSW#How_to_use_weights
+  + pile-up weighting -- **the same now**
   + Muon eff, isolation, ID, trigger (??)
   + b-tagging efficiencies twiki/bin/viewauth/CMS/BtagRecommendation76X
 * different datasets
+
+
