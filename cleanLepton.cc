@@ -521,6 +521,7 @@ int main (int argc, char *argv[])
     electronIdVetoTag("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
 
   // --------------------------------------- pileup weighting
+  /*
   edm::LumiReWeighting * LumiWeights = NULL;
   utils::cmssw::PuShifter_t PuShifters;
   double PUNorm[] = { 1, 1, 1 };
@@ -541,6 +542,8 @@ int main (int argc, char *argv[])
       PuShifters = utils::cmssw::getPUshifters(dataPileupDistribution, 0.05);
       utils::getPileupNormalization(mcPileupDistribution, PUNorm, LumiWeights, PuShifters);
     }
+   */
+   // pile-up is done directly with direct_pileup_reweight
   
   gROOT->cd ();                 //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
   
@@ -957,30 +960,36 @@ int main (int argc, char *argv[])
               }
           }
 
-        // ----------------------------------------- Apply pileup reweighting
-        if(isMC)
-          {
-            int ngenITpu = 0;
-            fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
-            puInfoH.getByLabel (ev, "slimmedAddPileupInfo");
-            for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
-              {
-                if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
-              }
-            
-            //ngenITpu = nGoodPV; // based on nvtx
-            //puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
-            // So, in Pietro's approach ngenITpu is number of vertices in the beam crossing?
-            //puWeight = direct_pileup_reweight[ngenITpu];
-            // Mara does:
-            unsigned int num_inters = puInfoH->at(0).getTrueNumInteractions();
-            // TOFIX: hopefully the length of the array is enough. Increse to 100 bins.
-            if (num_inters<40) {puWeight = direct_pileup_reweight[num_inters];}
-            else {puWeight = 1.5e-16;}
-            weight *= puWeight;//Weight; //* puWeight;
-            TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
-            TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
-          }
+	// ----------------------------------------- Apply pileup reweighting
+	if(isMC)
+		{
+		int ngenITpu = 0;
+		fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
+		puInfoH.getByLabel (ev, "slimmedAddPileupInfo");
+		if (!puInfoH.isValid())
+			{
+			puInfoH.getByLabel( ev, "addPileupInfo" );
+			if (!puInfoH.isValid()) {printf("collection PileupSummaryInfo with name slimmedAddPileupInfo or addPileupInfo does not exist\n"); exit(0);}
+			}
+		for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
+			{
+			if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
+			}
+
+		//ngenITpu = nGoodPV; // based on nvtx
+		//puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
+		// So, in Pietro's approach ngenITpu is number of vertices in the beam crossing?
+		//puWeight = direct_pileup_reweight[ngenITpu];
+		// Mara does:
+		unsigned int num_inters = puInfoH->at(0).getTrueNumInteractions();
+		// TOFIX: hopefully the length of the array is enough. Increse to 100 bins.
+		if (num_inters<40) {puWeight = direct_pileup_reweight[num_inters];}
+		else {puWeight = 1.5e-16;}
+		weight *= puWeight;//Weight; //* puWeight;
+		// implement error margins of pile-up
+		//TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
+		//TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
+		}
 
         // --------------------- save distributions of weights
         mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
