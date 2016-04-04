@@ -1008,7 +1008,8 @@ int main (int argc, char *argv[])
           }
         
         // -------------------------------------------------- Skip bad lumi
-        if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
+        // people say the new datasets for CMSSW76 don't have it implemented yet
+        //if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
         
         // --------------------------------------------- apply trigger
         // ---------------- and require compatibilitiy of the event with the PD
@@ -1027,12 +1028,17 @@ int main (int argc, char *argv[])
         }
 
         // Need either to simulate the HLT (https://twiki.cern.ch/twiki/bin/view/CMS/TopTrigger#How_to_easily_emulate_HLT_paths) to match triggers.
+        // Mara's triggers: HLT_Ele23_WPLoose_Gsf for electrons
+        //                  HLT_IsoMu20 or HLT_IsoTkMu20 for muons
+	/*
         bool eTrigger    (
                           isMC ? 
                           utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")
                           :
                           utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WPLoose_Gsf_v*")
                           );
+	*/
+        bool eTrigger    ( utils::passTriggerPatterns(tr, "HLT_Ele23_WPLoose_Gsf*") );
         bool muTrigger   (
                           utils::passTriggerPatterns (tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*")
                           );
