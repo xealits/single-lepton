@@ -577,7 +577,7 @@ int main (int argc, char *argv[])
   //##############################################
 
   // removing the SmartSelectionMonitor
-  SmartSelectionMonitor mon;
+  // SmartSelectionMonitor mon;
 
 
   TH1D* singlelep_ttbar_initialevents  = (TH1D*) new TH1D("singlelep_ttbar_init",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
@@ -587,7 +587,10 @@ int main (int argc, char *argv[])
   TH1D* singlelep_ttbar_selected2_mu_events = (TH1D*) new TH1D("singlelep_ttbar_sele2_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
   TH1D* singlelep_ttbar_selected2_el_events = (TH1D*) new TH1D("singlelep_ttbar_sele2_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
 
-/**/
+  TH1D* singlelep_ttbar_maraselected_mu_events = (TH1D*) new TH1D("singlelep_ttbar_marasele_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
+  TH1D* singlelep_ttbar_maraselected_el_events = (TH1D*) new TH1D("singlelep_ttbar_marasele_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
+
+/*
   // ensure proper normalization
   TH1D* normhist = (TH1D*) mon.addHistogram(new TH1D("initNorm", ";;Events", 5, 0., 5.));
   normhist->GetXaxis()->SetBinLabel (1, "Gen. Events");
@@ -813,7 +816,7 @@ int main (int argc, char *argv[])
 
     }
 
-/**/
+*/
 
   // -------------------------------
   // Here the output histograms and other object should be initialized
@@ -992,20 +995,22 @@ int main (int argc, char *argv[])
 		}
 
         // --------------------- save distributions of weights
-        mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
-        mon.fillHisto("initNorm", tags, 1., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
-        mon.fillHisto("initNorm", tags, 2., puWeight);
-        mon.fillHisto("initNorm", tags, 3., TotalWeight_plus);
-        mon.fillHisto("initNorm", tags, 4., TotalWeight_minus);
+        // TODO: make separate weight and number of events distrobutions
+        //mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
+        //mon.fillHisto("initNorm", tags, 1., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
+        //mon.fillHisto("initNorm", tags, 2., puWeight);
+        //mon.fillHisto("initNorm", tags, 3., TotalWeight_plus);
+        //mon.fillHisto("initNorm", tags, 4., TotalWeight_minus);
         // probably, these are N events after re-forming MC
         
         // ############################################   EVENT LOOP STARTS
 
         // ---------------------- Orthogonalize Run2015B PromptReco+17Jul15 mix
-        if(isRun2015B)
-          {
-            if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
-          }
+        // let's remove Run2015B
+        // if(isRun2015B)
+          // {
+            // if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
+          // }
         
         // -------------------------------------------------- Skip bad lumi
         // people say the new datasets for CMSSW76 don't have it implemented yet
@@ -1043,8 +1048,8 @@ int main (int argc, char *argv[])
                           utils::passTriggerPatterns (tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*")
                           );
 
-        if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, nGoodPV, 1.);
-        if(!isMC && eTrigger)  mon.fillHisto("nvtx_singlee_pileup",  tags, nGoodPV, 1.);
+        // if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, nGoodPV, 1.);
+        // if(!isMC && eTrigger)  mon.fillHisto("nvtx_singlee_pileup",  tags, nGoodPV, 1.);
         
         if(filterOnlySINGLEMU) {                    eTrigger = false; }
         if(filterOnlySINGLEE)  { muTrigger = false;                   }
@@ -1087,6 +1092,7 @@ int main (int argc, char *argv[])
         //float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
         // TODO: what is this??
         // there was some wague answer from Pietro.....
+        /*
         if(isMC)
           {
             // FIXME: Considering add support for different generators (based on PYTHIA6) for comparison.
@@ -1165,7 +1171,8 @@ int main (int argc, char *argv[])
             if(mctruthmode==6 && (!isHad || !hasTop )) continue;
             
           }
-        if(debug) cout << "DEBUG: Event was not stopped by the ttbar sample categorization (either success, or it was not ttbar)" << endl;      
+        if(debug) cout << "DEBUG: Event was not stopped by the ttbar sample categorization (either success, or it was not ttbar)" << endl;
+        */
         
         // FIXME: Top pT reweighting to be reactivated as soon as corrections are released
         //      if(tPt>0 && tbarPt>0 && topPtWgt)
@@ -1517,7 +1524,7 @@ int main (int argc, char *argv[])
         std::sort(selSingleLepBJets.begin(), selSingleLepBJets.end(), utils::sort_CandidatesByPt);
 
 
-        mon.fillHisto("nvtx_pileup", tags, nGoodPV, weight);
+        // mon.fillHisto("nvtx_pileup", tags, nGoodPV, weight);
 
         if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
         //int id (abs (selLeptons[0].pdgId()));
@@ -1529,7 +1536,32 @@ int main (int argc, char *argv[])
         bool passBtagsSelection(selSingleLepBJets.size()>0);
         bool passTauSelection(selTaus.size()==1);
         bool passOS(selTaus.size()>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0);
-        
+
+        if (passJetSelection)
+        {
+          if(isSingleMu) singlelep_ttbar_selected2_mu_events->Fill(1);
+          else if (isSingleE) singlelep_ttbar_selected2_el_events->Fill(1);
+        }
+
+        if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS )
+        {
+          if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
+          else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
+        }
+
+
+        // Mara's selection booleans
+        bool passMaraJetSelection(selSingleLepJets.size()>3); // 4 jets
+        bool passMaraBtagsSelection(selSingleLepBJets.size()>1); // 2 b-tag
+        bool passMaraLeptonSelection( selLeptons.size()>0 ); // 1 lepton
+
+        if(passMaraJetSelection && passMaraBtagsSelection && passMaraLeptonSelection)
+        {
+          if(isSingleMu) singlelep_ttbar_maraselected_mu_events->Fill(1);
+          else if (isSingleE) singlelep_ttbar_maraselected_el_events->Fill(1);
+        }
+
+        /* // old crap with smartmon:
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats;
         ctrlCats.clear ();
@@ -1756,6 +1788,7 @@ int main (int argc, char *argv[])
               }
           } // End stat analysis
         
+      */
       } // End single lepton full analysis
 
 	if(debug){
@@ -1790,7 +1823,7 @@ int main (int argc, char *argv[])
 
   //save all to the file
   TFile *ofile = TFile::Open (outUrl, "recreate");
-  mon.Write();
+  // mon.Write();
 
   singlelep_ttbar_initialevents->Write();
   singlelep_ttbar_preselectedevents->Write();
@@ -1798,6 +1831,9 @@ int main (int argc, char *argv[])
   singlelep_ttbar_selected_el_events->Write();
   singlelep_ttbar_selected2_mu_events->Write();
   singlelep_ttbar_selected2_el_events->Write();
+
+  singlelep_ttbar_maraselected_mu_events->Write();
+  singlelep_ttbar_maraselected_el_events->Write();
 
   ofile->Close();
 
