@@ -1018,14 +1018,14 @@ int main (int argc, char *argv[])
           cout << "Trigger is not valid" << endl;
           return false;
         }
-        
-        if(debug){
-          cout << "Printing trigger list" << endl;
-          for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
-            cout << *trnames << endl;
-          cout << "----------- End of trigger list ----------" << endl;
-          return 0;
-        }
+
+	if(debug){
+		cout << "Printing trigger list" << endl;
+		for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
+		cout << *trnames << endl;
+		cout << "----------- End of trigger list ----------" << endl;
+		//return 0;
+	}
 
         // Need either to simulate the HLT (https://twiki.cern.ch/twiki/bin/view/CMS/TopTrigger#How_to_easily_emulate_HLT_paths) to match triggers.
         // Mara's triggers: HLT_Ele23_WPLoose_Gsf for electrons
@@ -1051,9 +1051,17 @@ int main (int argc, char *argv[])
         
         if (!(eTrigger || muTrigger)) continue;   //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
 
+	if(debug){
+		cout << "Set triggers" << endl;
+	}
+
         // ------------------------------------------------- Apply MET filters
-        if( !isMC && !metFiler.passMetFilter( ev, isPromptReco)) continue;
+        //if( !isMC && !metFiler.passMetFilter( ev, isPromptReco)) continue;
  
+
+	if(debug){
+		cout << "met filters are commented out here" << endl;
+	}
 
 
         //------------------------- load all the objects we will need to access
@@ -1217,8 +1225,12 @@ int main (int argc, char *argv[])
         //
         //
         
-        
-        
+
+
+	if(debug){
+		cout << "got objects from the event, starting the analysis" << endl;
+	}
+
         //
         // LEPTON ANALYSIS
         //
@@ -1460,6 +1472,10 @@ int main (int argc, char *argv[])
           //tags.push_back( chTags[ich]+evCat );
         }
       if(multiChannel>1) nMultiChannel++;
+
+	if(debug){
+		cout << "channel is defined, running the event selection" << endl;
+	}
 
       // Dilepton full analysis
       // No dilepton analysis
@@ -1741,6 +1757,11 @@ int main (int argc, char *argv[])
           } // End stat analysis
         
       } // End single lepton full analysis
+
+	if(debug){
+		cout << "Finished processing first event in the first file, exiting" << endl;
+		return 0;
+	}
 
       } // End single file event loop 
     printf("\n");
