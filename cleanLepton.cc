@@ -828,163 +828,165 @@ int main (int argc, char *argv[])
   //########           EVENT LOOP         ########
   //##############################################
   //loop on all the events
-	printf ("Progressing Bar     :0%%       20%%       40%%       60%%       80%%       100%%\n");
+printf ("Progressing Bar     :0%%       20%%       40%%       60%%       80%%       100%%\n");
 
-	int nMultiChannel(0);
-	FILE *csv_out;
-	//csv_out = fopen(const char *filename, const char *mode);
-	string FileName = ((outUrl.ReplaceAll(".root",""))+".csv").Data();
-	//const char file_name = FileName.c_str();
-	csv_out = fopen(FileName.c_str(), "w");
-	fprintf(csv_out, "Some header\n");
+int nMultiChannel(0);
+FILE *csv_out;
+//csv_out = fopen(const char *filename, const char *mode);
+string FileName = ((outUrl.ReplaceAll(".root",""))+".csv").Data();
+//const char file_name = FileName.c_str();
+csv_out = fopen(FileName.c_str(), "w");
+fprintf(csv_out, "Some header\n");
 
-	for(size_t f=0; f<urls.size();++f){
-		fprintf(csv_out, "Processing file: %s\n", urls[f].c_str());
-		TFile* file = TFile::Open(urls[f].c_str());
-		fwlite::Event ev(file);
-		printf ("Scanning the ntuple %2lu/%2lu :",f+1, urls.size());
-		int iev(0);
-		int treeStep (ev.size()/50);
-		//DuplicatesChecker duplicatesChecker;
-		//int nDuplicates(0);
-    for (ev.toBegin(); !ev.atEnd(); ++ev)
-      {
-        singlelep_ttbar_initialevents->Fill(1);
-        iev++;
-        totalEntries++;
-        if (iev % treeStep == 0)
-          {
-            printf (".");
-            if(!debug) fflush (stdout); // Otherwise debug messages are flushed
-          }
-
-        edm::EventBase const & myEvent = ev;
-
-
-        // ---------------------------------- these are weird NLO -1 weights
-        // TODO: figure out what are these really
-        // Take into account the negative weights from some NLO generators (otherwise some phase space will be double counted)
-        double weightGen(1.);
-        if(isNLOMC)
-          {
-            //double weightGen(0.);
-            //double weightLhe(0.);
-            
-            fwlite::Handle<GenEventInfoProduct> evt;
-            evt.getByLabel(ev, "generator");
-            if(evt.isValid())
-              {
-                weightGen = (evt->weight() > 0 ) ? 1. : -1. ;
-              }
-            
-            // FIXME: this is for PDF uncertainties, must reactivate it at some point.
-            //fwlite::Handle<LHEEventProduct> lheEvtProd;
-            //lheEvtProd.getByLabel(ev, "externalLHEProducer");
-            //if(lheEvtProd.isValid())
-            //  {
-            //    weightLhe=lheEvtProd->originalXWGTUP();
-            //    
-            //   //for(unsigned int i=0; i<evet->weights().size();i++){
-            //   //  double asdde=evet->weights()[i].wgt;
-            //   //  EventInfo.ttbar_w[EventInfo.ttbar_nw]=EventInfo.ttbar_w[0]*asdde/asdd;
-            //   //  EventInfo.ttbar_nw++;
-            //   //}
-            //  }
-            //cout << "Event " << iev << " has genweight: " << weightGen << " and LHE weight " << weightLhe << endl;
-            
-          }
-        
-        
-        std::vector < TString > tags (1, "all"); // Inclusive inclusiveness
-        
-        //
-        // DERIVE WEIGHTS TO APPLY TO SAMPLE
-        //
-        
-        // ---------------------------------- pileup weight
-        double weight           (1.0);
-        double rawWeight        (1.0);
-        double TotalWeight_plus (1.0);
-        double TotalWeight_minus(1.0);
-        double puWeight         (1.0);
-        
-        
-        // This must remain deactivated if you use HT-binned samples (it was for pthat-binned samples)
-        // if (isV0JetsMC)
-        //   {
-        //     fwlite::Handle < LHEEventProduct > lheEPHandle;
-        //     lheEPHandle.getByLabel (ev, "externalLHEProducer");
-        //     mon.fillHisto ("nup", "", lheEPHandle->hepeup ().NUP, 1);
-        //     if (lheEPHandle->hepeup ().NUP > 5)  continue;
-        //     mon.fillHisto ("nupfilt", "", lheEPHandle->hepeup ().NUP, 1);
-        //   }
-        
-        // HT-binned samples stitching: https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples
-        // -------------- it should be the creeppish merging of LO and NLO sets
-        // not used now at all?
-        /*
-        if(isV0JetsMC)
-          {
-            // access generator level HT               
-            fwlite::Handle<LHEEventProduct> lheEventProduct;
-            lheEventProduct.getByLabel(ev, "externalLHEProducer");
-            //edm::Handle<LHEEventProduct> lheEventProduct;
-            //ev.getByLabel( 'externalLHEProducer', lheEventProduct);
-            const lhef::HEPEUP& lheEvent = lheEventProduct->hepeup(); 
-            std::vector<lhef::HEPEUP::FiveVector> lheParticles = lheEvent.PUP;
-            double lheHt = 0.;
-            size_t numParticles = lheParticles.size();
-            for ( size_t idxParticle = 0; idxParticle < numParticles; ++idxParticle ) {
-              int absPdgId = TMath::Abs(lheEvent.IDUP[idxParticle]);
-              int status = lheEvent.ISTUP[idxParticle];
-              if ( status == 1 && ((absPdgId >= 1 && absPdgId <= 6) || absPdgId == 21) ) { // quarks and gluons
-                lheHt += TMath::Sqrt(TMath::Power(lheParticles[idxParticle][0], 2.) + TMath::Power(lheParticles[idxParticle][1], 2.)); // first entry is px, second py
-              }                                        
-            }
-            if(debug) cout << "Sample: " << dtag << ", lheHt: " << lheHt << ", scale factor from spreadsheet: " << patUtils::getHTScaleFactor(dtag, lheHt) << endl;
-            // getHTScaleFactor works on combining several LO datasets with NLO
-            // now one 1 NLO dataset is used for both WJets and DYJets
-            // thus it is commented out here
-            //weightGen *=   patUtils::getHTScaleFactor(dtag, lheHt);
-          }
-        */
-
-        weight *= weightGen;
-        rawWeight *=weightGen;
-        
-        // ------------------------------- count N good verteces
-        // needed for particle selection/event classification later
-        reco::VertexCollection vtx;
-        reco::Vertex goodPV;
-        unsigned int nGoodPV(0);
-        fwlite::Handle<reco::VertexCollection> vtxHandle;
-        vtxHandle.getByLabel(ev, "offlineSlimmedPrimaryVertices");
-        if(vtxHandle.isValid() ) vtx = *vtxHandle;
-        // Clean up vertex collection
-        for(size_t ivtx=0; ivtx<vtx.size(); ++ivtx)
-          {
-            if(utils::isGoodVertex(vtx[ivtx]))
-              {
-                if(nGoodPV==0) goodPV=vtx[ivtx];
-                nGoodPV++;
-              }
-          }
-
-	// ----------------------------------------- Apply pileup reweighting
-	if(isMC)
+for(size_t f=0; f<urls.size();++f){
+	fprintf(csv_out, "Processing file: %s\n", urls[f].c_str());
+	TFile* file = TFile::Open(urls[f].c_str());
+	fwlite::Event ev(file);
+	printf ("Scanning the ntuple %2lu/%2lu :",f+1, urls.size());
+	int iev(0);
+	int treeStep (ev.size()/50);
+	//DuplicatesChecker duplicatesChecker;
+	//int nDuplicates(0);
+	for (ev.toBegin(); !ev.atEnd(); ++ev)
 		{
-		int ngenITpu = 0;
-		fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
-		puInfoH.getByLabel (ev, "slimmedAddPileupInfo");
-		if (!puInfoH.isValid())
+		singlelep_ttbar_initialevents->Fill(1);
+		iev++;
+		totalEntries++;
+		if (iev % treeStep == 0)
 			{
-			puInfoH.getByLabel( ev, "addPileupInfo" );
-			if (!puInfoH.isValid()) {printf("collection PileupSummaryInfo with name slimmedAddPileupInfo or addPileupInfo does not exist\n"); exit(0);}
+			printf (".");
+			if(!debug) fflush (stdout); // Otherwise debug messages are flushed
 			}
-		for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
+
+		edm::EventBase const & myEvent = ev;
+
+
+		// ---------------------------------- these are weird NLO -1 weights
+		// TODO: figure out what are these really
+		// Take into account the negative weights from some NLO generators (otherwise some phase space will be double counted)
+		double weightGen(1.);
+		if(isNLOMC)
 			{
-			if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
+			//double weightGen(0.);
+			//double weightLhe(0.);
+
+			fwlite::Handle<GenEventInfoProduct> evt;
+			evt.getByLabel(ev, "generator");
+			if(evt.isValid())
+				{
+				weightGen = (evt->weight() > 0 ) ? 1. : -1. ;
+				}
+
+			// FIXME: this is for PDF uncertainties, must reactivate it at some point.
+			//fwlite::Handle<LHEEventProduct> lheEvtProd;
+			//lheEvtProd.getByLabel(ev, "externalLHEProducer");
+			//if(lheEvtProd.isValid())
+			//  {
+			//    weightLhe=lheEvtProd->originalXWGTUP();
+			//    
+			//   //for(unsigned int i=0; i<evet->weights().size();i++){
+			//   //  double asdde=evet->weights()[i].wgt;
+			//   //  EventInfo.ttbar_w[EventInfo.ttbar_nw]=EventInfo.ttbar_w[0]*asdde/asdd;
+			//   //  EventInfo.ttbar_nw++;
+			//   //}
+			//  }
+			//cout << "Event " << iev << " has genweight: " << weightGen << " and LHE weight " << weightLhe << endl;
+
 			}
+
+
+		std::vector < TString > tags (1, "all"); // Inclusive inclusiveness
+
+		//
+		// DERIVE WEIGHTS TO APPLY TO SAMPLE
+		//
+
+		// ---------------------------------- pileup weight
+		double weight           (1.0);
+		double rawWeight        (1.0);
+		double TotalWeight_plus (1.0);
+		double TotalWeight_minus(1.0);
+		double puWeight         (1.0);
+
+
+		// This must remain deactivated if you use HT-binned samples (it was for pthat-binned samples)
+		// if (isV0JetsMC)
+		//   {
+		//     fwlite::Handle < LHEEventProduct > lheEPHandle;
+		//     lheEPHandle.getByLabel (ev, "externalLHEProducer");
+		//     mon.fillHisto ("nup", "", lheEPHandle->hepeup ().NUP, 1);
+		//     if (lheEPHandle->hepeup ().NUP > 5)  continue;
+		//     mon.fillHisto ("nupfilt", "", lheEPHandle->hepeup ().NUP, 1);
+		//   }
+
+		// HT-binned samples stitching: https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples
+		// -------------- it should be the creeppish merging of LO and NLO sets
+		// not used now at all?
+		/*
+		if(isV0JetsMC)
+			{
+			// access generator level HT               
+			fwlite::Handle<LHEEventProduct> lheEventProduct;
+			lheEventProduct.getByLabel(ev, "externalLHEProducer");
+			//edm::Handle<LHEEventProduct> lheEventProduct;
+			//ev.getByLabel( 'externalLHEProducer', lheEventProduct);
+			const lhef::HEPEUP& lheEvent = lheEventProduct->hepeup(); 
+			std::vector<lhef::HEPEUP::FiveVector> lheParticles = lheEvent.PUP;
+			double lheHt = 0.;
+			size_t numParticles = lheParticles.size();
+			for ( size_t idxParticle = 0; idxParticle < numParticles; ++idxParticle ) {
+				int absPdgId = TMath::Abs(lheEvent.IDUP[idxParticle]);
+				int status = lheEvent.ISTUP[idxParticle];
+				if ( status == 1 && ((absPdgId >= 1 && absPdgId <= 6) || absPdgId == 21) ) {
+					// quarks and gluons
+					lheHt += TMath::Sqrt(TMath::Power(lheParticles[idxParticle][0], 2.) + TMath::Power(lheParticles[idxParticle][1], 2.));
+					// first entry is px, second py
+					}                                        
+				}
+			if(debug) cout << "Sample: " << dtag << ", lheHt: " << lheHt << ", scale factor from spreadsheet: " << patUtils::getHTScaleFactor(dtag, lheHt) << endl;
+			// getHTScaleFactor works on combining several LO datasets with NLO
+			// now one 1 NLO dataset is used for both WJets and DYJets
+			// thus it is commented out here
+			//weightGen *=   patUtils::getHTScaleFactor(dtag, lheHt);
+			}
+		*/
+
+		weight *= weightGen;
+		rawWeight *=weightGen;
+        
+		// ------------------------------- count N good verteces
+		// needed for particle selection/event classification later
+		reco::VertexCollection vtx;
+		reco::Vertex goodPV;
+		unsigned int nGoodPV(0);
+		fwlite::Handle<reco::VertexCollection> vtxHandle;
+		vtxHandle.getByLabel(ev, "offlineSlimmedPrimaryVertices");
+		if(vtxHandle.isValid() ) vtx = *vtxHandle;
+		// Clean up vertex collection
+		for(size_t ivtx=0; ivtx<vtx.size(); ++ivtx)
+			{
+			if(utils::isGoodVertex(vtx[ivtx]))
+				{
+				if(nGoodPV==0) goodPV=vtx[ivtx];
+				nGoodPV++;
+				}
+			}
+
+		// ----------------------------------------- Apply pileup reweighting
+		if(isMC)
+			{
+			int ngenITpu = 0;
+			fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
+			puInfoH.getByLabel (ev, "slimmedAddPileupInfo");
+			if (!puInfoH.isValid())
+				{
+				puInfoH.getByLabel( ev, "addPileupInfo" );
+				if (!puInfoH.isValid()) {printf("collection PileupSummaryInfo with name slimmedAddPileupInfo or addPileupInfo does not exist\n"); exit(0);}
+				}
+			for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
+				{
+				if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
+				}
 
 		//ngenITpu = nGoodPV; // based on nvtx
 		//puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
@@ -1001,105 +1003,105 @@ int main (int argc, char *argv[])
 		//TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
 		}
 
-        // --------------------- save distributions of weights
-        // TODO: make separate weight and number of events distrobutions
-        //mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
-        //mon.fillHisto("initNorm", tags, 1., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
-        //mon.fillHisto("initNorm", tags, 2., puWeight);
-        //mon.fillHisto("initNorm", tags, 3., TotalWeight_plus);
-        //mon.fillHisto("initNorm", tags, 4., TotalWeight_minus);
-        // probably, these are N events after re-forming MC
-        
-        // ############################################   EVENT LOOP STARTS
+		// --------------------- save distributions of weights
+		// TODO: make separate weight and number of events distrobutions
+		//mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
+		//mon.fillHisto("initNorm", tags, 1., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
+		//mon.fillHisto("initNorm", tags, 2., puWeight);
+		//mon.fillHisto("initNorm", tags, 3., TotalWeight_plus);
+		//mon.fillHisto("initNorm", tags, 4., TotalWeight_minus);
+		// probably, these are N events after re-forming MC
+		
+		// ############################################   EVENT LOOP STARTS
 
-        // ---------------------- Orthogonalize Run2015B PromptReco+17Jul15 mix
-        // let's remove Run2015B
-        // if(isRun2015B)
-          // {
-            // if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
-          // }
-        
-        // -------------------------------------------------- Skip bad lumi
-        // people say the new datasets for CMSSW76 don't have it implemented yet
-        //if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
-        
-        // --------------------------------------------- apply trigger
-        // ---------------- and require compatibilitiy of the event with the PD
-        edm::TriggerResultsByName tr = ev.triggerResultsByName ("HLT");
-        if (!tr.isValid ()){
-          cout << "Trigger is not valid" << endl;
-          return false;
-        }
+		// ---------------------- Orthogonalize Run2015B PromptReco+17Jul15 mix
+		// let's remove Run2015B
+		// if(isRun2015B)
+		// {
+		// if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
+		// }
+		
+		// -------------------------------------------------- Skip bad lumi
+		// people say the new datasets for CMSSW76 don't have it implemented yet
+		//if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
+		
+		// --------------------------------------------- apply trigger
+		// ---------------- and require compatibilitiy of the event with the PD
+		edm::TriggerResultsByName tr = ev.triggerResultsByName ("HLT");
+		if (!tr.isValid ()){
+			cout << "Trigger is not valid" << endl;
+			return false;
+			}
 
-	if(debug){
-		cout << "Printing trigger list" << endl;
-		for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
-		cout << *trnames << endl;
-		cout << "----------- End of trigger list ----------" << endl;
-		//return 0;
-	}
+		if(debug){
+			cout << "Printing trigger list" << endl;
+			for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
+			cout << *trnames << endl;
+			cout << "----------- End of trigger list ----------" << endl;
+			//return 0;
+		}
 
-        // Need either to simulate the HLT (https://twiki.cern.ch/twiki/bin/view/CMS/TopTrigger#How_to_easily_emulate_HLT_paths) to match triggers.
-        // Mara's triggers: HLT_Ele23_WPLoose_Gsf for electrons
-        //                  HLT_IsoMu20 or HLT_IsoTkMu20 for muons
-	/*
-        bool eTrigger    (
-                          isMC ? 
-                          utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")
-                          :
-                          utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WPLoose_Gsf_v*")
-                          );
-	*/
-        bool eTrigger    ( utils::passTriggerPatterns(tr, "HLT_Ele23_WPLoose_Gsf*") );
-        bool muTrigger   (
-                          utils::passTriggerPatterns (tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*")
-                          );
+		// Need either to simulate the HLT (https://twiki.cern.ch/twiki/bin/view/CMS/TopTrigger#How_to_easily_emulate_HLT_paths) to match triggers.
+		// Mara's triggers: HLT_Ele23_WPLoose_Gsf for electrons
+		//                  HLT_IsoMu20 or HLT_IsoTkMu20 for muons
+		/*
+		bool eTrigger    (
+			isMC ? 
+			utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")
+			:
+			utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WPLoose_Gsf_v*")
+			);
+		*/
+		bool eTrigger    ( utils::passTriggerPatterns(tr, "HLT_Ele23_WPLoose_Gsf*") );
+		bool muTrigger   (
+			utils::passTriggerPatterns (tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*")
+			);
 
-        // if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, nGoodPV, 1.);
-        // if(!isMC && eTrigger)  mon.fillHisto("nvtx_singlee_pileup",  tags, nGoodPV, 1.);
-        
-        if(filterOnlySINGLEMU) {                    eTrigger = false; }
-        if(filterOnlySINGLEE)  { muTrigger = false;                   }
-        
-        if (!(eTrigger || muTrigger)) continue;   //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
+		// if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, nGoodPV, 1.);
+		// if(!isMC && eTrigger)  mon.fillHisto("nvtx_singlee_pileup",  tags, nGoodPV, 1.);
+		
+		if(filterOnlySINGLEMU) {                    eTrigger = false; }
+		if(filterOnlySINGLEE)  { muTrigger = false;                   }
+		
+		if (!(eTrigger || muTrigger)) continue;   //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
 
-	if(debug){
-		cout << "Set triggers" << endl;
-	}
+		if(debug){
+			cout << "Set triggers" << endl;
+			}
 
-        // ------------------------------------------------- Apply MET filters
-        //if( !isMC && !metFiler.passMetFilter( ev, isPromptReco)) continue;
- 
+		// ------------------------------------------------- Apply MET filters
+		//if( !isMC && !metFiler.passMetFilter( ev, isPromptReco)) continue;
+		
 
-	if(debug){
-		cout << "met filters are commented out here" << endl;
-	}
+		if(debug){
+			cout << "met filters are commented out here" << endl;
+			}
 
 
-        //------------------------- load all the objects we will need to access
+		//------------------------- load all the objects we will need to access
 
-        double rho = 0;
-        fwlite::Handle<double> rhoHandle;
-        rhoHandle.getByLabel(ev, "fixedGridRhoFastjetAll");
-        if(rhoHandle.isValid() ) rho = *rhoHandle;
-        
-        reco::GenParticleCollection gen;
-        fwlite::Handle<reco::GenParticleCollection> genHandle;
-        genHandle.getByLabel(ev, "prunedGenParticles");
-        if(genHandle.isValid() ) gen = *genHandle;
-        
-        // FIXME: Save time and don't load the rest of the objects when selecting by mctruthmode :)
-        bool hasTop(false);
-        int
-          ngenLeptonsStatus3(0),
-          ngenLeptonsNonTauSonsStatus3(0),
-          ngenTausStatus3(0),
-          ngenQuarksStatus3(0);
-        //double tPt(0.), tbarPt(0.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop
-        //float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
-        // TODO: what is this??
-        // there was some wague answer from Pietro.....
-        /*
+		double rho = 0;
+		fwlite::Handle<double> rhoHandle;
+		rhoHandle.getByLabel(ev, "fixedGridRhoFastjetAll");
+		if(rhoHandle.isValid() ) rho = *rhoHandle;
+		
+		reco::GenParticleCollection gen;
+		fwlite::Handle<reco::GenParticleCollection> genHandle;
+		genHandle.getByLabel(ev, "prunedGenParticles");
+		if(genHandle.isValid() ) gen = *genHandle;
+		
+		// FIXME: Save time and don't load the rest of the objects when selecting by mctruthmode :)
+		bool hasTop(false);
+		int
+		ngenLeptonsStatus3(0),
+		ngenLeptonsNonTauSonsStatus3(0),
+		ngenTausStatus3(0),
+		ngenQuarksStatus3(0);
+		//double tPt(0.), tbarPt(0.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop
+		//float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
+		// TODO: what is this??
+		// there was some wague answer from Pietro.....
+		/*
         if(isMC)
           {
             // FIXME: Considering add support for different generators (based on PYTHIA6) for comparison.
@@ -1191,69 +1193,69 @@ int main (int argc, char *argv[])
         //        }
 
 
-        // ------------------------------------ actual particles?
-        
-        pat::MuonCollection muons;
-        fwlite::Handle<pat::MuonCollection> muonsHandle;
-        muonsHandle.getByLabel(ev, "slimmedMuons");
-        if(muonsHandle.isValid() ) muons = *muonsHandle;
-        
-        pat::ElectronCollection electrons;
-        fwlite::Handle<pat::ElectronCollection> electronsHandle;
-        electronsHandle.getByLabel(ev, "slimmedElectrons");
-        if(electronsHandle.isValid() ) electrons = *electronsHandle;
-        
-        pat::JetCollection jets;
-        fwlite::Handle<pat::JetCollection>jetsHandle;
-        jetsHandle.getByLabel(ev, "slimmedJets");
-        if(jetsHandle.isValid() ) jets = *jetsHandle;
+        	// ------------------------------------ actual particles?
 
-        pat::PhotonCollection photons;
-        fwlite::Handle<pat::PhotonCollection> photonsHandle;
-        photonsHandle.getByLabel(ev, "slimmedPhotons");
-        if(photonsHandle.isValid() ) photons = *photonsHandle;
-        
-        pat::METCollection mets;
-        fwlite::Handle<pat::METCollection> metsHandle;
-        metsHandle.getByLabel(ev, "slimmedMETs");
-        if(metsHandle.isValid() ) mets = *metsHandle;
-        LorentzVector met = mets[0].p4 ();
-        
-        if(debug){
-          // MET try:
-          double mypt = mets[0].shiftedPt(pat::MET::METUncertainty::JetEnUp);
-          cout << "MET = " << mets[0].pt() << ", JetEnUp: " << mypt << endl;
-          LorentzVector myshiftedMet = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp);
-          cout << "MET = " << mets[0].pt() << ", JetEnUp: " << myshiftedMet.pt() << endl;
-        }
-        
-        pat::TauCollection taus;
-        fwlite::Handle<pat::TauCollection> tausHandle;
-        tausHandle.getByLabel(ev, "slimmedTaus");
-        if(tausHandle.isValid() ) taus = *tausHandle;
-        
+		pat::MuonCollection muons;
+		fwlite::Handle<pat::MuonCollection> muonsHandle;
+		muonsHandle.getByLabel(ev, "slimmedMuons");
+		if(muonsHandle.isValid() ) muons = *muonsHandle;
 
-        //
-        //
-        // BELOW FOLLOWS THE ANALYSIS OF THE MAIN SELECTION WITH N-1 PLOTS. Whatever that means
-        //
-        //
-        
+		pat::ElectronCollection electrons;
+		fwlite::Handle<pat::ElectronCollection> electronsHandle;
+		electronsHandle.getByLabel(ev, "slimmedElectrons");
+		if(electronsHandle.isValid() ) electrons = *electronsHandle;
+
+		pat::JetCollection jets;
+		fwlite::Handle<pat::JetCollection>jetsHandle;
+		jetsHandle.getByLabel(ev, "slimmedJets");
+		if(jetsHandle.isValid() ) jets = *jetsHandle;
+
+		pat::PhotonCollection photons;
+		fwlite::Handle<pat::PhotonCollection> photonsHandle;
+		photonsHandle.getByLabel(ev, "slimmedPhotons");
+		if(photonsHandle.isValid() ) photons = *photonsHandle;
+
+		pat::METCollection mets;
+		fwlite::Handle<pat::METCollection> metsHandle;
+		metsHandle.getByLabel(ev, "slimmedMETs");
+		if(metsHandle.isValid() ) mets = *metsHandle;
+		LorentzVector met = mets[0].p4 ();
+
+		if(debug){
+			// MET try:
+			double mypt = mets[0].shiftedPt(pat::MET::METUncertainty::JetEnUp);
+			cout << "MET = " << mets[0].pt() << ", JetEnUp: " << mypt << endl;
+			LorentzVector myshiftedMet = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp);
+			cout << "MET = " << mets[0].pt() << ", JetEnUp: " << myshiftedMet.pt() << endl;
+			}
+
+		pat::TauCollection taus;
+		fwlite::Handle<pat::TauCollection> tausHandle;
+		tausHandle.getByLabel(ev, "slimmedTaus");
+		if(tausHandle.isValid() ) taus = *tausHandle;
 
 
-	if(debug){
-		cout << "got objects from the event, starting the analysis" << endl;
-	}
+		//
+		//
+		// BELOW FOLLOWS THE ANALYSIS OF THE MAIN SELECTION WITH N-1 PLOTS. Whatever that means
+		//
+		//
+		
 
-        //
-        // LEPTON ANALYSIS
-        //
-        
-        // ------------------------------------ merging electrons and muons
-        std::vector<patUtils::GenericLepton> leptons;
-        for(size_t l=0; l<electrons.size(); ++l) leptons.push_back(patUtils::GenericLepton (electrons[l] ));
-        for(size_t l=0; l<muons.size(); ++l)     leptons.push_back(patUtils::GenericLepton (muons[l]     ));
-        std::sort(leptons.begin(), leptons.end(), utils::sort_CandidatesByPt);
+
+		if(debug){
+			cout << "got objects from the event, starting the analysis" << endl;
+			}
+
+		//
+		// LEPTON ANALYSIS
+		//
+		
+		// ------------------------------------ merging electrons and muons
+		std::vector<patUtils::GenericLepton> leptons;
+		for(size_t l=0; l<electrons.size(); ++l) leptons.push_back(patUtils::GenericLepton (electrons[l] ));
+		for(size_t l=0; l<muons.size(); ++l)     leptons.push_back(patUtils::GenericLepton (muons[l]     ));
+		std::sort(leptons.begin(), leptons.end(), utils::sort_CandidatesByPt);
 
 
         // ---------------------------------- leptons selection
@@ -1497,76 +1499,78 @@ int main (int argc, char *argv[])
 
       // ------------------------------------------ Single lepton full analysis
       //if(tags[1] == "singlemu" || tags[1] == "singlee"){
-      if(isSingleMu || isSingleE){
-        singlelep_ttbar_preselectedevents->Fill(1);
-        
-        // ---------------------------- Clean jet collection from selected taus
-        pat::JetCollection
-          selSingleLepJets, selSingleLepBJets;
-        for (size_t ijet = 0; ijet < selJets.size(); ++ijet)
-          {
-            pat::Jet jet = selJets[ijet];
-            
-            double minDRtj(9999.);
-            for(size_t itau=0; itau<selTaus.size(); ++itau)
-              {
-                minDRtj = TMath::Min(minDRtj, reco::deltaR(jet, selTaus[itau]));
-              }
-            if(minDRtj>0.4) selSingleLepJets.push_back(jet);
-            
-            bool hasCSVtag = (jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
-            if (isMC)
-              {
-                int flavId = jets[ijet].partonFlavour();
-                if      (abs (flavId) == 5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
-                else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
-                else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
-              }
+		if(isSingleMu || isSingleE){
+			singlelep_ttbar_preselectedevents->Fill(1);
 
-            if(!hasCSVtag) continue;
-            if(minDRtj>0.4) selSingleLepBJets.push_back(jets[ijet]);
-          }
+			// ---------------------------- Clean jet collection from selected taus
+			pat::JetCollection
+			selSingleLepJets, selSingleLepBJets;
+			for (size_t ijet = 0; ijet < selJets.size(); ++ijet)
+				{
+				pat::Jet jet = selJets[ijet];
 
-        std::sort(selSingleLepJets.begin(),  selSingleLepJets.end(),  utils::sort_CandidatesByPt);
-        std::sort(selSingleLepBJets.begin(), selSingleLepBJets.end(), utils::sort_CandidatesByPt);
+				double minDRtj(9999.);
+				for(size_t itau=0; itau<selTaus.size(); ++itau)
+					{
+					minDRtj = TMath::Min(minDRtj, reco::deltaR(jet, selTaus[itau]));
+					}
+				if(minDRtj>0.4) selSingleLepJets.push_back(jet);
 
+				bool hasCSVtag = (jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
+				if (isMC)
+					{
+					int flavId = jets[ijet].partonFlavour();
+					if      (abs (flavId) == 5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
+					else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
+					else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
+					}
 
-        // mon.fillHisto("nvtx_pileup", tags, nGoodPV, weight);
+				if(!hasCSVtag) continue;
+				if(minDRtj>0.4) selSingleLepBJets.push_back(jets[ijet]);
+				}
 
-        if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
-        //int id (abs (selLeptons[0].pdgId()));
-        //weight *= isMC ? lepEff.getLeptonEfficiency(selLeptons[0].pt(), selLeptons[0].eta(), id, id == 11 ? "loose" : "tight").first : 1.0;        
-
-        // Event selection booleans
-        bool passJetSelection(selSingleLepJets.size()>1);
-        bool passMetSelection(met.pt()>40.);
-        bool passBtagsSelection(selSingleLepBJets.size()>0);
-        bool passTauSelection(selTaus.size()==1);
-        bool passOS(selTaus.size()>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0);
-
-        if (passJetSelection)
-        {
-          if(isSingleMu) singlelep_ttbar_selected2_mu_events->Fill(1);
-          else if (isSingleE) singlelep_ttbar_selected2_el_events->Fill(1);
-        }
-
-        if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS )
-        {
-          if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
-          else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
-        }
+			std::sort(selSingleLepJets.begin(),  selSingleLepJets.end(),  utils::sort_CandidatesByPt);
+			std::sort(selSingleLepBJets.begin(), selSingleLepBJets.end(), utils::sort_CandidatesByPt);
 
 
-        // Mara's selection booleans
-        bool passMaraJetSelection(selSingleLepJets.size()>3); // 4 jets
-        bool passMaraBtagsSelection(selSingleLepBJets.size()>1); // 2 b-tag
-        bool passMaraLeptonSelection( selLeptons.size()>0 ); // 1 lepton
+			// mon.fillHisto("nvtx_pileup", tags, nGoodPV, weight);
 
-        if(passMaraJetSelection && passMaraBtagsSelection && passMaraLeptonSelection)
-        {
-          if(isSingleMu) singlelep_ttbar_maraselected_mu_events->Fill(1);
-          else if (isSingleE) singlelep_ttbar_maraselected_el_events->Fill(1);
-        }
+			if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
+			//int id (abs (selLeptons[0].pdgId()));
+			//weight *= isMC ? lepEff.getLeptonEfficiency(selLeptons[0].pt(), selLeptons[0].eta(), id, id == 11 ? "loose" : "tight").first : 1.0;        
+
+			// Event selection booleans
+			bool passJetSelection(selSingleLepJets.size()>1);
+			bool passMetSelection(met.pt()>40.);
+			bool passBtagsSelection(selSingleLepBJets.size()>0);
+			bool passTauSelection(selTaus.size()==1);
+			bool passOS(selTaus.size()>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0);
+
+			if (passJetSelection)
+				{
+				if(isSingleMu) singlelep_ttbar_selected2_mu_events->Fill(1);
+				else if (isSingleE) singlelep_ttbar_selected2_el_events->Fill(1);
+				}
+
+			if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS )
+				{
+				if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
+				else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
+				fprintf(out_csv, "oursel; %d, %g, %g\n", nGoodPV, rawWeight, weight);
+				}
+
+
+			// Mara's selection booleans
+			bool passMaraJetSelection(selSingleLepJets.size()>3); // 4 jets
+			bool passMaraBtagsSelection(selSingleLepBJets.size()>1); // 2 b-tag
+			bool passMaraLeptonSelection( selLeptons.size()>0 ); // 1 lepton
+
+			if(passMaraJetSelection && passMaraBtagsSelection && passMaraLeptonSelection)
+				{
+				if(isSingleMu) singlelep_ttbar_maraselected_mu_events->Fill(1);
+				else if (isSingleE) singlelep_ttbar_maraselected_el_events->Fill(1);
+				fprintf(out_csv, "marasel; %d, %g, %g\n", nGoodPV, rawWeight, weight);
+				}
 
         /* // old crap with smartmon:
         // Setting up control categories and fill up event flow histo
@@ -1741,119 +1745,118 @@ int main (int argc, char *argv[])
                     int flavId(jet.partonFlavour());
                     bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
 
-                    if (varyBtagUp)
-                      {
-                        if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb + sfbunc,     beff);
-                        else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5 + 2*sfbunc, beff);
-                        else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl + sflunc,     leff);
-                      }
-                    else if (varyBtagDown)
-                      {
-                        if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb - sfbunc,     beff);
-                        else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5 - 2*sfbunc, beff);
-                        else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl - sflunc,     leff);
-                      }
-                    if(hasCSVtag)
-                      finalSelSingleLepBJets.push_back(jet);
-                  }
-                std::sort(finalSelSingleLepJets.begin(),  finalSelSingleLepJets.end(),  utils::sort_CandidatesByPt);
-                std::sort(finalSelSingleLepBJets.begin(), finalSelSingleLepBJets.end(), utils::sort_CandidatesByPt);
+				if (varyBtagUp)
+					{
+					if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb + sfbunc,     beff);
+					else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5 + 2*sfbunc, beff);
+					else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl + sflunc,     leff);
+					}
+				else if (varyBtagDown)
+					{
+					if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb - sfbunc,     beff);
+					else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5 - 2*sfbunc, beff);
+					else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl - sflunc,     leff);
+					}
+				if(hasCSVtag) finalSelSingleLepBJets.push_back(jet);
+				}
+				std::sort(finalSelSingleLepJets.begin(),  finalSelSingleLepJets.end(),  utils::sort_CandidatesByPt);
+				std::sort(finalSelSingleLepBJets.begin(), finalSelSingleLepBJets.end(), utils::sort_CandidatesByPt);
 
-                bool passFinalJetSelection(finalSelSingleLepJets.size()>1);
-                bool passFinalMetSelection(newMET.pt()>40.);
-                bool passFinalBtagsSelection(finalSelSingleLepBJets.size()>0);
+				bool passFinalJetSelection(finalSelSingleLepJets.size()>1);
+				bool passFinalMetSelection(newMET.pt()>40.);
+				bool passFinalBtagsSelection(finalSelSingleLepBJets.size()>0);
+
+				if(!passFinalJetSelection || !passFinalMetSelection || !passFinalBtagsSelection) continue;
+				// Here fill stat plots
+				pat::Tau & tau = selTaus[0];
+				reco::CandidatePtr leadChargedHadron = tau.leadChargedHadrCand();
+				double tauR(leadChargedHadron->p() / tau.energy());  // Sic. It is momentum, not transverse momentum
+				double tauY(2*leadChargedHadron->pt()/tau.et() - 1);
+				//                Y= [ p_T^{trk} - (E_T - p_T^{trk} ]/E_T  = 2p_T^{trk}/E_T  - 1 . Which is practically Y = 2R' -1
+
+
+				LorentzVector mutauSystem (0, 0, 0, 0);
+				mutauSystem += selLeptons[0].p4();
+				mutauSystem += tau.p4();
                 
-                if(!passFinalJetSelection || !passFinalMetSelection || !passFinalBtagsSelection) continue;
-                // Here fill stat plots
-                pat::Tau & tau = selTaus[0];
-                reco::CandidatePtr leadChargedHadron = tau.leadChargedHadrCand();
-                double tauR(leadChargedHadron->p() / tau.energy());  // Sic. It is momentum, not transverse momentum
-                double tauY(2*leadChargedHadron->pt()/tau.et() - 1);
-                //                Y= [ p_T^{trk} - (E_T - p_T^{trk} ]/E_T  = 2p_T^{trk}/E_T  - 1 . Which is practically Y = 2R' -1
+				mon.fillHisto("finalnbjets"         +var, tags, finalSelSingleLepBJets.size(), iweight);
+				mon.fillHisto("finaltaur"           +var, tags, tauR, iweight);
+				mon.fillHisto("finaltaupolarization"+var, tags, tauY, iweight);
+				mon.fillHisto("finaldphilepmet"     +var, tags, fabs(deltaPhi(newMET.phi(), selLeptons[0].phi())), iweight);
+				mon.fillHisto("finaldphitaumet"     +var, tags, fabs(deltaPhi(newMET.phi(), selTaus[0].phi())), iweight);
+				mon.fillHisto("finaldphileptau"     +var, tags, fabs(deltaPhi(selLeptons[0].phi(), selTaus[0].phi())), iweight);
+				mon.fillHisto("finaltaupt"          +var, tags, selTaus[0].pt(), iweight);
+				mon.fillHisto("finalmutaumass"      +var, tags, mutauSystem.mass(), iweight);
 
-                
-                LorentzVector mutauSystem (0, 0, 0, 0);
-                mutauSystem += selLeptons[0].p4();
-                mutauSystem += tau.p4();
-                
-                mon.fillHisto("finalnbjets"         +var, tags, finalSelSingleLepBJets.size(), iweight);
-                mon.fillHisto("finaltaur"           +var, tags, tauR, iweight);
-                mon.fillHisto("finaltaupolarization"+var, tags, tauY, iweight);
-                mon.fillHisto("finaldphilepmet"     +var, tags, fabs(deltaPhi(newMET.phi(), selLeptons[0].phi())), iweight);
-                mon.fillHisto("finaldphitaumet"     +var, tags, fabs(deltaPhi(newMET.phi(), selTaus[0].phi())), iweight);
-                mon.fillHisto("finaldphileptau"     +var, tags, fabs(deltaPhi(selLeptons[0].phi(), selTaus[0].phi())), iweight);
-                mon.fillHisto("finaltaupt"          +var, tags, selTaus[0].pt(), iweight);
-                mon.fillHisto("finalmutaumass"      +var, tags, mutauSystem.mass(), iweight);
+				if(saveSummaryTree)
+					{
+					TDirectory* cwd = gDirectory;
+					summaryFile->cd();
+					summaryTree->Fill();
+					cwd->cd();
+					}
+				}
+			} // End stat analysis
 
-                if(saveSummaryTree)
-                  {
-                    TDirectory* cwd = gDirectory;
-                    summaryFile->cd();
-                    summaryTree->Fill();
-                    cwd->cd();
-                  }
-              }
-          } // End stat analysis
-        
-      */
-      } // End single lepton full analysis
+			*/
+			} // End single lepton full analysis
 
-	if(debug){
-		cout << "Finished processing first event in the first file, exiting" << endl;
-		return 0;
+		if(debug){
+			cout << "Finished processing first event in the first file, exiting" << endl;
+			return 0;
+			}
+
+		} // End single file event loop
+	printf("\n");
+	delete file;
+	} // End loop on files
+
+fclose(csv_out);
+
+if(saveSummaryTree)
+	{
+	TDirectory* cwd = gDirectory;
+	summaryFile->cd();
+	summaryTree->Write();
+	summaryFile->Close();
+	delete summaryFile;
+	cwd->cd();
 	}
 
-      } // End single file event loop 
-    printf("\n");
-    delete file;
-  } // End loop on files
-  
-	fclose(csv_out);
 
-	if(saveSummaryTree)
-		{
-		TDirectory* cwd = gDirectory;
-		summaryFile->cd();
-		summaryTree->Write();
-		summaryFile->Close();
-		delete summaryFile;
-		cwd->cd();
-		}
+if(nMultiChannel>0) cout << "Warning! There were " << nMultiChannel << " multi-channel events out of " << totalEntries << " events!" << endl;
+printf ("\n");
 
+//##############################################
+//########     SAVING HISTO TO FILE     ########
+//##############################################
+//save control plots to file
+printf ("Results save in %s\n", outUrl.Data());
 
-	if(nMultiChannel>0) cout << "Warning! There were " << nMultiChannel << " multi-channel events out of " << totalEntries << " events!" << endl;
-	printf ("\n");
+//save all to the file
+TFile *ofile = TFile::Open (outUrl, "recreate");
+// mon.Write();
 
-  //##############################################
-  //########     SAVING HISTO TO FILE     ########
-  //##############################################
-  //save control plots to file
-  printf ("Results save in %s\n", outUrl.Data());
+singlelep_ttbar_initialevents->Write();
+singlelep_ttbar_preselectedevents->Write();
+singlelep_ttbar_selected_mu_events->Write();
+singlelep_ttbar_selected_el_events->Write();
+singlelep_ttbar_selected2_mu_events->Write();
+singlelep_ttbar_selected2_el_events->Write();
 
-  //save all to the file
-  TFile *ofile = TFile::Open (outUrl, "recreate");
-  // mon.Write();
+singlelep_ttbar_maraselected_mu_events->Write();
+singlelep_ttbar_maraselected_el_events->Write();
 
-  singlelep_ttbar_initialevents->Write();
-  singlelep_ttbar_preselectedevents->Write();
-  singlelep_ttbar_selected_mu_events->Write();
-  singlelep_ttbar_selected_el_events->Write();
-  singlelep_ttbar_selected2_mu_events->Write();
-  singlelep_ttbar_selected2_el_events->Write();
+ofile->Close();
 
-  singlelep_ttbar_maraselected_mu_events->Write();
-  singlelep_ttbar_maraselected_el_events->Write();
+if (outTxtFile) fclose (outTxtFile);
 
-  ofile->Close();
+// Now that everything is done, dump the list of lumiBlock that we processed in this job
+if(!isMC){
+	// FIXME: when lumi certificate is ready for rereco data, check that these work
+	goodLumiFilter.FindLumiInFiles(urls);
+	goodLumiFilter.DumpToJson(((outUrl.ReplaceAll(".root",""))+".json").Data());
+	}
 
-  if (outTxtFile)
-    fclose (outTxtFile);
-
-  // Now that everything is done, dump the list of lumiBlock that we processed in this job
-  if(!isMC){
-    // FIXME: when lumi certificate is ready for rereco data, check that these work
-    goodLumiFilter.FindLumiInFiles(urls);
-    goodLumiFilter.DumpToJson(((outUrl.ReplaceAll(".root",""))+".json").Data());
-  }
-  
 }
+
