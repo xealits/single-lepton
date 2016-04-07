@@ -828,18 +828,25 @@ int main (int argc, char *argv[])
   //########           EVENT LOOP         ########
   //##############################################
   //loop on all the events
-  printf ("Progressing Bar     :0%%       20%%       40%%       60%%       80%%       100%%\n");
-  
-  int nMultiChannel(0);
-  
-  for(size_t f=0; f<urls.size();++f){
-    TFile* file = TFile::Open(urls[f].c_str());
-    fwlite::Event ev(file);
-    printf ("Scanning the ntuple %2lu/%2lu :",f+1, urls.size());
-    int iev(0);
-    int treeStep (ev.size()/50);
-    //DuplicatesChecker duplicatesChecker;
-    //int nDuplicates(0);
+	printf ("Progressing Bar     :0%%       20%%       40%%       60%%       80%%       100%%\n");
+
+	int nMultiChannel(0);
+	FILE *csv_out;
+	//csv_out = fopen(const char *filename, const char *mode);
+	string FileName = ((outUrl.ReplaceAll(".root",""))+".csv").Data();
+	//const char file_name = FileName.c_str();
+	csv_out = fopen(FileName.c_str(), "w");
+	fprintf(csv_out, "Some header\n");
+
+	for(size_t f=0; f<urls.size();++f){
+		fprintf(csv_out, "Processing file: %s\n", urls[f].c_str());
+		TFile* file = TFile::Open(urls[f].c_str());
+		fwlite::Event ev(file);
+		printf ("Scanning the ntuple %2lu/%2lu :",f+1, urls.size());
+		int iev(0);
+		int treeStep (ev.size()/50);
+		//DuplicatesChecker duplicatesChecker;
+		//int nDuplicates(0);
     for (ev.toBegin(); !ev.atEnd(); ++ev)
       {
         singlelep_ttbar_initialevents->Fill(1);
@@ -1801,19 +1808,21 @@ int main (int argc, char *argv[])
     delete file;
   } // End loop on files
   
-  if(saveSummaryTree)
-    {
-      TDirectory* cwd = gDirectory;
-      summaryFile->cd();
-      summaryTree->Write();
-      summaryFile->Close();
-      delete summaryFile;
-      cwd->cd();
-    }
-  
+	fclose(csv_out);
 
-  if(nMultiChannel>0) cout << "Warning! There were " << nMultiChannel << " multi-channel events out of " << totalEntries << " events!" << endl;
-  printf ("\n");
+	if(saveSummaryTree)
+		{
+		TDirectory* cwd = gDirectory;
+		summaryFile->cd();
+		summaryTree->Write();
+		summaryFile->Close();
+		delete summaryFile;
+		cwd->cd();
+		}
+
+
+	if(nMultiChannel>0) cout << "Warning! There were " << nMultiChannel << " multi-channel events out of " << totalEntries << " events!" << endl;
+	printf ("\n");
 
   //##############################################
   //########     SAVING HISTO TO FILE     ########
