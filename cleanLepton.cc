@@ -1556,7 +1556,7 @@ for(size_t f=0; f<urls.size();++f){
 				{
 				if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
 				else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
-				fprintf(out_csv, "oursel; %d, %g, %g\n", nGoodPV, rawWeight, weight);
+				fprintf(csv_out, "oursel; %d, %g, %g\n", nGoodPV, rawWeight, weight);
 				}
 
 
@@ -1569,7 +1569,7 @@ for(size_t f=0; f<urls.size();++f){
 				{
 				if(isSingleMu) singlelep_ttbar_maraselected_mu_events->Fill(1);
 				else if (isSingleE) singlelep_ttbar_maraselected_el_events->Fill(1);
-				fprintf(out_csv, "marasel; %d, %g, %g\n", nGoodPV, rawWeight, weight);
+				fprintf(csv_out, "marasel; %d, %g, %g\n", nGoodPV, rawWeight, weight);
 				}
 
         /* // old crap with smartmon:
@@ -1803,7 +1803,8 @@ for(size_t f=0; f<urls.size();++f){
 
 		if(debug){
 			cout << "Finished processing first event in the first file, exiting" << endl;
-			return 0;
+			//return 0;
+			break;
 			}
 
 		} // End single file event loop
@@ -1834,7 +1835,7 @@ printf ("\n");
 printf ("Results save in %s\n", outUrl.Data());
 
 //save all to the file
-TFile *ofile = TFile::Open (outUrl, "recreate");
+TFile *ofile = TFile::Open (outUrl + ".root", "recreate");
 // mon.Write();
 
 singlelep_ttbar_initialevents->Write();
