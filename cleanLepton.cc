@@ -1560,12 +1560,10 @@ for(size_t f=0; f<urls.size();++f){
 				if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
 				else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
 				fprintf(csv_out, "oursel; %d, %g, %g\n", nGoodPV, rawWeight, weight);
-				pb.SetVect( selSingleLepBJets[0].momentum() ); // 
-				pb.E = selSingleLepBJets[0].correctedP4();
-				pbb.SetVect( selSingleLepJets[1].momentum() ); // or take another B???
-				pbb.E = selSingleLepJets[1].correctedP4();
-				pl = selLeptons[0];
-				plb = selLeptons[1];
+				pb.SetPxPyPzE( selSingleLepBJets[0].px(), selSingleLepBJets[0].py(), selSingleLepBJets[0].pz(), selSingleLepBJets[0].pt()); // 
+				pbb.SetPxPyPzE( selSingleLepJets[1].px(), selSingleLepJets[1].py(), selSingleLepJets[1].pz(), selSingleLepJets[1].pt()); // or take another B???
+				pl.SetPxPyPzE( selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
+				plb.SetPxPyPzE( selLeptons[1].px(), selLeptons[1].py(), selLeptons[1].pz(), selLeptons[1].pt());
 				prest = pb + pbb + pl + plb;
 				fprintf(csv_out, "kino:\npl.E, plb.E, pb.E, pbb.E,\nprest-sqr, prest-XY-sqr, met.pt,\nprest-o-plpb, pl-o-pb, plb-o-pbb,\nsame 3 angles");
 				fprintf(csv_out, "%g, %g, %g, %g,\n", pl.E(), plb.E(), pb.E(), pbb.E());
