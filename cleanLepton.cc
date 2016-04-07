@@ -1842,6 +1842,7 @@ int main (int argc, char *argv[])
 
   // Now that everything is done, dump the list of lumiBlock that we processed in this job
   if(!isMC){
+    // FIXME: when lumi certificate is ready for rereco data, check that these work
     goodLumiFilter.FindLumiInFiles(urls);
     goodLumiFilter.DumpToJson(((outUrl.ReplaceAll(".root",""))+".json").Data());
   }
