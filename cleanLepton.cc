@@ -840,6 +840,8 @@ string FileName = ((outUrl.ReplaceAll(".root",""))+".csv").Data();
 //const char file_name = FileName.c_str();
 csv_out = fopen(FileName.c_str(), "w");
 fprintf(csv_out, "Some header\n");
+fprintf(csv_out, "kino:\npl.E, plb.E, pb.E, pbb.E,\nprest-sqr, prest-XY-sqr, met.pt,\nprest-o-plpb, pl-o-pb, plb-o-pbb,\nsame 3 angles\n");
+fprintf(csv_out, "kino2:\n(pl1) x,y,z,e\n(pl2)x,y,z,e\n(pb1) x,y,z,e\n(pb2) x,y,z,e\n");
 
 for(size_t f=0; f<urls.size();++f){
 	fprintf(csv_out, "Processing file: %s\n", urls[f].c_str());
@@ -1565,12 +1567,17 @@ for(size_t f=0; f<urls.size();++f){
 				pl.SetPxPyPzE( selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
 				plb.SetPxPyPzE( selLeptons[1].px(), selLeptons[1].py(), selLeptons[1].pz(), selLeptons[1].pt());
 				prest = pb + pbb + pl + plb;
-				fprintf(csv_out, "kino:\npl.E, plb.E, pb.E, pbb.E,\nprest-sqr, prest-XY-sqr, met.pt,\nprest-o-plpb, pl-o-pb, plb-o-pbb,\nsame 3 angles");
+				fprintf(csv_out, "kino1:\n");
 				fprintf(csv_out, "%g, %g, %g, %g,\n", pl.E(), plb.E(), pb.E(), pbb.E());
 				fprintf(csv_out, "%g, %g, %g,\n", (prest.X()*prest.X() + prest.Y()*prest.Y() + prest.Z()*prest.Z()),
 						(prest.X()*prest.X() + prest.Y()*prest.Y()), met.pt());
 				fprintf(csv_out, "%g, %g, %g,\n", prest*(pl+pb), pl*pb, plb*pbb);
-				fprintf(csv_out, "%g, %g, %g\n\n", (pl+pb).Angle(prest.Vect()), pl.Angle(pb.Vect()), plb.Angle(pbb.Vect()));
+				fprintf(csv_out, "%g, %g, %g\n", (pl+pb).Angle(prest.Vect()), pl.Angle(pb.Vect()), plb.Angle(pbb.Vect()));
+				fprintf(csv_out, "kino2:\n");
+				fprintf(csv_out, "%g, %g, %g, %g,\n", pl.X(), pl.Y(), pl.Z(), pl.E());
+				fprintf(csv_out, "%g, %g, %g, %g,\n", plb.X(), plb.Y(), plb.Z(), plb.E());
+				fprintf(csv_out, "%g, %g, %g, %g,\n", pb.X(), pb.Y(), pb.Z(), pb.E());
+				fprintf(csv_out, "%g, %g, %g, %g\n\n", pbb.X(), pbb.Y(), pbb.Z(), pbb.E());
 				}
 
 			/*
@@ -1608,6 +1615,16 @@ for(size_t f=0; f<urls.size();++f){
 				if(isSingleMu) singlelep_ttbar_maraselected_mu_events->Fill(1);
 				else if (isSingleE) singlelep_ttbar_maraselected_el_events->Fill(1);
 				fprintf(csv_out, "marasel; %d, %g, %g\n", nGoodPV, rawWeight, weight);
+				// TODO: print out separately b-jets and all other jets?
+				pb.SetPxPyPzE(  selSingleLepBJets[0].px(), selSingleLepBJets[0].py(), selSingleLepBJets[0].pz(), selSingleLepBJets[0].pt()); // 
+				pbb.SetPxPyPzE( selSingleLepBJets[1].px(), selSingleLepBJets[1].py(), selSingleLepBJets[1].pz(), selSingleLepBJets[1].pt());
+				pl.SetPxPyPzE(  selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
+				plb.SetPxPyPzE( selLeptons[1].px(), selLeptons[1].py(), selLeptons[1].pz(), selLeptons[1].pt());
+				fprintf(csv_out, "kino2:\n");
+				fprintf(csv_out, "%g, %g, %g, %g,\n", pl.X(), pl.Y(), pl.Z(), pl.E());
+				fprintf(csv_out, "%g, %g, %g, %g,\n", plb.X(), plb.Y(), plb.Z(), plb.E());
+				fprintf(csv_out, "%g, %g, %g, %g,\n", pb.X(), pb.Y(), pb.Z(), pb.E());
+				fprintf(csv_out, "%g, %g, %g, %g\n\n", pbb.X(), pbb.Y(), pbb.Z(), pbb.E());
 				}
 
 				/* // old crap with smartmon:
