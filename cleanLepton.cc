@@ -841,14 +841,16 @@ string FileName = ((outUrl.ReplaceAll(".root",""))+".csv").Data();
 csv_out = fopen(FileName.c_str(), "w");
 fprintf(csv_out, "Some header\n");
 fprintf(csv_out, "kino:\npl.E, plb.E, pb.E, pbb.E,\nprest-sqr, prest-XY-sqr, met.pt,\nprest-o-plpb, pl-o-pb, plb-o-pbb,\nsame 3 angles\n");
-fprintf(csv_out, "kino2:\n(pl1) x,y,z,e\n(pl2)x,y,z,e\n(pb1) x,y,z,e\n(pb2) x,y,z,e\n");
+fprintf(csv_out, "kino2:\n(pl1) x,y,z,e\n(pl2) x,y,z,e\n(pb1) x,y,z,e\n(pb2) x,y,z,e\n\n");
 
 for(size_t f=0; f<urls.size();++f){
 	fprintf(csv_out, "Processing file: %s\n", urls[f].c_str());
 	TFile* file = TFile::Open(urls[f].c_str());
 	fwlite::Event ev(file);
 	printf ("Scanning the ntuple %2lu/%2lu :",f+1, urls.size());
-	int iev(0);
+	int iev(0); // number of events
+	double sum_weights_raw = 0; // sum of raw weights
+	double sum_weights = 0; // sum of final weights
 	int treeStep (ev.size()/50);
 	//DuplicatesChecker duplicatesChecker;
 	//int nDuplicates(0);
@@ -1008,7 +1010,10 @@ for(size_t f=0; f<urls.size();++f){
 		//TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
 		}
 
+		// --------------- here the weighting/shaping of MC should be done
 		// --------------------- save distributions of weights
+		sum_weights += weight;
+		sum_weights_raw += rawWeight;
 		// TODO: make separate weight and number of events distrobutions
 		//mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
 		//mon.fillHisto("initNorm", tags, 1., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
@@ -1861,6 +1866,7 @@ for(size_t f=0; f<urls.size();++f){
 			//return 0;
 			break;
 			}
+		fprintf(csv_out, "In the file, num_events, sum_weights_raw, sum_weights: %d, %g, %g\n", iev, sum_weights_raw, sum_weights);
 
 		} // End single file event loop
 	printf("\n");
