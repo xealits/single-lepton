@@ -1499,16 +1499,16 @@ for(size_t f=0; f<urls.size();++f){
 				}
 			if(multiChannel>1) nMultiChannel++;
 
-	if(debug){
-		cout << "channel is defined, running the event selection" << endl;
-	}
+		if(debug){
+			cout << "channel is defined, running the event selection" << endl;
+		}
 
 			// Dilepton full analysis
 			// No dilepton analysis
 			//if( isDoubleE || isEMu || isDoubleMu){ continue; }
 
 			// ------------------------------------------ Single lepton full analysis
-			//if(tags[1] == "singlemu" || tags[1] == "singlee"){
+			//if(tags[1] == "singlemu" || tags[1] == "singlee")
 		if(isSingleMu || isSingleE){
 			singlelep_ttbar_preselectedevents->Fill(1);
 
@@ -1550,16 +1550,46 @@ for(size_t f=0; f<urls.size();++f){
 			//weight *= isMC ? lepEff.getLeptonEfficiency(selLeptons[0].pt(), selLeptons[0].eta(), id, id == 11 ? "loose" : "tight").first : 1.0;        
 
 			// Event selection booleans
-			bool passJetSelection(selSingleLepJets.size()>1);
-			bool passMetSelection(met.pt()>40.);
-			bool passBtagsSelection(selSingleLepBJets.size()>0);
-			bool passTauSelection(selTaus.size()==1);
-			bool passOS(selTaus.size()>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0);
+			bool passJetSelection(selSingleLepJets.size()>1); // 2 jets
+			bool passMetSelection(met.pt()>40.); // MET > 40
+			bool passBtagsSelection(selSingleLepBJets.size()>0); // 1 b jet
+			bool passTauSelection(selTaus.size()==1); // only 1 tau
+			bool passOS(selTaus.size()>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0); // Oposite sign
 
 			if (passJetSelection)
 				{
 				if(isSingleMu) singlelep_ttbar_selected2_mu_events->Fill(1);
 				else if (isSingleE) singlelep_ttbar_selected2_el_events->Fill(1);
+				}
+
+
+			// Mara's selection booleans
+			//bool passMaraJetSelection(selSingleLepJets.size()>3); // 4 jets FIXME: why 4 jets?
+			//bool passMaraBtagsSelection(selSingleLepBJets.size()>1); // 2 b-tag
+			//bool passMaraLeptonSelection( selLeptons.size()>0 ); // 1 lepton -- should be included by default at this stage
+
+			// common-selection
+			if(passJetSelection && passBtagsSelection) // 2 jets, 1 b jet, 1 isolated lepton
+				{
+				if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
+				else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
+				fprintf(csv_out, "crossel; %d, %g, %g\n", nGoodPV, rawWeight, weight);
+				pb.SetPxPyPzE( selSingleLepBJets[0].px(), selSingleLepBJets[0].py(), selSingleLepBJets[0].pz(), selSingleLepBJets[0].pt()); // 
+				pbb.SetPxPyPzE( selSingleLepJets[1].px(), selSingleLepJets[1].py(), selSingleLepJets[1].pz(), selSingleLepJets[1].pt()); // or take another B???
+				pl.SetPxPyPzE( selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
+				plb.SetPxPyPzE( selLeptons[1].px(), selLeptons[1].py(), selLeptons[1].pz(), selLeptons[1].pt());
+				prest = pb + pbb + pl + plb;
+				fprintf(csv_out, "kino1:\n");
+				fprintf(csv_out, "%g, %g, %g, %g,\n", pl.E(), plb.E(), pb.E(), pbb.E());
+				fprintf(csv_out, "%g, %g, %g,\n", (prest.X()*prest.X() + prest.Y()*prest.Y() + prest.Z()*prest.Z()),
+						(prest.X()*prest.X() + prest.Y()*prest.Y()), met.pt());
+				fprintf(csv_out, "%g, %g, %g,\n", prest*(pl+pb), pl*pb, plb*pbb);
+				fprintf(csv_out, "%g, %g, %g\n", (pl+pb).Angle(prest.Vect()), pl.Angle(pb.Vect()), plb.Angle(pbb.Vect()));
+				fprintf(csv_out, "kino2:\n");
+				fprintf(csv_out, "%g, %g, %g, %g,\n", pl.X(), pl.Y(), pl.Z(), pl.E());
+				fprintf(csv_out, "%g, %g, %g, %g,\n", plb.X(), plb.Y(), plb.Z(), plb.E());
+				fprintf(csv_out, "%g, %g, %g, %g,\n", pb.X(), pb.Y(), pb.Z(), pb.E());
+				fprintf(csv_out, "%g, %g, %g, %g\n\n", pbb.X(), pbb.Y(), pbb.Z(), pbb.E());
 				}
 
 			if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS )
@@ -1866,9 +1896,9 @@ for(size_t f=0; f<urls.size();++f){
 			//return 0;
 			break;
 			}
-		fprintf(csv_out, "In the file, num_events, sum_weights_raw, sum_weights: %d, %g, %g\n", iev, sum_weights_raw, sum_weights);
 
 		} // End single file event loop
+	fprintf(csv_out, "In the file, num_events, sum_weights_raw, sum_weights: %d, %g, %g\n", iev, sum_weights_raw, sum_weights);
 	printf("\n");
 	delete file;
 	} // End loop on files
