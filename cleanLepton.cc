@@ -839,18 +839,33 @@ FILE *csv_out;
 string FileName = ((outUrl.ReplaceAll(".root",""))+".csv").Data();
 //const char file_name = FileName.c_str();
 csv_out = fopen(FileName.c_str(), "w");
-fprintf(csv_out, "Some header\n");
-fprintf(csv_out, "kino:\npl.E, plb.E, pb.E, pbb.E,\nprest-sqr, prest-XY-sqr, met.pt,\nprest-o-plpb, pl-o-pb, plb-o-pbb,\nsame 3 angles\n");
-fprintf(csv_out, "kino2:\n(pl1) x,y,z,e\n(pl2) x,y,z,e\n(pb1) x,y,z,e\n(pb2) x,y,z,e\n\n");
+fprintf(csv_out, "Headers\n");
+//fprintf(csv_out, "kino:\npl.E, plb.E, pb.E, pbb.E,\nprest-sqr, prest-XY-sqr, met.pt,\nprest-o-plpb, pl-o-pb, plb-o-pbb,\nsame 3 angles\n");
+//fprintf(csv_out, "kino2:\n(pl1) x,y,z,e\n(pl2) x,y,z,e\n(pb1) x,y,z,e\n(pb2) x,y,z,e\n\n");
+
+fprintf(csv_out, "acceptances:filename, num_events, sum_rawWeight, sum_weight, cross_sum_rawWeight,cross_sum_weight, oursel_sum_rawWeight,oursel_sum_weight, marasel_sum_rawWeight,marasel_sum_weight\n");
+
+fprintf(csv_out, "crossel:nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
+fprintf(csv_out, "oursel:nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, tau_px,tau_py,tau_pz,tau_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
+fprintf(csv_out, "marasel:nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e,b2_px,b2_py,b2_pz,b2_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e,j3_px,j3_py,j3_pz,j3_e,j4_px,j4_py,j4_pz,j4_e\n");
 
 for(size_t f=0; f<urls.size();++f){
 	fprintf(csv_out, "Processing file: %s\n", urls[f].c_str());
 	TFile* file = TFile::Open(urls[f].c_str());
 	fwlite::Event ev(file);
 	printf ("Scanning the ntuple %2lu/%2lu :",f+1, urls.size());
+
+	// acceptance parameters
 	int iev(0); // number of events
 	double sum_weights_raw = 0; // sum of raw weights
 	double sum_weights = 0; // sum of final weights
+	double crossel_sum_weights_raw = 0; // crossel
+	double crossel_sum_weights = 0;
+	double oursel_sum_weights_raw = 0; // oursel
+	double oursel_sum_weights = 0;
+	double marasel_sum_weights_raw = 0; // marasel
+	double marasel_sum_weights = 0;
+
 	int treeStep (ev.size()/50);
 	//DuplicatesChecker duplicatesChecker;
 	//int nDuplicates(0);
@@ -1573,46 +1588,58 @@ for(size_t f=0; f<urls.size();++f){
 				{
 				if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
 				else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
-				fprintf(csv_out, "crossel; %d, %g, %g\n", nGoodPV, rawWeight, weight);
+				fprintf(csv_out, "crossel:%d,%g,%g,%d,", nGoodPV, rawWeight, weight, isSingleE);
+				crossel_sum_weights_raw += rawWeight;
+				crossel_sum_weights += weight;
 				pb.SetPxPyPzE( selSingleLepBJets[0].px(), selSingleLepBJets[0].py(), selSingleLepBJets[0].pz(), selSingleLepBJets[0].pt()); // 
 				pbb.SetPxPyPzE( selSingleLepJets[1].px(), selSingleLepJets[1].py(), selSingleLepJets[1].pz(), selSingleLepJets[1].pt()); // or take another B???
 				pl.SetPxPyPzE( selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
 				plb.SetPxPyPzE( selLeptons[1].px(), selLeptons[1].py(), selLeptons[1].pz(), selLeptons[1].pt());
-				prest = pb + pbb + pl + plb;
-				fprintf(csv_out, "kino1:\n");
-				fprintf(csv_out, "%g, %g, %g, %g,\n", pl.E(), plb.E(), pb.E(), pbb.E());
-				fprintf(csv_out, "%g, %g, %g,\n", (prest.X()*prest.X() + prest.Y()*prest.Y() + prest.Z()*prest.Z()),
-						(prest.X()*prest.X() + prest.Y()*prest.Y()), met.pt());
-				fprintf(csv_out, "%g, %g, %g,\n", prest*(pl+pb), pl*pb, plb*pbb);
-				fprintf(csv_out, "%g, %g, %g\n", (pl+pb).Angle(prest.Vect()), pl.Angle(pb.Vect()), plb.Angle(pbb.Vect()));
-				fprintf(csv_out, "kino2:\n");
-				fprintf(csv_out, "%g, %g, %g, %g,\n", pl.X(), pl.Y(), pl.Z(), pl.E());
-				fprintf(csv_out, "%g, %g, %g, %g,\n", plb.X(), plb.Y(), plb.Z(), plb.E());
-				fprintf(csv_out, "%g, %g, %g, %g,\n", pb.X(), pb.Y(), pb.Z(), pb.E());
-				fprintf(csv_out, "%g, %g, %g, %g\n\n", pbb.X(), pbb.Y(), pbb.Z(), pbb.E());
+				// no kino1 for now
+				//prest = pb + pbb + pl + plb;
+				//fprintf(csv_out, "kino1:\n");
+				//fprintf(csv_out, "%g, %g, %g, %g,", pl.E(), plb.E(), pb.E(), pbb.E());
+				//fprintf(csv_out, "%g, %g, %g,", (prest.X()*prest.X() + prest.Y()*prest.Y() + prest.Z()*prest.Z()),
+						//(prest.X()*prest.X() + prest.Y()*prest.Y()), met.pt());
+				//fprintf(csv_out, "%g, %g, %g,\n", prest*(pl+pb), pl*pb, plb*pbb);
+				//fprintf(csv_out, "%g, %g, %g\n", (pl+pb).Angle(prest.Vect()), pl.Angle(pb.Vect()), plb.Angle(pbb.Vect()));
+				//fprintf(csv_out, "kino2:\n");
+				fprintf(csv_out, "%g,%g,%g,%g,", pl.X(), pl.Y(), pl.Z(), pl.E());
+				//fprintf(csv_out, "%g,%g,%g,%g,", plb.X(), plb.Y(), plb.Z(), plb.E());
+				fprintf(csv_out, "%g,%g,%g,%g,", pb.X(), pb.Y(), pb.Z(), pb.E());
+				//fprintf(csv_out, "%g,%g,%g,%g\n", pbb.X(), pbb.Y(), pbb.Z(), pbb.E());
+				fprintf(csv_out, "%g,%g,%g,%g,", selSingleLepJets[0].px(), selSingleLepJets[0].py(), selSingleLepJets[0].pz(), selSingleLepJets[0].pt() );
+				fprintf(csv_out, "%g,%g,%g,%g\n", selSingleLepJets[1].px(), selSingleLepJets[1].py(), selSingleLepJets[1].pz(), selSingleLepJets[1].pt() );
 				}
 
+
+			// oursel: 2 jets, 1 b, 1 iso lepton, 1 tau
 			if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS )
 				{
 				if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
 				else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
-				fprintf(csv_out, "oursel; %d, %g, %g\n", nGoodPV, rawWeight, weight);
+				fprintf(csv_out, "oursel:%d,%g,%g,%d,", nGoodPV, rawWeight, weight, isSingleE);
+				oursel_sum_weights_raw += rawWeight;
+				oursel_sum_weights += weight;
 				pb.SetPxPyPzE( selSingleLepBJets[0].px(), selSingleLepBJets[0].py(), selSingleLepBJets[0].pz(), selSingleLepBJets[0].pt()); // 
-				pbb.SetPxPyPzE( selSingleLepJets[1].px(), selSingleLepJets[1].py(), selSingleLepJets[1].pz(), selSingleLepJets[1].pt()); // or take another B???
+				//pbb.SetPxPyPzE( selSingleLepJets[1].px(), selSingleLepJets[1].py(), selSingleLepJets[1].pz(), selSingleLepJets[1].pt()); // or take another B???
 				pl.SetPxPyPzE( selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
-				plb.SetPxPyPzE( selLeptons[1].px(), selLeptons[1].py(), selLeptons[1].pz(), selLeptons[1].pt());
-				prest = pb + pbb + pl + plb;
-				fprintf(csv_out, "kino1:\n");
-				fprintf(csv_out, "%g, %g, %g, %g,\n", pl.E(), plb.E(), pb.E(), pbb.E());
-				fprintf(csv_out, "%g, %g, %g,\n", (prest.X()*prest.X() + prest.Y()*prest.Y() + prest.Z()*prest.Z()),
-						(prest.X()*prest.X() + prest.Y()*prest.Y()), met.pt());
-				fprintf(csv_out, "%g, %g, %g,\n", prest*(pl+pb), pl*pb, plb*pbb);
-				fprintf(csv_out, "%g, %g, %g\n", (pl+pb).Angle(prest.Vect()), pl.Angle(pb.Vect()), plb.Angle(pbb.Vect()));
-				fprintf(csv_out, "kino2:\n");
-				fprintf(csv_out, "%g, %g, %g, %g,\n", pl.X(), pl.Y(), pl.Z(), pl.E());
-				fprintf(csv_out, "%g, %g, %g, %g,\n", plb.X(), plb.Y(), plb.Z(), plb.E());
-				fprintf(csv_out, "%g, %g, %g, %g,\n", pb.X(), pb.Y(), pb.Z(), pb.E());
-				fprintf(csv_out, "%g, %g, %g, %g\n\n", pbb.X(), pbb.Y(), pbb.Z(), pbb.E());
+				//plb.SetPxPyPzE( selLeptons[1].px(), selLeptons[1].py(), selLeptons[1].pz(), selLeptons[1].pt());
+				//prest = pb + pbb + pl + plb;
+				//fprintf(csv_out, "kino1:\n");
+				//fprintf(csv_out, "%g, %g, %g, %g,\n", pl.E(), plb.E(), pb.E(), pbb.E());
+				//fprintf(csv_out, "%g, %g, %g,\n", (prest.X()*prest.X() + prest.Y()*prest.Y() + prest.Z()*prest.Z()),
+						//(prest.X()*prest.X() + prest.Y()*prest.Y()), met.pt());
+				//fprintf(csv_out, "%g, %g, %g,\n", prest*(pl+pb), pl*pb, plb*pbb);
+				//fprintf(csv_out, "%g, %g, %g\n", (pl+pb).Angle(prest.Vect()), pl.Angle(pb.Vect()), plb.Angle(pbb.Vect()));
+				//fprintf(csv_out, "kino2:\n");
+				fprintf(csv_out, "%g,%g,%g,%g,",  pl.X(), pl.Y(), pl.Z(), pl.E());
+				fprintf(csv_out, "%g,%g,%g,%g,", selTaus[0].px(), selTaus[0].py(), selTaus[0].pz(), selTaus[0].pt() );
+				//fprintf(csv_out, "%g,%g,%g,%g,", plb.X(), plb.Y(), plb.Z(), plb.E());
+				fprintf(csv_out, "%g,%g,%g,%g,",  pb.X(), pb.Y(), pb.Z(), pb.E());
+				fprintf(csv_out, "%g,%g,%g,%g,", selSingleLepJets[0].px(), selSingleLepJets[0].py(), selSingleLepJets[0].pz(), selSingleLepJets[0].pt() );
+				fprintf(csv_out, "%g,%g,%g,%g\n", selSingleLepJets[1].px(), selSingleLepJets[1].py(), selSingleLepJets[1].pz(), selSingleLepJets[1].pt() );
+				//fprintf(csv_out, "%g,%g,%g,%g\n", pbb.X(), pbb.Y(), pbb.Z(), pbb.E());
 				}
 
 			/*
@@ -1649,17 +1676,23 @@ for(size_t f=0; f<urls.size();++f){
 				{
 				if(isSingleMu) singlelep_ttbar_maraselected_mu_events->Fill(1);
 				else if (isSingleE) singlelep_ttbar_maraselected_el_events->Fill(1);
-				fprintf(csv_out, "marasel; %d, %g, %g\n", nGoodPV, rawWeight, weight);
+				marasel_sum_weights_raw += rawWeight;
+				marasel_sum_weights += weight;
+				fprintf(csv_out, "marasel:%d,%g,%g,%d,", nGoodPV, rawWeight, weight, isSingleE);
 				// TODO: print out separately b-jets and all other jets?
 				pb.SetPxPyPzE(  selSingleLepBJets[0].px(), selSingleLepBJets[0].py(), selSingleLepBJets[0].pz(), selSingleLepBJets[0].pt()); // 
 				pbb.SetPxPyPzE( selSingleLepBJets[1].px(), selSingleLepBJets[1].py(), selSingleLepBJets[1].pz(), selSingleLepBJets[1].pt());
 				pl.SetPxPyPzE(  selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
-				plb.SetPxPyPzE( selLeptons[1].px(), selLeptons[1].py(), selLeptons[1].pz(), selLeptons[1].pt());
-				fprintf(csv_out, "kino2:\n");
-				fprintf(csv_out, "%g, %g, %g, %g,\n", pl.X(), pl.Y(), pl.Z(), pl.E());
-				fprintf(csv_out, "%g, %g, %g, %g,\n", plb.X(), plb.Y(), plb.Z(), plb.E());
-				fprintf(csv_out, "%g, %g, %g, %g,\n", pb.X(), pb.Y(), pb.Z(), pb.E());
-				fprintf(csv_out, "%g, %g, %g, %g\n\n", pbb.X(), pbb.Y(), pbb.Z(), pbb.E());
+				//plb.SetPxPyPzE( selLeptons[1].px(), selLeptons[1].py(), selLeptons[1].pz(), selLeptons[1].pt());
+				//fprintf(csv_out, "kino2:\n");
+				fprintf(csv_out, "%g,%g,%g,%g,", pl.X(), pl.Y(), pl.Z(), pl.E());
+				//fprintf(csv_out, "%g,%g,%g,%g,", plb.X(), plb.Y(), plb.Z(), plb.E());
+				fprintf(csv_out, "%g,%g,%g,%g,", pb.X(), pb.Y(), pb.Z(), pb.E());
+				fprintf(csv_out, "%g,%g,%g,%g,", pbb.X(), pbb.Y(), pbb.Z(), pbb.E());
+				fprintf(csv_out, "%g,%g,%g,%g,", selSingleLepJets[0].px(), selSingleLepJets[0].py(), selSingleLepJets[0].pz(), selSingleLepJets[0].pt() );
+				fprintf(csv_out, "%g,%g,%g,%g,", selSingleLepJets[1].px(), selSingleLepJets[1].py(), selSingleLepJets[1].pz(), selSingleLepJets[1].pt() );
+				fprintf(csv_out, "%g,%g,%g,%g,", selSingleLepJets[2].px(), selSingleLepJets[2].py(), selSingleLepJets[2].pz(), selSingleLepJets[2].pt() );
+				fprintf(csv_out, "%g,%g,%g,%g\n", selSingleLepJets[3].px(), selSingleLepJets[3].py(), selSingleLepJets[3].pz(), selSingleLepJets[3].pt() );
 				}
 
 				/* // old crap with smartmon:
@@ -1898,7 +1931,13 @@ for(size_t f=0; f<urls.size();++f){
 			}
 
 		} // End single file event loop
-	fprintf(csv_out, "In the file, num_events, sum_weights_raw, sum_weights: %d, %g, %g\n", iev, sum_weights_raw, sum_weights);
+	//fprintf(csv_out, "In the file, num_events, sum_weights_raw, sum_weights: %d, %g, %g\n", iev, sum_weights_raw, sum_weights);
+	fprintf(csv_out, "acceptances:");
+	fprintf(csv_out, "%s,", urls[f].c_str());
+	fprintf(csv_out, "%d,%g,%g,", iev, sum_weights_raw, sum_weights);
+	fprintf(csv_out, "%g,%g,",  crossel_sum_weights_raw, crossel_sum_weights);
+	fprintf(csv_out, "%g,%g,",  oursel_sum_weights_raw, oursel_sum_weights);
+	fprintf(csv_out, "%g,%g\n", marasel_sum_weights_raw, marasel_sum_weights);
 	printf("\n");
 	delete file;
 	} // End loop on files
