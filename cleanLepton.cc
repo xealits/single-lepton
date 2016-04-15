@@ -865,6 +865,13 @@ for(size_t f=0; f<urls.size();++f){
 	double oursel_sum_weights = 0;
 	double marasel_sum_weights_raw = 0; // marasel
 	double marasel_sum_weights = 0;
+	unsigned int negative_event_nvtx[100];
+	unsigned int positive_event_nvtx[100];
+	for (int i=0; i<100; i++)
+		{
+		negative_event_nvtx[i] = 0;
+		positive_event_nvtx[i] = 0;
+		}
 
 	int treeStep (ev.size()/50);
 	//DuplicatesChecker duplicatesChecker;
@@ -995,6 +1002,7 @@ for(size_t f=0; f<urls.size();++f){
 			}
 
 		// ----------------------------------------- Apply pileup reweighting
+		unsigned int num_inters = 0;
 		if(isMC)
 			{
 			int ngenITpu = 0;
@@ -1010,25 +1018,29 @@ for(size_t f=0; f<urls.size();++f){
 				if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
 				}
 
-		//ngenITpu = nGoodPV; // based on nvtx
-		//puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
-		// So, in Pietro's approach ngenITpu is number of vertices in the beam crossing?
-		//puWeight = direct_pileup_reweight[ngenITpu];
-		// Mara does:
-		unsigned int num_inters = puInfoH->at(0).getTrueNumInteractions();
-		// TOFIX: hopefully the length of the array is enough. Increse to 100 bins.
-		if (num_inters<40) {puWeight = direct_pileup_reweight[num_inters];}
-		else {puWeight = 1.5e-16;}
-		weight *= puWeight;//Weight; //* puWeight;
-		// implement error margins of pile-up
-		//TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
-		//TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
-		}
+			//ngenITpu = nGoodPV; // based on nvtx
+			//puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
+			// So, in Pietro's approach ngenITpu is number of vertices in the beam crossing?
+			//puWeight = direct_pileup_reweight[ngenITpu];
+			// Mara does:
+			num_inters = puInfoH->at(0).getTrueNumInteractions();
+			// TOFIX: hopefully the length of the array is enough. Increse to 100 bins.
+			if (num_inters<40) {puWeight = direct_pileup_reweight[num_inters];}
+			else {puWeight = 1.5e-16;}
+			weight *= puWeight;//Weight; //* puWeight;
+			// implement error margins of pile-up
+			//TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
+			//TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
+			}
 
 		// --------------- here the weighting/shaping of MC should be done
 		// --------------------- save distributions of weights
 		sum_weights += weight;
 		sum_weights_raw += rawWeight;
+
+		if (weightGen<0) negative_event_nvtx[num_inters] += 1;
+                else positive_event_nvtx[num_inters] += 1;
+
 		// TODO: make separate weight and number of events distrobutions
 		//mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
 		//mon.fillHisto("initNorm", tags, 1., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
@@ -1940,7 +1952,17 @@ for(size_t f=0; f<urls.size();++f){
 	fprintf(csv_out, "%g,%g,",  crossel_sum_weights_raw, crossel_sum_weights);
 	fprintf(csv_out, "%g,%g,",  oursel_sum_weights_raw, oursel_sum_weights);
 	fprintf(csv_out, "%g,%g\n", marasel_sum_weights_raw, marasel_sum_weights);
+
+	fprintf(csv_out, "negative_events_nvtx:");
+        for (int i=0; i<100; i++)
+                { fprintf(csv_out, "%d,", negative_event_nvtx[i]); }
+	fprintf(csv_out, "\n");
+	fprintf(csv_out, "positive_events_nvtx:");
+        for (int i=0; i<100; i++)
+                { fprintf(csv_out, "%d,", positive_event_nvtx[i]); }
+	fprintf(csv_out, "\n");
 	printf("\n");
+
 	delete file;
 	} // End loop on files
 
