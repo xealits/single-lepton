@@ -1588,9 +1588,10 @@ for(size_t f=0; f<urls.size();++f){
 				{
 				if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
 				else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
-				fprintf(csv_out, "crossel:%d,%g,%g,%d,", nGoodPV, rawWeight, weight, isSingleE);
 				crossel_sum_weights_raw += rawWeight;
 				crossel_sum_weights += weight;
+				/*
+				fprintf(csv_out, "crossel:%d,%g,%g,%d,", nGoodPV, rawWeight, weight, isSingleE);
 				pb.SetPxPyPzE( selSingleLepBJets[0].px(), selSingleLepBJets[0].py(), selSingleLepBJets[0].pz(), selSingleLepBJets[0].pt()); // 
 				pbb.SetPxPyPzE( selSingleLepJets[1].px(), selSingleLepJets[1].py(), selSingleLepJets[1].pz(), selSingleLepJets[1].pt()); // or take another B???
 				pl.SetPxPyPzE( selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
@@ -1610,6 +1611,7 @@ for(size_t f=0; f<urls.size();++f){
 				//fprintf(csv_out, "%g,%g,%g,%g\n", pbb.X(), pbb.Y(), pbb.Z(), pbb.E());
 				fprintf(csv_out, "%g,%g,%g,%g,", selSingleLepJets[0].px(), selSingleLepJets[0].py(), selSingleLepJets[0].pz(), selSingleLepJets[0].pt() );
 				fprintf(csv_out, "%g,%g,%g,%g\n", selSingleLepJets[1].px(), selSingleLepJets[1].py(), selSingleLepJets[1].pz(), selSingleLepJets[1].pt() );
+				*/
 				}
 
 
