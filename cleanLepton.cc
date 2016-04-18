@@ -1024,8 +1024,10 @@ for(size_t f=0; f<urls.size();++f){
 			// So, in Pietro's approach ngenITpu is number of vertices in the beam crossing?
 			//puWeight = direct_pileup_reweight[ngenITpu];
 			// Mara does:
-			num_inters = puInfoH->at(0).getTrueNumInteractions(); // in 76 it seems to not work, returns 0 always
-			// TOFIX: hopefully the length of the array is enough. Increse to 100 bins.
+			//num_inters = puInfoH->at(0).getTrueNumInteractions(); // in 76 it seems to not work, returns 0 always
+			// Using Pietro's PU number vertices:
+			num_inters = ngenITpu;
+			// FIXME: hopefully the length of the array is enough. Increse to 100 bins.
 			if (num_inters<40) {puWeight = direct_pileup_reweight[num_inters];}
 			else {puWeight = 1.5e-16;}
 			weight *= puWeight;//Weight; //* puWeight;
