@@ -845,9 +845,9 @@ fprintf(csv_out, "Headers\n");
 
 fprintf(csv_out, "acceptances:filename, num_events, sum_rawWeight, sum_weight, cross_sum_rawWeight,cross_sum_weight, oursel_sum_rawWeight,oursel_sum_weight, marasel_sum_rawWeight,marasel_sum_weight\n");
 
-fprintf(csv_out, "crossel:nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
-fprintf(csv_out, "oursel:nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, tau_px,tau_py,tau_pz,tau_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
-fprintf(csv_out, "marasel:nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e,b2_px,b2_py,b2_pz,b2_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e,j3_px,j3_py,j3_pz,j3_e,j4_px,j4_py,j4_pz,j4_e\n");
+fprintf(csv_out, "crossel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
+fprintf(csv_out, "oursel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, tau_px,tau_py,tau_pz,tau_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
+fprintf(csv_out, "marasel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e,b2_px,b2_py,b2_pz,b2_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e,j3_px,j3_py,j3_pz,j3_e,j4_px,j4_py,j4_pz,j4_e\n");
 
 for(size_t f=0; f<urls.size();++f){
 	fprintf(csv_out, "Processing file: %s\n", urls[f].c_str());
@@ -1002,6 +1002,7 @@ for(size_t f=0; f<urls.size();++f){
 			}
 
 		// ----------------------------------------- Apply pileup reweighting
+		// why don't use nGoodPV for Pile-Up?
 		unsigned int num_inters = 0;
 		if(isMC)
 			{
@@ -1023,7 +1024,7 @@ for(size_t f=0; f<urls.size();++f){
 			// So, in Pietro's approach ngenITpu is number of vertices in the beam crossing?
 			//puWeight = direct_pileup_reweight[ngenITpu];
 			// Mara does:
-			num_inters = puInfoH->at(0).getTrueNumInteractions();
+			num_inters = puInfoH->at(0).getTrueNumInteractions(); // in 76 it seems to not work, returns 0 always
 			// TOFIX: hopefully the length of the array is enough. Increse to 100 bins.
 			if (num_inters<40) {puWeight = direct_pileup_reweight[num_inters];}
 			else {puWeight = 1.5e-16;}
@@ -1603,7 +1604,7 @@ for(size_t f=0; f<urls.size();++f){
 				crossel_sum_weights_raw += rawWeight;
 				crossel_sum_weights += weight;
 				/*
-				fprintf(csv_out, "crossel:%d,%g,%g,%d,", nGoodPV, rawWeight, weight, isSingleE);
+				fprintf(csv_out, "crossel:%d,%d,%g,%g,%d,", num_inters, nGoodPV, rawWeight, weight, isSingleE);
 				pb.SetPxPyPzE( selSingleLepBJets[0].px(), selSingleLepBJets[0].py(), selSingleLepBJets[0].pz(), selSingleLepBJets[0].pt()); // 
 				pbb.SetPxPyPzE( selSingleLepJets[1].px(), selSingleLepJets[1].py(), selSingleLepJets[1].pz(), selSingleLepJets[1].pt()); // or take another B???
 				pl.SetPxPyPzE( selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
@@ -1632,7 +1633,7 @@ for(size_t f=0; f<urls.size();++f){
 				{
 				if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
 				else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
-				fprintf(csv_out, "oursel:%d,%g,%g,%d,", nGoodPV, rawWeight, weight, isSingleE);
+				fprintf(csv_out, "oursel:%d,%d,%g,%g,%d,", num_inters, nGoodPV, rawWeight, weight, isSingleE);
 				oursel_sum_weights_raw += rawWeight;
 				oursel_sum_weights += weight;
 				pb.SetPxPyPzE( selSingleLepBJets[0].px(), selSingleLepBJets[0].py(), selSingleLepBJets[0].pz(), selSingleLepBJets[0].pt()); // 
@@ -1692,7 +1693,7 @@ for(size_t f=0; f<urls.size();++f){
 				else if (isSingleE) singlelep_ttbar_maraselected_el_events->Fill(1);
 				marasel_sum_weights_raw += rawWeight;
 				marasel_sum_weights += weight;
-				fprintf(csv_out, "marasel:%d,%g,%g,%d,", nGoodPV, rawWeight, weight, isSingleE);
+				fprintf(csv_out, "marasel:%d,%d,%g,%g,%d,", num_inters, nGoodPV, rawWeight, weight, isSingleE);
 				// TODO: print out separately b-jets and all other jets?
 				pb.SetPxPyPzE(  selSingleLepBJets[0].px(), selSingleLepBJets[0].py(), selSingleLepBJets[0].pz(), selSingleLepBJets[0].pt()); // 
 				pbb.SetPxPyPzE( selSingleLepBJets[1].px(), selSingleLepBJets[1].py(), selSingleLepBJets[1].pz(), selSingleLepBJets[1].pt());
