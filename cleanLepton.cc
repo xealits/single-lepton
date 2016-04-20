@@ -1063,7 +1063,8 @@ for(size_t f=0; f<urls.size();++f){
 		
 		// -------------------------------------------------- Skip bad lumi
 		// people say the new datasets for CMSSW76 don't have it implemented yet
-		//if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
+		// testing if the procedure from 74 works with 76:
+		if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
 		
 		// --------------------------------------------- apply trigger
 		// ---------------- and require compatibilitiy of the event with the PD
