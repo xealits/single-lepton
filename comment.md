@@ -156,13 +156,29 @@ The steps of Pietro's code with changes.
 * Apply MET filters -> **bug in metFilter, running bug-less * cleanLepton**
 * load all the objects we will need to access
 * "TODO: what is this??" thing -> **0 commented out**
-* actual particles
+* actual particles:
+  - muons,
+  - electrons,
+  - jets,
+  - gammas,
+  - METs (collection of MET -- there are different MET algorithms!)
+     **check which MET we use**
+  - taus
 * merging electrons and muons
 * leptons selection
+  + apply muon corrections, muCor
   + kinematics, main and veto -> new threshold **1**
   + lepton IDs and isolation -> new isolation **1**
 * select the taus -> **0 ?? leave as is**
 * JET/MET ANALYSIS -> **0 ?? leave as is** -> update b-jets
+  + it only selects jets, some of them -- as b-tagged
+  + only 1 parameter is obtained from MET
+  + updateJEC
+  + newMet = getMETvariations
+  + selecting jets:
+      pt, eta, **mctruth (?)**, cross-clean with l/gamma dR, jet ID
+  + dphijmet = fabs( deltaPhi(curr_jet, met) ) -- and save the min
+  + b-tagging via hasCSVtag
 * ASSIGN CHANNEL
 * Single lepton full analysis
   + Clean jet collection from selected taus

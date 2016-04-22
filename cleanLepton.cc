@@ -320,275 +320,269 @@ bool hasTauAsMother(const reco::GenParticle  p)
 
 int main (int argc, char *argv[])
 {
-	//##############################################
-	//########2    GLOBAL INITIALIZATION     ########
-	//##############################################
+//##############################################
+//########2    GLOBAL INITIALIZATION     ########
+//##############################################
 
-	// check arguments
-	if (argc < 2)
-		{
-			std::cout << "Usage : " << argv[0] << " parameters_cfg.py" << std::endl;
-			exit (0);
-		}
+// check arguments
+if (argc < 2)
+	{
+		std::cout << "Usage : " << argv[0] << " parameters_cfg.py" << std::endl;
+		exit (0);
+	}
 	
-	// load framework libraries
-	gSystem->Load ("libFWCoreFWLite");
-	AutoLibraryLoader::enable ();
+// load framework libraries
+gSystem->Load ("libFWCoreFWLite");
+AutoLibraryLoader::enable ();
 	
-	// configure the process
-	const edm::ParameterSet & runProcess = edm::readPSetsFrom (argv[1])->getParameter < edm::ParameterSet > ("runProcess");
+// configure the process
+const edm::ParameterSet & runProcess = edm::readPSetsFrom (argv[1])->getParameter < edm::ParameterSet > ("runProcess");
 
-	bool debug           = runProcess.getParameter<bool>  ("debug");
-	bool runSystematics  = runProcess.getParameter<bool>  ("runSystematics");
-	bool saveSummaryTree = runProcess.getParameter<bool>  ("saveSummaryTree");
-	bool isMC            = runProcess.getParameter<bool>  ("isMC");
-	double xsec          = runProcess.getParameter<double>("xsec");
-	int mctruthmode      = runProcess.getParameter<int>   ("mctruthmode");
-	TString dtag         = runProcess.getParameter<std::string>("dtag");
+bool debug           = runProcess.getParameter<bool>  ("debug");
+bool runSystematics  = runProcess.getParameter<bool>  ("runSystematics");
+bool saveSummaryTree = runProcess.getParameter<bool>  ("saveSummaryTree");
+bool isMC            = runProcess.getParameter<bool>  ("isMC");
+double xsec          = runProcess.getParameter<double>("xsec");
+int mctruthmode      = runProcess.getParameter<int>   ("mctruthmode");
+TString dtag         = runProcess.getParameter<std::string>("dtag");
 	
-	const edm::ParameterSet& myVidElectronIdConf = runProcess.getParameterSet("electronidparas");
-	const edm::ParameterSet& myVidElectronMainIdWPConf = myVidElectronIdConf.getParameterSet("tight");
-	const edm::ParameterSet& myVidElectronVetoIdWPConf = myVidElectronIdConf.getParameterSet("loose");
+const edm::ParameterSet& myVidElectronIdConf = runProcess.getParameterSet("electronidparas");
+const edm::ParameterSet& myVidElectronMainIdWPConf = myVidElectronIdConf.getParameterSet("tight");
+const edm::ParameterSet& myVidElectronVetoIdWPConf = myVidElectronIdConf.getParameterSet("loose");
 	
-	VersionedPatElectronSelector electronVidMainId(myVidElectronMainIdWPConf);
-	VersionedPatElectronSelector electronVidVetoId(myVidElectronVetoIdWPConf);
+VersionedPatElectronSelector electronVidMainId(myVidElectronMainIdWPConf);
+VersionedPatElectronSelector electronVidVetoId(myVidElectronVetoIdWPConf);
 	
-	TString suffix = runProcess.getParameter < std::string > ("suffix");
-	std::vector < std::string > urls = runProcess.getUntrackedParameter < std::vector < std::string > >("input");
-	//TString baseDir = runProcess.getParameter < std::string > ("dirName");
-	//  if (mctruthmode != 0) //FIXME
-	//    {
-	//      outFileUrl += "_filt";
-	//      outFileUrl += mctruthmode;
-	//    }
-	TString outUrl = runProcess.getParameter<std::string>("outfile");
+TString suffix = runProcess.getParameter < std::string > ("suffix");
+std::vector < std::string > urls = runProcess.getUntrackedParameter < std::vector < std::string > >("input");
+//TString baseDir = runProcess.getParameter < std::string > ("dirName");
+//  if (mctruthmode != 0) //FIXME
+//    {
+//      outFileUrl += "_filt";
+//      outFileUrl += mctruthmode;
+//    }
+TString outUrl = runProcess.getParameter<std::string>("outfile");
 	
-	// Good lumi mask
-	lumiUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));
+// Good lumi mask
+lumiUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));
 
-	bool
-		filterOnlySINGLEE  (false),
-		filterOnlySINGLEMU (false);
-	if (!isMC)
-		{
-			if (dtag.Contains ("SingleMuon")) filterOnlySINGLEMU = true;
-			if (dtag.Contains ("SingleEle"))  filterOnlySINGLEE  = true;
-		}
+bool
+	filterOnlySINGLEE  (false),
+	filterOnlySINGLEMU (false);
+if (!isMC)
+	{
+	if (dtag.Contains ("SingleMuon")) filterOnlySINGLEMU = true;
+	if (dtag.Contains ("SingleEle"))  filterOnlySINGLEE  = true;
+	}
 
-	bool isV0JetsMC   (isMC && (dtag.Contains ("DYJetsToLL") || dtag.Contains ("WJets")));
-	// Reactivate for diboson shapes  
-	// bool isMC_ZZ      (isMC && (string (dtag.Data ()).find ("TeV_ZZ") != string::npos));
-	// bool isMC_WZ      (isMC && (string (dtag.Data ()).find ("TeV_WZ") != string::npos));
+bool isV0JetsMC   (isMC && (dtag.Contains ("DYJetsToLL") || dtag.Contains ("WJets")));
+// Reactivate for diboson shapes  
+// bool isMC_ZZ      (isMC && (string (dtag.Data ()).find ("TeV_ZZ") != string::npos));
+// bool isMC_WZ      (isMC && (string (dtag.Data ()).find ("TeV_WZ") != string::npos));
 	
-	bool isTTbarMC    (isMC && (dtag.Contains("TTJets") || dtag.Contains("_TT_") )); // Is this still useful?
-	bool isPromptReco (!isMC && dtag.Contains("PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
-	bool isRun2015B   (!isMC && dtag.Contains("Run2015B"));
-	bool isNLOMC      (isMC && (dtag.Contains("amcatnlo") || dtag.Contains("powheg")) );
+bool isTTbarMC    (isMC && (dtag.Contains("TTJets") || dtag.Contains("_TT_") )); // Is this still useful?
+bool isPromptReco (!isMC && dtag.Contains("PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
+bool isRun2015B   (!isMC && dtag.Contains("Run2015B"));
+bool isNLOMC      (isMC && (dtag.Contains("amcatnlo") || dtag.Contains("powheg")) );
 	
-	TString outTxtUrl = outUrl + ".txt";
-	FILE *outTxtFile = NULL;
-	if (!isMC) outTxtFile = fopen (outTxtUrl.Data (), "w");
-	printf ("TextFile URL = %s\n", outTxtUrl.Data ());
+TString outTxtUrl = outUrl + ".txt";
+FILE *outTxtFile = NULL;
+if (!isMC) outTxtFile = fopen (outTxtUrl.Data (), "w");
+printf ("TextFile URL = %s\n", outTxtUrl.Data ());
+
+//tree info
+TString dirname = runProcess.getParameter < std::string > ("dirName");
+
+//systematics
+std::vector<TString> systVars(1,"");
+if(runSystematics && isMC)
+	{
+	systVars.push_back("jerup" );     systVars.push_back("jerdown"   );
+	systVars.push_back("jesup" );     systVars.push_back("jesdown"   );
+	//systVars.push_back("lesup" );   systVars.push_back("lesdown"   );
+	systVars.push_back("leffup");     systVars.push_back("leffdown"  );
+	systVars.push_back("puup"  );     systVars.push_back("pudown"   );
+	systVars.push_back("umetup");     systVars.push_back("umetdown" );
+	systVars.push_back("btagup");     systVars.push_back("btagdown" );
+	systVars.push_back("unbtagup");   systVars.push_back("unbtagdown" );
+	if(isTTbarMC) {systVars.push_back("topptuncup"); systVars.push_back("topptuncdown"); }
+	//systVars.push_back(); systVars.push_back();
+
+	if(isTTbarMC) { systVars.push_back("pdfup"); systVars.push_back("pdfdown"); }
+	cout << "Systematics will be computed for this analysis - this will take a bit" << endl;
+	}
+
+size_t nSystVars(systVars.size());
 	
-	//tree info
-	TString dirname = runProcess.getParameter < std::string > ("dirName");
-	
-	//systematics
-	std::vector<TString> systVars(1,"");
-	if(runSystematics && isMC)
-		{
-			systVars.push_back("jerup" );     systVars.push_back("jerdown"   );
-			systVars.push_back("jesup" );     systVars.push_back("jesdown"   );
-			//systVars.push_back("lesup" );   systVars.push_back("lesdown"   );
-			systVars.push_back("leffup");     systVars.push_back("leffdown"  );
-			systVars.push_back("puup"  );     systVars.push_back("pudown"   );
-			systVars.push_back("umetup");     systVars.push_back("umetdown" );
-			systVars.push_back("btagup");     systVars.push_back("btagdown" );
-			systVars.push_back("unbtagup");   systVars.push_back("unbtagdown" );
-			if(isTTbarMC) {systVars.push_back("topptuncup"); systVars.push_back("topptuncdown"); }
-			//      systVars.push_back(); systVars.push_back();
 
-			if(isTTbarMC) { systVars.push_back("pdfup"); systVars.push_back("pdfdown"); }
-			cout << "Systematics will be computed for this analysis - this will take a bit" << endl;
-		}
-
-	size_t nSystVars(systVars.size());
-	
-
-	// TODO: what is this: allWeightsURL ... "weightsFile"??
-	std::vector < std::string > allWeightsURL = runProcess.getParameter < std::vector < std::string > >("weightsFile");
-	std::string weightsDir (allWeightsURL.size ()? allWeightsURL[0] : "");
-	// weightsDir is not used
-
-	//  //shape uncertainties for dibosons
-	//  std::vector<TGraph *> vvShapeUnc;
-	//  if(isMC_ZZ || isMC_WZ)
-	//    {
-	//      TString weightsFile=weightsDir+"/zzQ2unc.root";
-	//      TString dist("zzpt");
-	//      if(isMC_WZ) { weightsFile.ReplaceAll("zzQ2","wzQ2"); dist.ReplaceAll("zzpt","wzpt"); }
-	//      gSystem->ExpandPathName(weightsFile);
-	//      TFile *q2UncF=TFile::Open(weightsFile);
-	//      if(q2UncF){
-	//    vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_up") ) );
-	//    vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_down") ) );
-	//    q2UncF->Close();
-	//      }
-	//    }
+// TODO: what is this: allWeightsURL ... "weightsFile"??
+std::vector < std::string > allWeightsURL = runProcess.getParameter < std::vector < std::string > >("weightsFile");
+std::string weightsDir (allWeightsURL.size ()? allWeightsURL[0] : "");
+// weightsDir is not used
+//  //shape uncertainties for dibosons
+//  std::vector<TGraph *> vvShapeUnc;
+//  if(isMC_ZZ || isMC_WZ)
+//    {
+//      TString weightsFile=weightsDir+"/zzQ2unc.root";
+//      TString dist("zzpt");
+//      if(isMC_WZ) { weightsFile.ReplaceAll("zzQ2","wzQ2"); dist.ReplaceAll("zzpt","wzpt"); }
+//      gSystem->ExpandPathName(weightsFile);
+//      TFile *q2UncF=TFile::Open(weightsFile);
+//      if(q2UncF){
+//    vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_up") ) );
+//    vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_down") ) );
+//    q2UncF->Close();
+//      }
+//    }
 
 
 
 
 	
-	//##############################################
-	//######## GET READY FOR THE EVENT LOOP ########
-	//##############################################
-	size_t totalEntries(0);
+//##############################################
+//######## GET READY FOR THE EVENT LOOP ########
+//##############################################
+size_t totalEntries(0);
 
-	TFile* summaryFile = NULL;
-	TTree* summaryTree = NULL; //ev->;
+TFile* summaryFile = NULL;
+TTree* summaryTree = NULL; //ev->;
 
-	//  
-	//  if(saveSummaryTree)
-	//    {
-	//      TDirectory* cwd = gDirectory;
-	//      std::string summaryFileName(outUrl); 
-	//      summaryFileName.replace(summaryFileName.find(".root", 0), 5, "_summary.root");
-	//      
-	//      summaryFile = new TFile(summaryFileName.c_str() "recreate");
-	//      
-	//      summaryTree = new TTree("Events", "Events");
-	//    KEY: TTreeMetaData;1
-	//                         KEY: TTreeParameterSets;1
-	//                                                   KEY: TTreeParentage;1
-	//                                                                         KEY: TTreeEvents;1
-	//                                                                                            KEY: TTreeLuminosityBlocks;1
-	//                                                                                                                         KEY: TTreeRuns;
-	//      summaryTree->SetDirectory(summaryFile);  // This line is probably not needed
-	//      
-	//      summmaryTree->Branch(
-	//
-	//      cwd->cd();
-	//    }
-	//
+//  
+//  if(saveSummaryTree)
+//    {
+//      TDirectory* cwd = gDirectory;
+//      std::string summaryFileName(outUrl); 
+//      summaryFileName.replace(summaryFileName.find(".root", 0), 5, "_summary.root");
+//      
+//      summaryFile = new TFile(summaryFileName.c_str() "recreate");
+//      
+//      summaryTree = new TTree("Events", "Events");
+//    KEY: TTreeMetaData;1
+//                         KEY: TTreeParameterSets;1
+//                                                   KEY: TTreeParentage;1
+//                                                                         KEY: TTreeEvents;1
+//                                                                                            KEY: TTreeLuminosityBlocks;1
+//                                                                                                                         KEY: TTreeRuns;
+//      summaryTree->SetDirectory(summaryFile);  // This line is probably not needed
+//      
+//      summmaryTree->Branch(
+//
+//      cwd->cd();
+//    }
+//
 
 
-	//MC normalization (to 1/pb)
-	if(debug) cout << "DEBUG: xsec: " << xsec << endl;
+//MC normalization (to 1/pb)
+if(debug) cout << "DEBUG: xsec: " << xsec << endl;
 
-	// ------------------------------------- jet energy scale and uncertainties 
-	TString jecDir = runProcess.getParameter < std::string > ("jecDir");
-	gSystem->ExpandPathName (jecDir);
-	FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector (jecDir, isMC);
-	JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK4PFchs.txt").Data ());
+// ------------------------------------- jet energy scale and uncertainties 
+TString jecDir = runProcess.getParameter < std::string > ("jecDir");
+gSystem->ExpandPathName (jecDir);
+FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector (jecDir, isMC);
+JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK4PFchs.txt").Data ());
 	
-	// ------------------------------------- muon energy scale and uncertainties
-	MuScleFitCorrector *muCor = NULL; // FIXME: MuScle fit corrections for 13 TeV not available yet (more Zs are needed) getMuonCorrector (jecDir, dtag);
+// ------------------------------------- muon energy scale and uncertainties
+MuScleFitCorrector *muCor = NULL; // FIXME: MuScle fit corrections for 13 TeV not available yet (more Zs are needed) getMuonCorrector (jecDir, dtag);
 
-	// --------------------------------------- lepton efficiencies
-	LeptonEfficiencySF lepEff;
+// --------------------------------------- lepton efficiencies
+LeptonEfficiencySF lepEff;
 	
-	// --------------------------------------- b-tagging 
-	// Prescriptions taken from: https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation74X
+// --------------------------------------- b-tagging 
+// Prescriptions taken from: https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation74X
 
-	// b-tagging working points for 50ns 
-	//   (pfC|c)ombinedInclusiveSecondaryVertexV2BJetTags
-	//      v2CSVv2L 0.605
-	//      v2CSVv2M 0.890
-	//      v2CSVv2T 0.970
-	double
-		btagLoose(0.605),
-		btagMedium(0.890),
-		btagTight(0.970);
+// b-tagging working points for 50ns 
+//   (pfC|c)ombinedInclusiveSecondaryVertexV2BJetTags
+//      v2CSVv2L 0.605
+//      v2CSVv2M 0.890
+//      v2CSVv2T 0.970
+double
+	btagLoose(0.605),
+	btagMedium(0.890),
+	btagTight(0.970);
 
-	//b-tagging: scale factors
-	//beff and leff must be derived from the MC sample using the discriminator vs flavor
-	//the scale factors are taken as average numbers from the pT dependent curves see:
-	//https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC_EPS13_prescript
-	BTagSFUtil btsfutil;
-	double beff(0.68), sfb(0.99), sfbunc(0.015);
-	double leff(0.13), sfl(1.05), sflunc(0.12);
+//b-tagging: scale factors
+//beff and leff must be derived from the MC sample using the discriminator vs flavor
+//the scale factors are taken as average numbers from the pT dependent curves see:
+//https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC_EPS13_prescript
+BTagSFUtil btsfutil;
+double beff(0.68), sfb(0.99), sfbunc(0.015);
+double leff(0.13), sfl(1.05), sflunc(0.12);
 
+// Btag SF and eff from https://indico.cern.ch/event/437675/#preview:1629681
+sfb = 0.861;
+// sbbunc =;
+beff = 0.559;
 
-	// Btag SF and eff from https://indico.cern.ch/event/437675/#preview:1629681
-	sfb = 0.861;
-	// sbbunc =;
-	beff = 0.559;
+TString
+	electronIdMainTag("cutBasedElectronID-Spring15-25ns-V1-standalone-loose"),
+	electronIdVetoTag("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
 
-
-	TString
-		electronIdMainTag("cutBasedElectronID-Spring15-25ns-V1-standalone-loose"),
-		electronIdVetoTag("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
-
-	// --------------------------------------- pileup weighting
-	/*
-	edm::LumiReWeighting * LumiWeights = NULL;
-	utils::cmssw::PuShifter_t PuShifters;
-	double PUNorm[] = { 1, 1, 1 };
-	if (isMC)
-		{
-			std::vector<double> dataPileupDistributionDouble = runProcess.getParameter < std::vector < double >>("datapileup");
-			std::vector<float> dataPileupDistribution;
-			for (unsigned int i = 0; i < dataPileupDistributionDouble.size (); i++)
-				{
-					dataPileupDistribution.push_back (dataPileupDistributionDouble[i]);
-				}
-			std::vector<float> mcPileupDistribution;
-			utils::getMCPileupDistributionFromMiniAOD(urls, dataPileupDistribution.size (), mcPileupDistribution);
-			while(mcPileupDistribution.size() < dataPileupDistribution.size()) mcPileupDistribution.push_back(0.0);
-			while(mcPileupDistribution.size() > dataPileupDistribution.size()) dataPileupDistribution.push_back(0.0);
-			gROOT->cd ();             //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
-			LumiWeights = new edm::LumiReWeighting(mcPileupDistribution, dataPileupDistribution);
-			PuShifters = utils::cmssw::getPUshifters(dataPileupDistribution, 0.05);
-			utils::getPileupNormalization(mcPileupDistribution, PUNorm, LumiWeights, PuShifters);
-		}
-	 */
-	 // pile-up is done directly with direct_pileup_reweight
+// --------------------------------------- pileup weighting
+/*
+edm::LumiReWeighting * LumiWeights = NULL;
+utils::cmssw::PuShifter_t PuShifters;
+double PUNorm[] = { 1, 1, 1 };
+if (isMC)
+	{
+		std::vector<double> dataPileupDistributionDouble = runProcess.getParameter < std::vector < double >>("datapileup");
+		std::vector<float> dataPileupDistribution;
+		for (unsigned int i = 0; i < dataPileupDistributionDouble.size (); i++)
+			{
+				dataPileupDistribution.push_back (dataPileupDistributionDouble[i]);
+			}
+		std::vector<float> mcPileupDistribution;
+		utils::getMCPileupDistributionFromMiniAOD(urls, dataPileupDistribution.size (), mcPileupDistribution);
+		while(mcPileupDistribution.size() < dataPileupDistribution.size()) mcPileupDistribution.push_back(0.0);
+		while(mcPileupDistribution.size() > dataPileupDistribution.size()) dataPileupDistribution.push_back(0.0);
+		gROOT->cd ();             //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
+		LumiWeights = new edm::LumiReWeighting(mcPileupDistribution, dataPileupDistribution);
+		PuShifters = utils::cmssw::getPUshifters(dataPileupDistribution, 0.05);
+		utils::getPileupNormalization(mcPileupDistribution, PUNorm, LumiWeights, PuShifters);
+	}
+ */
+ // pile-up is done directly with direct_pileup_reweight
 	
-	gROOT->cd ();                 //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
+gROOT->cd ();                 //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
 	
-	//higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
+//higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
 
-	std::vector<double> direct_pileup_reweight = runProcess.getParameter < std::vector < double >>("pileup_reweight_direct");
- 
+std::vector<double> direct_pileup_reweight = runProcess.getParameter < std::vector < double >>("pileup_reweight_direct");
 
-	// --------------------------------------- hardcoded MET filter
-	patUtils::MetFilter metFiler;
-	if(!isMC) { 
-				metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_csc2015.txt");
-				metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_ecalscn1043093.txt");
-				metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_csc2015.txt");
-				metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_ecalscn1043093.txt");
-				metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_csc2015.txt");
-				metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt");
+// --------------------------------------- hardcoded MET filter
+patUtils::MetFilter metFiler;
+if(!isMC)
+	{
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_csc2015.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_ecalscn1043093.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_csc2015.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_ecalscn1043093.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_csc2015.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt");
 	}
 
 
-	// ----------------------------
-	// So here we got all the parameters from the config
+// ----------------------------
+// So here we got all the parameters from the config
 
 
 
 
+//##############################################
+//########    INITIATING HISTOGRAMS     ########
+//##############################################
 
+// Removed the SmartSelectionMonitor
+// SmartSelectionMonitor mon;
 
-	//##############################################
-	//########    INITIATING HISTOGRAMS     ########
-	//##############################################
+TH1D* singlelep_ttbar_initialevents  = (TH1D*) new TH1D("singlelep_ttbar_init",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
+TH1D* singlelep_ttbar_preselectedevents = (TH1D*) new TH1D("singlelep_ttbar_presele",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
+TH1D* singlelep_ttbar_selected_mu_events = (TH1D*) new TH1D("singlelep_ttbar_sele_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
+TH1D* singlelep_ttbar_selected_el_events = (TH1D*) new TH1D("singlelep_ttbar_sele_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
+TH1D* singlelep_ttbar_selected2_mu_events = (TH1D*) new TH1D("singlelep_ttbar_sele2_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
+TH1D* singlelep_ttbar_selected2_el_events = (TH1D*) new TH1D("singlelep_ttbar_sele2_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
 
-	// Removed the SmartSelectionMonitor
-	// SmartSelectionMonitor mon;
-
-
-	TH1D* singlelep_ttbar_initialevents  = (TH1D*) new TH1D("singlelep_ttbar_init",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-	TH1D* singlelep_ttbar_preselectedevents = (TH1D*) new TH1D("singlelep_ttbar_presele",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-	TH1D* singlelep_ttbar_selected_mu_events = (TH1D*) new TH1D("singlelep_ttbar_sele_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-	TH1D* singlelep_ttbar_selected_el_events = (TH1D*) new TH1D("singlelep_ttbar_sele_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-	TH1D* singlelep_ttbar_selected2_mu_events = (TH1D*) new TH1D("singlelep_ttbar_sele2_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-	TH1D* singlelep_ttbar_selected2_el_events = (TH1D*) new TH1D("singlelep_ttbar_sele2_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-
-	TH1D* singlelep_ttbar_maraselected_mu_events = (TH1D*) new TH1D("singlelep_ttbar_marasele_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-	TH1D* singlelep_ttbar_maraselected_el_events = (TH1D*) new TH1D("singlelep_ttbar_marasele_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
+TH1D* singlelep_ttbar_maraselected_mu_events = (TH1D*) new TH1D("singlelep_ttbar_marasele_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
+TH1D* singlelep_ttbar_maraselected_el_events = (TH1D*) new TH1D("singlelep_ttbar_marasele_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
 
 
 // Kinematic parameters of the decay
