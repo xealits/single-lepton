@@ -781,9 +781,13 @@ for(size_t f=0; f<urls.size();++f){
 				puInfoH.getByLabel( ev, "addPileupInfo" );
 				if (!puInfoH.isValid()) {printf("collection PileupSummaryInfo with name slimmedAddPileupInfo or addPileupInfo does not exist\n"); exit(0);}
 				}
+			// so here we have valid puInfoH
+			// otherwise exit was called
 			for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
 				{
-				if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
+				//if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
+				// guys and Mara use getTrueNumInteractions :
+				if (it->getBunchCrossing () == 0) ngenITpu += it->getTrueNumInteractions();
 				}
 
 			//ngenITpu = nGoodPV; // based on nvtx
@@ -794,6 +798,8 @@ for(size_t f=0; f<urls.size();++f){
 			//num_inters = puInfoH->at(0).getTrueNumInteractions(); // in 76 it seems to not work, returns 0 always
 			// Using Pietro's PU number vertices:
 			num_inters = ngenITpu;
+			//num_inters = 1;
+			fprintf(csv_out, "\npu-num-inters:%d\n", num_inters);
 			// FIXME: hopefully the length of the array is enough. Increse to 100 bins.
 			if (num_inters<40) {puWeight = direct_pileup_reweight[num_inters];}
 			else {puWeight = 1.5e-16;}
@@ -802,12 +808,21 @@ for(size_t f=0; f<urls.size();++f){
 			//TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
 			//TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
 			}
+		else
+			{
+			// get data pile-up into num_inters
+			// use number of good vertices for the data
+			num_inters = nGoodPV;
+			}
 
 		// --------------- here the weighting/shaping of MC should be done
 		// --------------------- save distributions of weights
 		sum_weights += weight;
 		sum_weights_raw += rawWeight;
 
+		//num_inters = 1;
+		if (num_inters>99) num_inters = 99;
+		//if (num_inters<0)  num_inters = 0;
 		if (weightGen<0) negative_event_nvtx[num_inters] += 1;
                 else positive_event_nvtx[num_inters] += 1;
 
