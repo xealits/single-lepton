@@ -53,10 +53,23 @@ singleLepton is the single-lepton part of it.
 
     std::vector<TString> systVars(1,"");
     if(runSystematics && isMC)
-    {
+      {
       systVars.push_back("jerup" );     systVars.push_back("jerdown"   );
-      ...
-    }
+      systVars.push_back("jesup" );     systVars.push_back("jesdown"   );
+      //systVars.push_back("lesup" );   systVars.push_back("lesdown"   );
+      systVars.push_back("leffup");     systVars.push_back("leffdown"  );
+      systVars.push_back("puup"  );     systVars.push_back("pudown"   );
+      systVars.push_back("umetup");     systVars.push_back("umetdown" );
+      systVars.push_back("btagup");     systVars.push_back("btagdown" );
+      systVars.push_back("unbtagup");   systVars.push_back("unbtagdown" );
+      if(isTTbarMC) {systVars.push_back("topptuncup");
+         systVars.push_back("topptuncdown"); }
+      //systVars.push_back(); systVars.push_back();
+    
+      if(isTTbarMC) { systVars.push_back("pdfup"); systVars.push_back("pdfdown"); }
+      cout << "Systematics will be computed for this analysis - this will take a bit" << endl;
+      }
+
 
     // TODO: what is this: allWeightsURL ... "weightsFile"??
     std::vector < std::string > allWeightsURL = runProcess.getParameter < std::vector < std::string > >("weightsFile");
@@ -195,6 +208,6 @@ Other Mara's steps:
   + pile-up weighting -- **the same now**
   + Muon eff, isolation, ID, trigger (??)
   + b-tagging efficiencies twiki/bin/viewauth/CMS/BtagRecommendation76X
-* different datasets
+* different datasets (**switched to them**)
 
 
