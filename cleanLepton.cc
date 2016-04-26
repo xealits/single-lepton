@@ -925,98 +925,100 @@ for(size_t f=0; f<urls.size();++f){
 		// TODO: what is this??
 		// there was some wague answer from Pietro.....
 		/*
-				if(isMC)
+		if(isMC)
+			{
+			// FIXME: Considering add support for different generators (based on PYTHIA6) for comparison.
+			for(size_t igen=0; igen<gen.size(); igen++){
+				// FIXME: Should pass to the new status scheme from: https://github.com/cms-sw/cmssw/pull/7791
+				// ////// if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
+
+				if(gen[igen].status() != 1 &&  gen[igen].status() !=2 && gen[igen].status() !=62 ) continue;
+				int absid=abs(gen[igen].pdgId());
+				// OK, so taus should be checked as status 2, and quarks as 71 or 23. More testing needed
+				//if( absid==15 && hasWasMother(gen[igen]) ) cout << "Event " << iev << ", Particle " << igen << " has " << gen[igen].numberOfDaughters() << " daughters, pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", mothers " << gen[igen].numberOfMothers() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
+
+
+				////// if(absid==6 && gen[igen].isHardProcess()){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
+				if(absid==6 && gen[igen].status()==62)
+					{ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass). Josh says 62 (last in chain)
+					hasTop=true;
+					// FIXME: Top pT reweighting. 13 TeV values not propagated yet, so not using.
+					//if(isTTbarMC){
+					//  if(gen[igen].get("id") > 0) tPt=gen[igen].pt();
+					//  else                        tbarPt=gen[igen].pt();
+					//}
+					} 
+
+
+				//if(!gen[igen].isPromptFinalState() ) continue;
+				if( (gen[igen].status() != 1 && gen[igen].status()!= 2 ) || !hasWasMother(gen[igen])) continue;
+
+				if((absid==11 || absid==13) && hasLeptonAsDaughter(gen[igen]))
+					cout << "Electron or muon " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
+
+				if((absid==11 || absid==13) && gen[igen].status()==1)
 					{
-						// FIXME: Considering add support for different generators (based on PYTHIA6) for comparison.
-						for(size_t igen=0; igen<gen.size(); igen++){
-							// FIXME: Should pass to the new status scheme from: https://github.com/cms-sw/cmssw/pull/7791
-							//            ////// if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
-							
-							if(gen[igen].status() != 1 &&  gen[igen].status() !=2 && gen[igen].status() !=62 ) continue;
-							int absid=abs(gen[igen].pdgId());
-							// OK, so taus should be checked as status 2, and quarks as 71 or 23. More testing needed
-							//if( absid==15 && hasWasMother(gen[igen]) ) cout << "Event " << iev << ", Particle " << igen << " has " << gen[igen].numberOfDaughters() << " daughters, pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", mothers " << gen[igen].numberOfMothers() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
-							
-							
-							//////            if(absid==6 && gen[igen].isHardProcess()){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
-							if(absid==6 && gen[igen].status()==62){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass). Josh says 62 (last in chain)
-								hasTop=true;
+					ngenLeptonsStatus3++;
 
-								// FIXME: Top pT reweighting. 13 TeV values not propagated yet, so not using.
-								//if(isTTbarMC){
-								//  if(gen[igen].get("id") > 0) tPt=gen[igen].pt();
-								//  else                        tbarPt=gen[igen].pt();
-								//}
-							} 
-							
-							
-							//if(!gen[igen].isPromptFinalState() ) continue;
-							if( (gen[igen].status() != 1 && gen[igen].status()!= 2 ) || !hasWasMother(gen[igen])) continue;
-							
-							if((absid==11 || absid==13) && hasLeptonAsDaughter(gen[igen])) cout << "Electron or muon " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
-							
-							if((absid==11 || absid==13) && gen[igen].status()==1)
-								{
-									ngenLeptonsStatus3++;
-									
-									if(!hasTauAsMother(gen[igen]))
-										ngenLeptonsNonTauSonsStatus3++;
-								}
-							if(absid==15 && gen[igen].status()==2 )
-								{
-									ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
-									//    if(hasLeptonAsDaughter(gen[igen])) cout << "Tau " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
-								}
-							if(absid<=5              ) ngenQuarksStatus3++;
-						}
-						
-						if(debug && (ngenTausStatus3==1 && ngenLeptonsStatus3==1 )  ) cout << "Event: " << iev << ". Leptons: " << ngenLeptonsStatus3 << ". Leptons notaus: " << ngenLeptonsNonTauSonsStatus3 << ". Taus: " << ngenTausStatus3 << ". Quarks: " << ngenQuarksStatus3 << endl;
-						
-						// Dileptons:
-						//    ttbar dileptons --> 1
-						//    ttbar other     --> 2
-						if(mctruthmode==1 && (ngenLeptonsStatus3+ngenTausStatus3!=2 || !hasTop )) continue;
-						if(mctruthmode==2 && (ngenLeptonsStatus3+ngenTausStatus3==2 || !hasTop )) continue;
-						// FIXME: port tt+bb splitting from 8 TeV (check the reference to the matched genjet)
-						//if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
-						//if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
-						//if(mcTruthMode==3 && (ngenBQuarksStatus23<4 || !hasTop))                           continue;
-						
-						// lepton-tau:
-						//    ttbar ltau      --> 3
-						//    ttbar dileptons --> 4
-						//    ttbar ljets     --> 5
-						//    ttbar hadrons   --> 6
-						if(mctruthmode==3 && (ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1  || !hasTop )) continue; // This is bugged, as it is obvious
-						if(mctruthmode==4 && (ngenLeptonsNonTauSonsStatus3!=2                        || !hasTop )) continue;
-						if(mctruthmode==5 && (ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1        || !hasTop )) continue;
-						
-						bool isHad(false);
-						if( 
-							 (ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1 ) &&
-							 (ngenLeptonsNonTauSonsStatus3!=2                      ) &&
-							 (ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1      ) 
-								)
-							isHad=true;
-						
-						//if(mctruthmode==6 && (ngenLeptonsNonTauSonsStatus3!=0 || ngenTausStatus3!=0  || !hasTop )) continue;
-						if(mctruthmode==6 && (!isHad || !hasTop )) continue;
-						
+					if(!hasTauAsMother(gen[igen]))
+						ngenLeptonsNonTauSonsStatus3++;
 					}
-				if(debug) cout << "DEBUG: Event was not stopped by the ttbar sample categorization (either success, or it was not ttbar)" << endl;
-				*/
+					if(absid==15 && gen[igen].status()==2 )
+						{
+						ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
+						//    if(hasLeptonAsDaughter(gen[igen])) cout << "Tau " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
+						}
+					if (absid<=5) ngenQuarksStatus3++;
+					}
+						
+				if(debug && (ngenTausStatus3==1 && ngenLeptonsStatus3==1 )  ) cout << "Event: " << iev << ". Leptons: " << ngenLeptonsStatus3 << ". Leptons notaus: " << ngenLeptonsNonTauSonsStatus3 << ". Taus: " << ngenTausStatus3 << ". Quarks: " << ngenQuarksStatus3 << endl;
+						
+				// Dileptons:
+				//    ttbar dileptons --> 1
+				//    ttbar other     --> 2
+				if(mctruthmode==1 && (ngenLeptonsStatus3+ngenTausStatus3!=2 || !hasTop )) continue;
+				if(mctruthmode==2 && (ngenLeptonsStatus3+ngenTausStatus3==2 || !hasTop )) continue;
+				// FIXME: port tt+bb splitting from 8 TeV (check the reference to the matched genjet)
+				//if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
+				//if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
+				//if(mcTruthMode==3 && (ngenBQuarksStatus23<4 || !hasTop))                           continue;
+						
+				// lepton-tau:
+				//    ttbar ltau      --> 3
+				//    ttbar dileptons --> 4
+				//    ttbar ljets     --> 5
+				//    ttbar hadrons   --> 6
+				if(mctruthmode==3 && (ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1  || !hasTop )) continue; // This is bugged, as it is obvious
+				if(mctruthmode==4 && (ngenLeptonsNonTauSonsStatus3!=2                        || !hasTop )) continue;
+				if(mctruthmode==5 && (ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1        || !hasTop )) continue;
+						
+				bool isHad(false);
+				if (
+					(ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1 ) &&
+					(ngenLeptonsNonTauSonsStatus3!=2                      ) &&
+					(ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1      ) 
+					)
+				isHad=true;
+					
+				//if(mctruthmode==6 && (ngenLeptonsNonTauSonsStatus3!=0 || ngenTausStatus3!=0  || !hasTop )) continue;
+				if(mctruthmode==6 && (!isHad || !hasTop )) continue;
+						
+			}
+
+		if(debug) cout << "DEBUG: Event was not stopped by the ttbar sample categorization (either success, or it was not ttbar)" << endl;
+		*/
 				
-				// FIXME: Top pT reweighting to be reactivated as soon as corrections are released
-				//      if(tPt>0 && tbarPt>0 && topPtWgt)
-				//        {
-				//          topPtWgt->computeWeight(tPt,tbarPt);
-				//          topPtWgt->getEventWeight(wgtTopPt, wgtTopPtUp, wgtTopPtDown);
-				//          wgtTopPtUp /= wgtTopPt;
-				//          wgtTopPtDown /= wgtTopPt;
-				//        }
+		// FIXME: Top pT reweighting to be reactivated as soon as corrections are released
+		// if(tPt>0 && tbarPt>0 && topPtWgt)
+		//   {
+		//     topPtWgt->computeWeight(tPt,tbarPt);
+		//     topPtWgt->getEventWeight(wgtTopPt, wgtTopPtUp, wgtTopPtDown);
+		//     wgtTopPtUp /= wgtTopPt;
+		//     wgtTopPtDown /= wgtTopPt;
+		//   }
 
 
-					// ------------------------------------ actual particles?
+		// ------------------------------------ actual particles?
 
 		pat::MuonCollection muons;
 		fwlite::Handle<pat::MuonCollection> muonsHandle;
@@ -1129,8 +1131,8 @@ for(size_t f=0; f<urls.size();++f){
 			if (leta > 2.1)                                    passVetoKin = false;
 			if (lid == 11 && (leta > 1.4442 && leta < 1.5660)) passVetoKin = false; // Crack veto
 
-			//Cut based identification 
-					
+			//Cut based identification
+
 			//std::vector<pat::Electron> dummyShit; dummyShit.push_back(leptons[ilep].el);
 
 			// ------------------------- lepton IDs
@@ -1143,11 +1145,10 @@ for(size_t f=0; f<urls.size();++f){
 
 			if     (passKin     && passId     && passIso)     selLeptons.push_back(lepton);
 			else if(passVetoKin && passVetoId && passVetoIso) lid==11 ? nVetoE++ : nVetoMu++;
-					
 			}
 
-			std::sort(selLeptons.begin(),   selLeptons.end(),   utils::sort_CandidatesByPt);
-			LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
+		std::sort(selLeptons.begin(),   selLeptons.end(),   utils::sort_CandidatesByPt);
+		LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
 
 
 		// ------------------------------------------ select the taus
@@ -1190,12 +1191,12 @@ for(size_t f=0; f<urls.size();++f){
 			if(nChHadPixelHits==0) continue;
 			}
 			/////
-					
+
 			selTaus.push_back(tau);
 			ntaus++;
 			}
 		std::sort (selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
-			
+
 		//
 		// ----------------------------------------------- JET/MET ANALYSIS
 		//
@@ -1206,7 +1207,7 @@ for(size_t f=0; f<urls.size();++f){
 		std::vector<LorentzVector> newMet=utils::cmssw::getMETvariations(met/*recoMet*/,jets,selLeptons,isMC); // FIXME: Must choose a lepton collection. Perhaps loose leptons?
 		met=newMet[utils::cmssw::METvariations::NOMINAL];
 		if(debug) cout << "Jet Energy Corrections updated" << endl;
-			
+
 		// Select the jets. I need different collections because of tau cleaning, but this is needed only for the single lepton channels, so the tau cleaning is performed later.
 		pat::JetCollection
 			selJets, selBJets;
@@ -1251,7 +1252,7 @@ for(size_t f=0; f<urls.size();++f){
 			double dphijmet = fabs (deltaPhi (met.phi(), jet.phi()));
 			if (dphijmet < mindphijmet) mindphijmet = dphijmet;
 			bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
-					
+
 			if (isMC)
 				{
 				int flavId = jet.partonFlavour();
@@ -1259,14 +1260,14 @@ for(size_t f=0; f<urls.size();++f){
 				else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
 				else                     btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
 				}
-					
+
 			if(!hasCSVtag) continue;
 			selBJets.push_back(jet);
 			}
 
 		std::sort (selJets.begin(),  selJets.end(),  utils::sort_CandidatesByPt);
 		std::sort (selBJets.begin(), selBJets.end(), utils::sort_CandidatesByPt);
-			
+
 		//
 		// -------------------------------------------------- ASSIGN CHANNEL
 		//
