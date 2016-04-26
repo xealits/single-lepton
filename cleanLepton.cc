@@ -656,11 +656,30 @@ for(size_t f=0; f<urls.size();++f){
 
 		edm::EventBase const & myEvent = ev;
 
+		// ---------------------------------- MC shaping to data
+		// MC is weighted according to distributions of a bunch of data properties
+
+		// NLO -1 corrections
+		double weightGen(1.);
+
+		// there are also the (dissabled now, since NLO samples are used) HT-binned and pthat-binned stitching of LO and NLO
+
+		// ---------------------------------- pileup weight
+		double puWeight         (1.0);
+
+		// rawWeight is everything but Pile-Up
+		double rawWeight        (1.0);
+
+		// final weight of the event
+		double weight           (1.0);
+		// and systematic corrections? TODO: check how TotalWeight_plus is used?
+		double TotalWeight_plus (1.0);
+		double TotalWeight_minus(1.0);
+
 
 		// ---------------------------------- these are weird NLO -1 weights
-		// TODO: figure out what are these really
+		// TODO: figure out how exactly they correct for NLO
 		// Take into account the negative weights from some NLO generators (otherwise some phase space will be double counted)
-		double weightGen(1.);
 		if(isNLOMC)
 			{
 			//double weightGen(0.);
@@ -696,13 +715,6 @@ for(size_t f=0; f<urls.size();++f){
 		//
 		// DERIVE WEIGHTS TO APPLY TO SAMPLE
 		//
-
-		// ---------------------------------- pileup weight
-		double weight           (1.0);
-		double rawWeight        (1.0);
-		double TotalWeight_plus (1.0);
-		double TotalWeight_minus(1.0);
-		double puWeight         (1.0);
 
 
 		// This must remain deactivated if you use HT-binned samples (it was for pthat-binned samples)
@@ -752,6 +764,7 @@ for(size_t f=0; f<urls.size();++f){
 				
 		// ------------------------------- count N good verteces
 		// needed for particle selection/event classification later
+		// and pile-up control-distribution for data
 		reco::VertexCollection vtx;
 		reco::Vertex goodPV;
 		unsigned int nGoodPV(0);
@@ -834,7 +847,7 @@ for(size_t f=0; f<urls.size();++f){
 		//mon.fillHisto("initNorm", tags, 4., TotalWeight_minus);
 		// probably, these are N events after re-forming MC
 		
-		// ############################################   EVENT LOOP STARTS
+		// -------------------------------------   Basic event selection
 
 		// ---------------------- Orthogonalize Run2015B PromptReco+17Jul15 mix
 		// let's remove Run2015B
@@ -900,6 +913,8 @@ for(size_t f=0; f<urls.size();++f){
 			cout << "met filters are commented out here" << endl;
 			}
 
+
+		// ------------------------- event physics and the corresponding selection
 
 		//------------------------- load all the objects we will need to access
 
