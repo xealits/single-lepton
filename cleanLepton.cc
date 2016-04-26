@@ -812,7 +812,8 @@ for(size_t f=0; f<urls.size();++f){
 			// Using Pietro's PU number vertices:
 			num_inters = ngenITpu;
 			//num_inters = 1;
-			fprintf(csv_out, "\npu-num-inters:%d\n", num_inters);
+			// debugging:
+			//fprintf(csv_out, "\npu-num-inters:%d\n", num_inters);
 			// FIXME: hopefully the length of the array is enough. Increse to 100 bins.
 			if (num_inters<40) {puWeight = direct_pileup_reweight[num_inters];}
 			else {puWeight = 1.5e-16;}
