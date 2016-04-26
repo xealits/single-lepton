@@ -1081,247 +1081,260 @@ for(size_t f=0; f<urls.size();++f){
 		std::sort(leptons.begin(), leptons.end(), utils::sort_CandidatesByPt);
 
 
-				// ---------------------------------- leptons selection
-				LorentzVector muDiff(0., 0., 0., 0.);
-				std::vector<patUtils::GenericLepton> selLeptons;
-				unsigned int nVetoE(0), nVetoMu(0);
-				for(size_t ilep=0; ilep<leptons.size (); ++ilep)
-					{
-						patUtils::GenericLepton& lepton = leptons[ilep];
+		// ---------------------------------- leptons selection
+		LorentzVector muDiff(0., 0., 0., 0.);
+		std::vector<patUtils::GenericLepton> selLeptons;
+		unsigned int nVetoE(0), nVetoMu(0);
+		for(size_t ilep=0; ilep<leptons.size (); ++ilep)
+			{
+			patUtils::GenericLepton& lepton = leptons[ilep];
 
-						bool 
-							passKin(true),     passId(true),     passIso(true),
-							passVetoKin(true), passVetoId(true), passVetoIso(true);
+			bool 
+				passKin(true),     passId(true),     passIso(true),
+				passVetoKin(true), passVetoId(true), passVetoIso(true);
 						
-						int lid(lepton.pdgId());
+			int lid(lepton.pdgId());
 						
-						//apply muon corrections
-						if(abs(lid) == 13)
-						{
-							if(muCor)
-								{
-									TLorentzVector p4(lepton.px(), lepton.py(), lepton.pz(), lepton.energy());
-									muCor->applyPtCorrection(p4, lid < 0 ? -1 : 1);
-									if(isMC) muCor->applyPtSmearing(p4, lid < 0 ? -1 : 1, false);
-									muDiff -= lepton.p4();
-									lepton.setP4(LorentzVector(p4.Px(), p4.Py(), p4.Pz(), p4.E()));
-									muDiff += lepton.p4();
-								}
-						}
-						
-					//no need for charge info any longer
-					lid = abs(lid);
-					TString lepStr(lid == 13 ? "mu" : "e");
-					
-					// no need to mess with photon ID // //veto nearby photon (loose electrons are many times photons...)
-					// no need to mess with photon ID // double minDRlg(9999.);
-					// no need to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-					// no need to mess with photon ID //   minDRlg=TMath::Min(minDRlg,deltaR(leptons[ilep].p4(),selPhotons[ipho].p4()));
-					// no need to mess with photon ID // if(minDRlg<0.1) continue;
-
-					// ---------------------------- kinematics
-					double leta(fabs(lid==11 ? lepton.el.superCluster()->eta() : lepton.eta()));
-					
-					// ---------------------- Main lepton kin
-					if(lepton.pt() < 30.)                      passKin = false;
-					if(leta > 2.1)                                    passKin = false;
-					if(lid == 11 && (leta > 1.4442 && leta < 1.5660)) passKin = false; // Crack veto
-					
-					// ---------------------- Veto lepton kin
-					if (lepton.pt () < 20)                      passVetoKin = false;
-					if (leta > 2.1)                                    passVetoKin = false;
-					if (lid == 11 && (leta > 1.4442 && leta < 1.5660)) passVetoKin = false; // Crack veto
-					
-					//Cut based identification 
-					
-					//std::vector<pat::Electron> dummyShit; dummyShit.push_back(leptons[ilep].el);
-
-					// ------------------------- lepton IDs
-					passId     = lid == 11 ? patUtils::passId(electronVidMainId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdTight);
-					passVetoId = lid == 11 ? patUtils::passId(electronVidVetoId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdLoose);
-
-					// ------------------------- lepton isolation
-					passIso     = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Tight); // Electron iso is included within the ID
-					passVetoIso = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Loose); // Electron iso is included within the ID
-
-					if     (passKin     && passId     && passIso)     selLeptons.push_back(lepton);
-					else if(passVetoKin && passVetoId && passVetoIso) lid==11 ? nVetoE++ : nVetoMu++;
-					
+			//apply muon corrections
+			if(abs(lid) == 13 && muCor)
+				{
+				TLorentzVector p4(lepton.px(), lepton.py(), lepton.pz(), lepton.energy());
+				muCor->applyPtCorrection(p4, lid < 0 ? -1 : 1);
+				if(isMC) muCor->applyPtSmearing(p4, lid < 0 ? -1 : 1, false);
+				muDiff -= lepton.p4();
+				lepton.setP4(LorentzVector(p4.Px(), p4.Py(), p4.Pz(), p4.E()));
+				muDiff += lepton.p4();
 				}
+
+			//no need for charge info any longer
+			lid = abs(lid);
+			TString lepStr(lid == 13 ? "mu" : "e");
+					
+			// no need to mess with photon ID // //veto nearby photon (loose electrons are many times photons...)
+			// no need to mess with photon ID // double minDRlg(9999.);
+			// no need to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
+			// no need to mess with photon ID //   minDRlg=TMath::Min(minDRlg,deltaR(leptons[ilep].p4(),selPhotons[ipho].p4()));
+			// no need to mess with photon ID // if(minDRlg<0.1) continue;
+
+			// ---------------------------- kinematics
+			double leta(fabs(lid==11 ? lepton.el.superCluster()->eta() : lepton.eta()));
+
+			// ---------------------- Main lepton kin
+			if(lepton.pt() < 30.)                      passKin = false;
+			if(leta > 2.1)                                    passKin = false;
+			if(lid == 11 && (leta > 1.4442 && leta < 1.5660)) passKin = false; // Crack veto
+
+			// ---------------------- Veto lepton kin
+			if (lepton.pt () < 20)                      passVetoKin = false;
+			if (leta > 2.1)                                    passVetoKin = false;
+			if (lid == 11 && (leta > 1.4442 && leta < 1.5660)) passVetoKin = false; // Crack veto
+
+			//Cut based identification 
+					
+			//std::vector<pat::Electron> dummyShit; dummyShit.push_back(leptons[ilep].el);
+
+			// ------------------------- lepton IDs
+			passId     = lid == 11 ? patUtils::passId(electronVidMainId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdTight);
+			passVetoId = lid == 11 ? patUtils::passId(electronVidVetoId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdLoose);
+
+			// ------------------------- lepton isolation
+			passIso     = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Tight); // Electron iso is included within the ID
+			passVetoIso = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Loose); // Electron iso is included within the ID
+
+			if     (passKin     && passId     && passIso)     selLeptons.push_back(lepton);
+			else if(passVetoKin && passVetoId && passVetoIso) lid==11 ? nVetoE++ : nVetoMu++;
+					
+			}
+
 			std::sort(selLeptons.begin(),   selLeptons.end(),   utils::sort_CandidatesByPt);
 			LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
-			
-			
-			// ------------------------------------------ select the taus
-			pat::TauCollection selTaus;
-			int ntaus (0);
-			for (size_t itau = 0; itau < taus.size(); ++itau)
-				{
-					pat::Tau& tau = taus[itau];
-					if (tau.pt() < 20. || fabs (tau.eta()) > 2.3) continue;
-					
-					bool overlapWithLepton(false);
-					for(int l=0; l<(int)selLeptons.size();++l){
-						if(reco::deltaR(tau, selLeptons[l])<0.4){overlapWithLepton=true; break;}
-					}
-					if(overlapWithLepton) continue;
-					
-					//      if(!tau.isPFTau()) continue; // Only PFTaus // It should be false for slimmedTaus
-					//      if(tau.emFraction() >=2.) continue;
-					
-					// Discriminators from https://twiki.cern.ch/twiki/bin/viewauth/CMS/TauIDRecommendation13TeV
-					// "The tau passes the discriminator if pat::Tau::tauID("name") returns a value of 0.5 or greater"
-					if(tau.tauID("decayModeFindingNewDMs")<0.5) continue; // High pt tau. Otherwise, OldDMs
-					// Anyways, the collection of taus from miniAOD should be already afer decayModeFinding cut (the tag - Old or New - is unspecified in the twiki, though).
-					// Consequently, there might be a small bias due to events that are cut by the OldDM and would not be cut by the NewDM
-					if (tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")<0.5) continue; // See whether to us the new byMediumPileupWeightedIsolation3Hits that is available only for dynamic strip reconstruction (default in CMSSW_7_4_14)
-					if (tau.tauID ("againstMuonTight3")                          <0.5) continue; // Medium working point not usable. Available values: Loose, Tight
-					if (tau.tauID ("againstElectronMediumMVA5")                  <0.5) continue; // Tight working point not usable. Avaiable values: VLoose, Loose, Medium
-					
-					// Pixel hits cut (will be available out of the box in new MINIAOD production)
-					{
-						int nChHadPixelHits = 0;
-						reco::CandidatePtrVector chCands = tau.signalChargedHadrCands();
-						for(reco::CandidatePtrVector::const_iterator iter = chCands.begin(); iter != chCands.end(); iter++){
-							pat::PackedCandidate const* packedCand = dynamic_cast<pat::PackedCandidate const*>(iter->get());
-							int pixelHits = packedCand->numberOfPixelHits();
-							if(pixelHits > nChHadPixelHits) nChHadPixelHits = pixelHits;
-						}
-						if(nChHadPixelHits==0) continue;
-					}
-					/////
-					
-					selTaus.push_back(tau);
-					ntaus++;
-				}
-			std::sort (selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
-			
-			//
-			// ----------------------------------------------- JET/MET ANALYSIS
-			//
-			if(debug) cout << "Now update Jet Energy Corrections" << endl;
-			//add scale/resolution uncertainties and propagate to the MET      
-			utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,nGoodPV,isMC);
-			if(debug) cout << "Update also MET" << endl;
-			std::vector<LorentzVector> newMet=utils::cmssw::getMETvariations(met/*recoMet*/,jets,selLeptons,isMC); // FIXME: Must choose a lepton collection. Perhaps loose leptons?
-			met=newMet[utils::cmssw::METvariations::NOMINAL];
-			if(debug) cout << "Jet Energy Corrections updated" << endl;
-			
-			// Select the jets. I need different collections because of tau cleaning, but this is needed only for the single lepton channels, so the tau cleaning is performed later.
-			pat::JetCollection
-				selJets, selBJets;
-			double mindphijmet (9999.);
-			for (size_t ijet = 0; ijet < jets.size(); ++ijet)
-				{
-					pat::Jet& jet = jets[ijet];
-					
-					if (jet.pt() < 15 || fabs (jet.eta()) > 3.0) continue; // Was 4.7 in eta. Tightened for computing time. 3.0 ensures that we don't cut associations with leptons (0.4 from 2.4)
-					
-					//mc truth for this jet
-					const reco::GenJet * genJet = jet.genJet();
-					TString jetType (genJet && genJet->pt() > 0 ? "truejetsid" : "pujetsid");
 
-					//cross-clean with selected leptons and photons
-					double minDRlj (9999.), minDRlg (9999.), minDRljSingleLep(9999.);
 
-					for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
-						minDRlj = TMath::Min(minDRlj, reco::deltaR (jet, selLeptons[ilep]));
-					// don't want to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-					// don't want to mess with photon ID //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
-					//          if (minDRlj < 0.4 /*|| minDRlg<0.4 */ ) continue;
+		// ------------------------------------------ select the taus
+		pat::TauCollection selTaus;
+		int ntaus (0);
+		for (size_t itau = 0; itau < taus.size(); ++itau)
+			{
+			pat::Tau& tau = taus[itau];
+			if (tau.pt() < 20. || fabs (tau.eta()) > 2.3) continue;
 					
-					for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
-						minDRljSingleLep = TMath::Min(minDRljSingleLep, reco::deltaR (jet, selLeptons[ilep]));
-					
-					//jet id
-					bool passPFloose = passPFJetID("Loose", jet); 
-					// FIXME: check when pileup ID will come out
-					//if (jets[ijet].pt() > 30)
-					//  {
-					//    mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 0);
-					//    if (passPFloose)                        mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 1);
-					//    if (passLooseSimplePuId)                mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 2);
-					//    if (passPFloose && passLooseSimplePuId) mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 3);
-					//  }
-					if (!passPFloose || jet.pt() <30. || fabs(jet.eta()) > 2.5) continue;
-					if (minDRlj < 0.4) continue;
-					
-					selJets.push_back(jet);
-					
-					double dphijmet = fabs (deltaPhi (met.phi(), jet.phi()));
-					if (dphijmet < mindphijmet) mindphijmet = dphijmet;
-					bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
-					
-					if (isMC)
-						{
-							int flavId = jet.partonFlavour();
-							if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
-							else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
-							else                     btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
-						}
-					
-					if(!hasCSVtag) continue;
-					selBJets.push_back(jet);
+			bool overlapWithLepton(false);
+			for(int l=0; l<(int)selLeptons.size();++l)
+				{
+				if(reco::deltaR(tau, selLeptons[l])<0.4) {overlapWithLepton=true; break;}
 				}
+			if(overlapWithLepton) continue;
+					
+			// if(!tau.isPFTau()) continue; // Only PFTaus // It should be false for slimmedTaus
+			// if(tau.emFraction() >=2.) continue;
+					
+			// Discriminators from https://twiki.cern.ch/twiki/bin/viewauth/CMS/TauIDRecommendation13TeV
+			// "The tau passes the discriminator if pat::Tau::tauID("name") returns a value of 0.5 or greater"
+			if(tau.tauID("decayModeFindingNewDMs")<0.5) continue; // High pt tau. Otherwise, OldDMs
+			// Anyways, the collection of taus from miniAOD should be already afer decayModeFinding cut (the tag - Old or New - is unspecified in the twiki, though).
+			// Consequently, there might be a small bias due to events that are cut by the OldDM and would not be cut by the NewDM
+			if (tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")<0.5) continue; // See whether to us the new byMediumPileupWeightedIsolation3Hits that is available only for dynamic strip reconstruction (default in CMSSW_7_4_14)
+			if (tau.tauID ("againstMuonTight3")                          <0.5) continue; // Medium working point not usable. Available values: Loose, Tight
+			if (tau.tauID ("againstElectronMediumMVA5")                  <0.5) continue; // Tight working point not usable. Avaiable values: VLoose, Loose, Medium
+					
+			// Pixel hits cut (will be available out of the box in new MINIAOD production)
+			{
+			int nChHadPixelHits = 0;
+			reco::CandidatePtrVector chCands = tau.signalChargedHadrCands();
+			for(reco::CandidatePtrVector::const_iterator iter = chCands.begin(); iter != chCands.end(); iter++)
+				{
+				pat::PackedCandidate const* packedCand = dynamic_cast<pat::PackedCandidate const*>(iter->get());
+				int pixelHits = packedCand->numberOfPixelHits();
+				if(pixelHits > nChHadPixelHits) nChHadPixelHits = pixelHits;
+				}
+			if(nChHadPixelHits==0) continue;
+			}
+			/////
+					
+			selTaus.push_back(tau);
+			ntaus++;
+			}
+		std::sort (selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
+			
+		//
+		// ----------------------------------------------- JET/MET ANALYSIS
+		//
+		if(debug) cout << "Now update Jet Energy Corrections" << endl;
+		//add scale/resolution uncertainties and propagate to the MET      
+		utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,nGoodPV,isMC);
+		if(debug) cout << "Update also MET" << endl;
+		std::vector<LorentzVector> newMet=utils::cmssw::getMETvariations(met/*recoMet*/,jets,selLeptons,isMC); // FIXME: Must choose a lepton collection. Perhaps loose leptons?
+		met=newMet[utils::cmssw::METvariations::NOMINAL];
+		if(debug) cout << "Jet Energy Corrections updated" << endl;
+			
+		// Select the jets. I need different collections because of tau cleaning, but this is needed only for the single lepton channels, so the tau cleaning is performed later.
+		pat::JetCollection
+			selJets, selBJets;
+		double mindphijmet (9999.);
+		for (size_t ijet = 0; ijet < jets.size(); ++ijet)
+			{
+			pat::Jet& jet = jets[ijet];
 
-			std::sort (selJets.begin(),  selJets.end(),  utils::sort_CandidatesByPt);
-			std::sort (selBJets.begin(), selBJets.end(), utils::sort_CandidatesByPt);
-			
-			//
-			// -------------------------------------------------- ASSIGN CHANNEL
-			//
-			std::vector < TString > chTags; chTags.clear();
-			int 
-				dilId (1),
-				slepId(0);
-			LorentzVector dileptonSystem (0, 0, 0, 0);
-			if(selLeptons.size()>=2)
+			if (jet.pt() < 15 || fabs (jet.eta()) > 3.0) continue; // Was 4.7 in eta. Tightened for computing time. 3.0 ensures that we don't cut associations with leptons (0.4 from 2.4)
+
+			//mc truth for this jet
+			const reco::GenJet * genJet = jet.genJet();
+			TString jetType (genJet && genJet->pt() > 0 ? "truejetsid" : "pujetsid");
+
+			//cross-clean with selected leptons and photons
+			double minDRlj (9999.), minDRlg (9999.), minDRljSingleLep(9999.);
+
+			for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
+				minDRlj = TMath::Min(minDRlj, reco::deltaR (jet, selLeptons[ilep]));
+			// don't want to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
+			// don't want to mess with photon ID //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
+			// if (minDRlj < 0.4 /*|| minDRlg<0.4 */ ) continue;
+
+			for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
+				minDRljSingleLep = TMath::Min(minDRljSingleLep, reco::deltaR (jet, selLeptons[ilep]));
+
+			//jet id
+			bool passPFloose = passPFJetID("Loose", jet); 
+			// FIXME: check when pileup ID will come out
+			//if (jets[ijet].pt() > 30)
+			//  {
+			//    mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 0);
+			//    if (passPFloose)                        mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 1);
+			//    if (passLooseSimplePuId)                mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 2);
+			//    if (passPFloose && passLooseSimplePuId) mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 3);
+			//  }
+			if (!passPFloose || jet.pt() <30. || fabs(jet.eta()) > 2.5) continue;
+			if (minDRlj < 0.4) continue;
+
+			selJets.push_back(jet);
+
+			double dphijmet = fabs (deltaPhi (met.phi(), jet.phi()));
+			if (dphijmet < mindphijmet) mindphijmet = dphijmet;
+			bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
+					
+			if (isMC)
 				{
-					for (size_t ilep = 0; ilep < 2; ilep++)
-						{
-							dilId *= selLeptons[ilep].pdgId();
-							int id(abs (selLeptons[ilep].pdgId()));
-							dileptonSystem += selLeptons[ilep].p4();
-						}
+				int flavId = jet.partonFlavour();
+				if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
+				else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
+				else                     btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
 				}
+					
+			if(!hasCSVtag) continue;
+			selBJets.push_back(jet);
+			}
+
+		std::sort (selJets.begin(),  selJets.end(),  utils::sort_CandidatesByPt);
+		std::sort (selBJets.begin(), selBJets.end(), utils::sort_CandidatesByPt);
 			
-			if(selLeptons.size()>0)
-				slepId=selLeptons[0].pdgId();
-			
-			// Event classification. Single lepton triggers are used for offline selection of dilepton events. The "else if"s guarantee orthogonality
-			bool 
-				isSingleMu(false),
-				isSingleE(false),
-				isDoubleMu(false),
-				isDoubleE(false),
-				isEMu(false);
-			int multiChannel(0);
-			if      (abs(slepId)==13 && muTrigger && nVetoE==0 && nVetoMu==0){ isSingleMu = true; multiChannel++; chTags.push_back("singlemu");}
-			else if (abs(slepId)==11 && eTrigger  && nVetoE==0 && nVetoMu==0){ isSingleE  = true; multiChannel++; chTags.push_back("singlee");}
-			else if (abs(dilId)==121 && eTrigger                            ){ isDoubleE  = true; multiChannel++; chTags.push_back("ee");}
-			else if (abs(dilId)==169 && muTrigger                           ){ isDoubleMu = true; multiChannel++; chTags.push_back("mumu");}
-			else if (abs(dilId)==143 && muTrigger                           ){ isEMu      = true; multiChannel++; chTags.push_back("emu");}
-			else if (abs(dilId)==143 && eTrigger  && !muTrigger             ){ isEMu      = true; multiChannel++; chTags.push_back("emu");} // Pick up the largest number of emu events possible, maintaining orthogonality
-			
-			// keep in mind the eventCategory thingy for more refined categorization // TString evCat=eventCategoryInst.GetCategory(selJets,dileptonSystem);
-			//std::vector < TString > tags (1, "all");
-			for (size_t ich = 0; ich < chTags.size(); ich++)
+		//
+		// -------------------------------------------------- ASSIGN CHANNEL
+		//
+		std::vector < TString > chTags; chTags.clear();
+		int 
+			dilId (1),
+			slepId(0);
+		LorentzVector dileptonSystem (0, 0, 0, 0);
+		if(selLeptons.size()>=2)
+			{
+			for (size_t ilep = 0; ilep < 2; ilep++)
 				{
-					tags.push_back (chTags[ich]);
-					//tags.push_back( chTags[ich]+evCat );
+				dilId *= selLeptons[ilep].pdgId();
+				int id(abs (selLeptons[ilep].pdgId()));
+				dileptonSystem += selLeptons[ilep].p4();
 				}
-			if(multiChannel>1) nMultiChannel++;
+			}
+
+		if(selLeptons.size()>0)
+			slepId=selLeptons[0].pdgId();
+
+		// Event classification. Single lepton triggers are used for offline selection of dilepton events. The "else if"s guarantee orthogonality
+		bool 
+			isSingleMu(false),
+			isSingleE(false),
+			isDoubleMu(false),
+			isDoubleE(false),
+			isEMu(false);
+		// int multiChannel(0);
+
+		// Let's try cleaner channel booleans
+		/*
+		if      (abs(slepId)==13 && muTrigger && nVetoE==0 && nVetoMu==0){ isSingleMu = true; multiChannel++; chTags.push_back("singlemu");}
+		else if (abs(slepId)==11 && eTrigger  && nVetoE==0 && nVetoMu==0){ isSingleE  = true; multiChannel++; chTags.push_back("singlee");}
+		else if (abs(dilId)==121 && eTrigger                            ){ isDoubleE  = true; multiChannel++; chTags.push_back("ee");}
+		else if (abs(dilId)==169 && muTrigger                           ){ isDoubleMu = true; multiChannel++; chTags.push_back("mumu");}
+		else if (abs(dilId)==143 && muTrigger                           ){ isEMu      = true; multiChannel++; chTags.push_back("emu");}
+		else if (abs(dilId)==143 && eTrigger  && !muTrigger             ){ isEMu      = true; multiChannel++; chTags.push_back("emu");} // Pick up the largest number of emu events possible, maintaining orthogonality
+		*/
+
+		// keep in mind the eventCategory thingy for more refined categorization
+		// TString evCat=eventCategoryInst.GetCategory(selJets,dileptonSystem);
+		//std::vector < TString > tags (1, "all");
+		/*
+		for (size_t ich = 0; ich < chTags.size(); ich++)
+			{
+				tags.push_back (chTags[ich]);
+				//tags.push_back( chTags[ich]+evCat );
+			}
+		if(multiChannel>1) nMultiChannel++;
+		*/
+
+		isSingleMu = (abs(slepId)==13) && muTrigger && nVetoE==0 && nVetoMu==0;
+		isSingleE  = (abs(slepId)==11) && eTrigger  && nVetoE==0 && nVetoMu==0;
+		// and no double-lepton channel yet
+
+		if (isSingleE && isSingleMu) nMultiChannel++;
 
 		if(debug){
 			cout << "channel is defined, running the event selection" << endl;
-		}
+			}
 
-			// Dilepton full analysis
-			// No dilepton analysis
-			//if( isDoubleE || isEMu || isDoubleMu){ continue; }
+		// Dilepton full analysis
+		// There is no dilepton analysis now
+		//if( isDoubleE || isEMu || isDoubleMu){ continue; }
 
-			// ------------------------------------------ Single lepton full analysis
-			//if(tags[1] == "singlemu" || tags[1] == "singlee")
+		// ------------------------------------------ Single lepton full analysis
+		//if(tags[1] == "singlemu" || tags[1] == "singlee")
 		if(isSingleMu || isSingleE){
 			singlelep_ttbar_preselectedevents->Fill(1);
 

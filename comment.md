@@ -183,6 +183,10 @@ The steps of Pietro's code with changes.
   + kinematics, main and veto -> new threshold **1**
   + lepton IDs and isolation -> new isolation **1**
 * select the taus -> **0 ?? leave as is**
+  + tau pt, eta
+  + overlap with selLeptons
+  + 4 tau ID discriminators (**check if up to date**)
+  + pixel hits cut (*"should be available out of the mox in new MINIAOD"* - ?)
 * JET/MET ANALYSIS -> **0 ?? leave as is** -> update b-jets
   + it only selects jets, some of them -- as b-tagged
   + only 1 parameter is obtained from MET
