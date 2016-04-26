@@ -1495,231 +1495,235 @@ for(size_t f=0; f<urls.size();++f){
 				fprintf(csv_out, "%g,%g,%g,%g\n", selSingleLepJets[3].px(), selSingleLepJets[3].py(), selSingleLepJets[3].pz(), selSingleLepJets[3].pt() );
 				}
 
-				/* // old crap with smartmon:
-				// Setting up control categories and fill up event flow histo
-				std::vector < TString > ctrlCats;
-				ctrlCats.clear ();
-																																																			{ ctrlCats.push_back ("step1"); mon.fillHisto("xseceventflowslep", tags, 0, weight); mon.fillHisto("chhiggseventflowslep", tags, 0, weight); }
-				if(passJetSelection   )                                                                       { ctrlCats.push_back ("step2"); mon.fillHisto("xseceventflowslep", tags, 1, weight); mon.fillHisto("chhiggseventflowslep", tags, 1, weight);
-					 if(isSingleMu) singlelep_ttbar_selected2_mu_events->Fill(1);
-					 else if (isSingleE) singlelep_ttbar_selected2_el_events->Fill(1);
-				}
-				if(passJetSelection && passMetSelection )                                                     { ctrlCats.push_back ("step3"); mon.fillHisto("xseceventflowslep", tags, 2, weight); mon.fillHisto("chhiggseventflowslep", tags, 2, weight); }
-				if(passJetSelection && passMetSelection && passBtagsSelection )                               { ctrlCats.push_back ("step4"); mon.fillHisto("xseceventflowslep", tags, 3, weight); mon.fillHisto("chhiggseventflowslep", tags, 3, weight); }
-				if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection )           { ctrlCats.push_back ("step5"); mon.fillHisto("xseceventflowslep", tags, 4, weight); mon.fillHisto("chhiggseventflowslep", tags, 4, weight); }
-				if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS ) { ctrlCats.push_back ("step6"); mon.fillHisto("xseceventflowslep", tags, 5, weight); mon.fillHisto("chhiggseventflowslep", tags, 5, weight);
-					 if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
-					 else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
-				}
-				
+			/* // old crap with smartmon:
+			// Setting up control categories and fill up event flow histo
+			std::vector < TString > ctrlCats;
+			ctrlCats.clear ();
+																																																		{ ctrlCats.push_back ("step1"); mon.fillHisto("xseceventflowslep", tags, 0, weight); mon.fillHisto("chhiggseventflowslep", tags, 0, weight); }
+			if(passJetSelection   )                                                                       { ctrlCats.push_back ("step2"); mon.fillHisto("xseceventflowslep", tags, 1, weight); mon.fillHisto("chhiggseventflowslep", tags, 1, weight);
+				 if(isSingleMu) singlelep_ttbar_selected2_mu_events->Fill(1);
+				 else if (isSingleE) singlelep_ttbar_selected2_el_events->Fill(1);
+			}
+			if(passJetSelection && passMetSelection )                                                     { ctrlCats.push_back ("step3"); mon.fillHisto("xseceventflowslep", tags, 2, weight); mon.fillHisto("chhiggseventflowslep", tags, 2, weight); }
+			if(passJetSelection && passMetSelection && passBtagsSelection )                               { ctrlCats.push_back ("step4"); mon.fillHisto("xseceventflowslep", tags, 3, weight); mon.fillHisto("chhiggseventflowslep", tags, 3, weight); }
+			if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection )           { ctrlCats.push_back ("step5"); mon.fillHisto("xseceventflowslep", tags, 4, weight); mon.fillHisto("chhiggseventflowslep", tags, 4, weight); }
+			if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS ) { ctrlCats.push_back ("step6"); mon.fillHisto("xseceventflowslep", tags, 5, weight); mon.fillHisto("chhiggseventflowslep", tags, 5, weight);
+				 if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
+				 else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
+			}
 
-				bool passBtagsSelection_0(selSingleLepBJets.size()==0);
-				bool passBtagsSelection_1(selSingleLepBJets.size()==1);
-				bool passBtagsSelection_2(selSingleLepBJets.size()>1);
 
-																																										{ ctrlCats.push_back("altstep1"); mon.fillHisto("xsecalteventflowslep", tags, 0, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 0, weight); }
-				if(passMetSelection)                                                        { ctrlCats.push_back("altstep2"); mon.fillHisto("xsecalteventflowslep", tags, 1, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 1, weight); }
-				if(passMetSelection && passTauSelection)                                    { ctrlCats.push_back("altstep3"); mon.fillHisto("xsecalteventflowslep", tags, 2, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 2, weight); }
-				if(passMetSelection && passTauSelection && passOS)                          { ctrlCats.push_back("altstep4"); mon.fillHisto("xsecalteventflowslep", tags, 3, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 3, weight); }
-				if(passMetSelection && passTauSelection && passOS && passBtagsSelection_0)  { ctrlCats.push_back("altstep5"); mon.fillHisto("xsecalteventflowslep", tags, 4, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 4, weight); }
-				if(passMetSelection && passTauSelection && passOS && passBtagsSelection_1)  { ctrlCats.push_back("altstep6"); mon.fillHisto("xsecalteventflowslep", tags, 5, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 5, weight); }
-				if(passMetSelection && passTauSelection && passOS && passBtagsSelection_2)  { ctrlCats.push_back("altstep7"); mon.fillHisto("xsecalteventflowslep", tags, 6, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 6, weight); }
+			bool passBtagsSelection_0(selSingleLepBJets.size()==0);
+			bool passBtagsSelection_1(selSingleLepBJets.size()==1);
+			bool passBtagsSelection_2(selSingleLepBJets.size()>1);
 
-				// Fill the control plots
-				for(size_t k=0; k<ctrlCats.size(); ++k){
-					
-					TString icat(ctrlCats[k]);
-					mon.fillHisto(icat+"nvtxraw",    tags, nGoodPV,                            rawWeight);
-					mon.fillHisto(icat+"nvtx",       tags, nGoodPV,                            weight   );
-					mon.fillHisto(icat+"rho",        tags, rho,                                weight   );
-					mon.fillHisto(icat+"leadpt",     tags, selLeptons[0].pt(),                 weight   );
-					mon.fillHisto(icat+"leadleptonpt",     tags, selLeptons[0].pt(),                 weight   );
-					mon.fillHisto(icat+"trailerpt",  tags, selLeptons[1].pt(),                 weight   );
-					mon.fillHisto(icat+"trailerleptonpt",  tags, selLeptons[1].pt(),                 weight   );
-					mon.fillHisto(icat+"leadleptoneta",    tags, fabs(selLeptons[0].eta()),          weight   );
-					mon.fillHisto(icat+"trailerleptoneta", tags, fabs(selLeptons[1].eta()),          weight   );
-					mon.fillHisto(icat+"ntaus",      tags, ntaus,                              weight   );
-					mon.fillHisto(icat+"met",        tags, met.pt(),                           weight   );
-					mon.fillHisto(icat+"recomet",    tags, recoMET.pt(),                       weight   );
-					if(selSingleLepJets.size()>0){
-						mon.fillHisto(icat+"leadjetpt",      tags, selSingleLepJets[0].pt(),         weight);
-						//mon.fillHisto(icat+"trailerpt",   tags, selLeptons[1].pt(),         weight);
-						mon.fillHisto(icat+"leadjeteta",     tags, fabs (selSingleLepJets[0].eta()), weight);
-						//mon.fillHisto(icat+"trailereta",  tags, fabs (selLeptons[1].eta()), weight);
+																																									{ ctrlCats.push_back("altstep1"); mon.fillHisto("xsecalteventflowslep", tags, 0, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 0, weight); }
+			if(passMetSelection)                                                        { ctrlCats.push_back("altstep2"); mon.fillHisto("xsecalteventflowslep", tags, 1, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 1, weight); }
+			if(passMetSelection && passTauSelection)                                    { ctrlCats.push_back("altstep3"); mon.fillHisto("xsecalteventflowslep", tags, 2, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 2, weight); }
+			if(passMetSelection && passTauSelection && passOS)                          { ctrlCats.push_back("altstep4"); mon.fillHisto("xsecalteventflowslep", tags, 3, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 3, weight); }
+			if(passMetSelection && passTauSelection && passOS && passBtagsSelection_0)  { ctrlCats.push_back("altstep5"); mon.fillHisto("xsecalteventflowslep", tags, 4, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 4, weight); }
+			if(passMetSelection && passTauSelection && passOS && passBtagsSelection_1)  { ctrlCats.push_back("altstep6"); mon.fillHisto("xsecalteventflowslep", tags, 5, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 5, weight); }
+			if(passMetSelection && passTauSelection && passOS && passBtagsSelection_2)  { ctrlCats.push_back("altstep7"); mon.fillHisto("xsecalteventflowslep", tags, 6, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 6, weight); }
+
+			// Fill the control plots
+			for(size_t k=0; k<ctrlCats.size(); ++k)
+				{
+				TString icat(ctrlCats[k]);
+				mon.fillHisto(icat+"nvtxraw",    tags, nGoodPV,                            rawWeight);
+				mon.fillHisto(icat+"nvtx",       tags, nGoodPV,                            weight   );
+				mon.fillHisto(icat+"rho",        tags, rho,                                weight   );
+				mon.fillHisto(icat+"leadpt",     tags, selLeptons[0].pt(),                 weight   );
+				mon.fillHisto(icat+"leadleptonpt",     tags, selLeptons[0].pt(),                 weight   );
+				mon.fillHisto(icat+"trailerpt",  tags, selLeptons[1].pt(),                 weight   );
+				mon.fillHisto(icat+"trailerleptonpt",  tags, selLeptons[1].pt(),                 weight   );
+				mon.fillHisto(icat+"leadleptoneta",    tags, fabs(selLeptons[0].eta()),          weight   );
+				mon.fillHisto(icat+"trailerleptoneta", tags, fabs(selLeptons[1].eta()),          weight   );
+				mon.fillHisto(icat+"ntaus",      tags, ntaus,                              weight   );
+				mon.fillHisto(icat+"met",        tags, met.pt(),                           weight   );
+				mon.fillHisto(icat+"recomet",    tags, recoMET.pt(),                       weight   );
+				if(selSingleLepJets.size()>0)
+					{
+					mon.fillHisto(icat+"leadjetpt",      tags, selSingleLepJets[0].pt(),         weight);
+					//mon.fillHisto(icat+"trailerpt",   tags, selLeptons[1].pt(),         weight);
+					mon.fillHisto(icat+"leadjeteta",     tags, fabs (selSingleLepJets[0].eta()), weight);
+					//mon.fillHisto(icat+"trailereta",  tags, fabs (selLeptons[1].eta()), weight);
 					}
-					if(ntaus > 0){
-						mon.fillHisto (icat+"tauleadpt", tags, selTaus[0].pt(),             weight);
-						mon.fillHisto (icat+"tauleadeta", tags, selTaus[0].eta(),             weight);
+				if(ntaus > 0)
+					{
+					mon.fillHisto (icat+"tauleadpt", tags, selTaus[0].pt(),             weight);
+					mon.fillHisto (icat+"tauleadeta", tags, selTaus[0].eta(),             weight);
 					}
-				 
-					
-					mon.fillHisto(icat+"nbtags", tags, selSingleLepBJets.size(), weight);
-					mon.fillHisto(icat+"njets",  tags, selSingleLepJets.size(), weight);
-					// dilepton only           mon.fillHisto (icat+"zmass", tags, dileptonSystem.mass(),           weight);
-					// dilepton only           mon.fillHisto (icat+"zy",    tags, fabs(dileptonSystem.Rapidity()), weight);
-					// dilepton only           mon.fillHisto (icat+"zpt",   tags, dileptonSystem.pt(),             weight);
-					// dilepton only           //these two are used to reweight photon -> Z, the 3rd is a control
-					// dilepton only           mon.fillHisto (icat+"qt",    tags, dileptonSystem.pt(),             weight, true);
-					// dilepton only           ///     mon.fillHisto("qtraw",    tags, dileptonSystem.pt(),weight/triggerPrescale,true); 
-					
-					for (size_t ijet = 0; ijet < selSingleLepJets.size(); ijet++)
+
+
+				mon.fillHisto(icat+"nbtags", tags, selSingleLepBJets.size(), weight);
+				mon.fillHisto(icat+"njets",  tags, selSingleLepJets.size(), weight);
+				// dilepton only           mon.fillHisto (icat+"zmass", tags, dileptonSystem.mass(),           weight);
+				// dilepton only           mon.fillHisto (icat+"zy",    tags, fabs(dileptonSystem.Rapidity()), weight);
+				// dilepton only           mon.fillHisto (icat+"zpt",   tags, dileptonSystem.pt(),             weight);
+				// dilepton only           //these two are used to reweight photon -> Z, the 3rd is a control
+				// dilepton only           mon.fillHisto (icat+"qt",    tags, dileptonSystem.pt(),             weight, true);
+				// dilepton only           ///     mon.fillHisto("qtraw",    tags, dileptonSystem.pt(),weight/triggerPrescale,true); 
+
+				for (size_t ijet = 0; ijet < selSingleLepJets.size(); ijet++)
+					{
+					if (selSingleLepJets[ijet].pt() < 30 || fabs (selSingleLepJets[ijet].eta()) > 2.5) continue;
+
+					double csv (selSingleLepJets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
+					mon.fillHisto ("csv", tags, csv, weight);
+					if (!isMC) continue;
+					int flavId = selSingleLepJets[ijet].partonFlavour();
+					TString jetFlav ("others");
+					if (abs (flavId) == 5) jetFlav = "b";
+					else if (abs (flavId) == 4) jetFlav = "c";
+					mon.fillHisto ("csv" + jetFlav, tags, csv, weight);
+					}
+				}
+
+			//
+			// HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
+			//
+			//Fill histogram for posterior optimization, or for control regions
+
+			if(passTauSelection && passOS)
+				{
+				for (size_t ivar = 0; ivar < nSystVars; ivar++)
+					{
+					TString var(systVars[ivar]);
+
+					double iweight = weight;       //nominal
+
+					//energy scale/resolution
+					bool varyJesUp    (systVars[ivar] == "_jesup"   );
+					bool varyJesDown  (systVars[ivar] == "_jesdown" );
+					bool varyJerUp    (systVars[ivar] == "_jerup"   );
+					bool varyJerDown  (systVars[ivar] == "_jerdown" );
+					bool varyUmetUp   (systVars[ivar] == "_umetup"  );
+					bool varyUmetDown (systVars[ivar] == "_umetdown");
+					bool varyLesUp    (systVars[ivar] == "_lesup"   );
+					bool varyLesDown  (systVars[ivar] == "_lesdown" );
+
+					//pileup variations
+					if (systVars[ivar] == "_puup")   iweight *= TotalWeight_plus;
+					if (systVars[ivar] == "_pudown") iweight *= TotalWeight_minus;
+
+					//btag
+					bool varyBtagUp (systVars[ivar] == "_btagup");
+					bool varyBtagDown (systVars[ivar] == "_btagdown");
+
+					//Here were the Q^2 variations on VV pT spectum
+
+					//recompute MET/MT if JES/JER was varied
+					LorentzVector newMET = mets[0].p4();
+
+					if(varyJesUp)    newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp);
+					if(varyJesDown)  newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown);
+					if(varyJerUp)    newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp);
+					if(varyJerDown)  newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown);
+					if(varyUmetUp)   newMET = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnUp);
+					if(varyUmetDown) newMET = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnDown);
+					//if(varyLesUp)    newMET = met[utils::cmssw::LESUP]; //FIXME  must vary all leptons separately: MuonEnUp/MuonEnDown/ElectronEnUp/ElectronEnDown/TauEnUp/TauEnDown
+					//if(varyLesDown)  newMET = met[utils::cmssw::LESDOWN];
+
+					pat::JetCollection finalSelSingleLepJets;
+					pat::JetCollection finalSelSingleLepBJets;
+					bool passLocalBveto (true);///passBtags);
+					for (size_t ijet = 0; ijet < jets.size(); ijet++)
 						{
-							if (selSingleLepJets[ijet].pt() < 30 || fabs (selSingleLepJets[ijet].eta()) > 2.5) continue;
-							
-							double csv (selSingleLepJets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
-							mon.fillHisto ("csv", tags, csv, weight);
-							if (!isMC) continue;
-							int flavId = selSingleLepJets[ijet].partonFlavour();
-							TString jetFlav ("others");
-							if (abs (flavId) == 5) jetFlav = "b";
-							else if (abs (flavId) == 4) jetFlav = "c";
-							mon.fillHisto ("csv" + jetFlav, tags, csv, weight);
-						}
-				}
-				//
-				// HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
-				//
-				//Fill histogram for posterior optimization, or for control regions
-				
-				if(passTauSelection && passOS)
-					{
-						for (size_t ivar = 0; ivar < nSystVars; ivar++)
+						pat::Jet jet = jets[ijet];
+						double eta = jet.eta();
+						double pt = jet.pt();
+						if(isMC)
 							{
-								TString var(systVars[ivar]);
-								
-								double iweight = weight;       //nominal
-								
-								//energy scale/resolution
-								bool varyJesUp    (systVars[ivar] == "_jesup"   );
-								bool varyJesDown  (systVars[ivar] == "_jesdown" );
-								bool varyJerUp    (systVars[ivar] == "_jerup"   );
-								bool varyJerDown  (systVars[ivar] == "_jerdown" );
-								bool varyUmetUp   (systVars[ivar] == "_umetup"  );
-								bool varyUmetDown (systVars[ivar] == "_umetdown");
-								bool varyLesUp    (systVars[ivar] == "_lesup"   );
-								bool varyLesDown  (systVars[ivar] == "_lesdown" );
-								
-								//pileup variations
-								if (systVars[ivar] == "_puup")   iweight *= TotalWeight_plus;
-								if (systVars[ivar] == "_pudown") iweight *= TotalWeight_minus;
+							std::vector<double> varPt = utils::cmssw::smearJES(pt, eta, totalJESUnc);
+							if(varyJesUp)   pt = varPt[0];
+							if(varyJesDown) pt = varPt[1];
+							//  smearJER(float pt, float eta, float genPt)
+							//  float newJERSF(1.0);
+							//if(isMC)
+							//  {
+							//    const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
+							//    std::vector<float> smearJER=utils::cmssw::smearJER(jets[ijet].pt(),jets[ijet].eta(),genJet.pt());
+							//    newJERSF=smearJER[0]/jets[ijet].pt();
+							//    rawJet *= newJERSF;
+							// if(varyJerUp)    pt=jets[ijet].getVal("jerup");
+							// if(varyJerDown)  pt=jets[ijet].getVal("jerdown");
+							}
 
-								//btag
-								bool varyBtagUp (systVars[ivar] == "_btagup");
-								bool varyBtagDown (systVars[ivar] == "_btagdown");
-								
-								//Here were the Q^2 variations on VV pT spectum
-								
-								//recompute MET/MT if JES/JER was varied
-								LorentzVector newMET = mets[0].p4();
-								
-								if(varyJesUp)    newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp);
-								if(varyJesDown)  newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown);
-								if(varyJerUp)    newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp);
-								if(varyJerDown)  newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown);
-								if(varyUmetUp)   newMET = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnUp);
-								if(varyUmetDown) newMET = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnDown);
-								//if(varyLesUp)    newMET = met[utils::cmssw::LESUP]; //FIXME  must vary all leptons separately: MuonEnUp/MuonEnDown/ElectronEnUp/ElectronEnDown/TauEnUp/TauEnDown
-								//if(varyLesDown)  newMET = met[utils::cmssw::LESDOWN];
-								
-								pat::JetCollection finalSelSingleLepJets;
-								pat::JetCollection finalSelSingleLepBJets;
-								bool passLocalBveto (true);///passBtags);
-								for (size_t ijet = 0; ijet < jets.size(); ijet++)
-									{
-										pat::Jet jet = jets[ijet];
-										double eta = jet.eta();
-										double pt = jet.pt();
-										if(isMC)
-											{
-												std::vector<double> varPt = utils::cmssw::smearJES(pt, eta, totalJESUnc);
-												if(varyJesUp)   pt = varPt[0];
-												if(varyJesDown) pt = varPt[1];
-												//  smearJER(float pt, float eta, float genPt)
-												//  float newJERSF(1.0);
-												//if(isMC)
-												//  {
-												//    const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
-												//    std::vector<float> smearJER=utils::cmssw::smearJER(jets[ijet].pt(),jets[ijet].eta(),genJet.pt());
-												//    newJERSF=smearJER[0]/jets[ijet].pt();
-												//    rawJet *= newJERSF;
-												// if(varyJerUp)    pt=jets[ijet].getVal("jerup");
-												// if(varyJerDown)  pt=jets[ijet].getVal("jerdown");
-											}
-										
-										if (pt < 30 || fabs(eta) > 2.5) continue;
-										bool passPFloose = passPFJetID("Loose", jet); 
-										if (!passPFloose) continue;
-										
-										//cross-clean with selected leptons and photons
-										double minDRlj (9999.), minDRlg (9999.);
-										for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
-											minDRlj = TMath::Min (minDRlj, reco::deltaR (jet.p4(), selLeptons[ilep].p4()));
-										// don't want to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-										// don't want to mess with photon ID //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet].p4(),selPhotons[ipho].p4()) );
-										double minDRtj(9999.);
-										for(size_t itau=0; itau<selTaus.size(); ++itau)
-											{
-												minDRtj = TMath::Min(minDRtj, reco::deltaR(jet, selTaus[itau]));
-											}
-										if (minDRlj < 0.4 || minDRtj<0.4 ) continue;
-										
-										finalSelSingleLepJets.push_back(jet);
-										
-										int flavId(jet.partonFlavour());
-										bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
+						if (pt < 30 || fabs(eta) > 2.5) continue;
+						bool passPFloose = passPFJetID("Loose", jet); 
+						if (!passPFloose) continue;
 
-				if (varyBtagUp)
-					{
-					if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb + sfbunc,     beff);
-					else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5 + 2*sfbunc, beff);
-					else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl + sflunc,     leff);
+						//cross-clean with selected leptons and photons
+						double minDRlj (9999.), minDRlg (9999.);
+						for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
+							minDRlj = TMath::Min (minDRlj, reco::deltaR (jet.p4(), selLeptons[ilep].p4()));
+						// don't want to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
+						// don't want to mess with photon ID //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet].p4(),selPhotons[ipho].p4()) );
+						double minDRtj(9999.);
+						for(size_t itau=0; itau<selTaus.size(); ++itau)
+							{
+							minDRtj = TMath::Min(minDRtj, reco::deltaR(jet, selTaus[itau]));
+							}
+						if (minDRlj < 0.4 || minDRtj<0.4 ) continue;
+
+						finalSelSingleLepJets.push_back(jet);
+
+						int flavId(jet.partonFlavour());
+						bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
+
+						if (varyBtagUp)
+							{
+							if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb + sfbunc,     beff);
+							else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5 + 2*sfbunc, beff);
+							else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl + sflunc,     leff);
+							}
+						else if (varyBtagDown)
+							{
+							if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb - sfbunc,     beff);
+							else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5 - 2*sfbunc, beff);
+							else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl - sflunc,     leff);
+							}
+						if(hasCSVtag) finalSelSingleLepBJets.push_back(jet);
+						}
+
+					std::sort(finalSelSingleLepJets.begin(),  finalSelSingleLepJets.end(),  utils::sort_CandidatesByPt);
+					std::sort(finalSelSingleLepBJets.begin(), finalSelSingleLepBJets.end(), utils::sort_CandidatesByPt);
+
+					bool passFinalJetSelection(finalSelSingleLepJets.size()>1);
+					bool passFinalMetSelection(newMET.pt()>40.);
+					bool passFinalBtagsSelection(finalSelSingleLepBJets.size()>0);
+
+					if(!passFinalJetSelection || !passFinalMetSelection || !passFinalBtagsSelection) continue;
+					// Here fill stat plots
+					pat::Tau & tau = selTaus[0];
+					reco::CandidatePtr leadChargedHadron = tau.leadChargedHadrCand();
+					double tauR(leadChargedHadron->p() / tau.energy());  // Sic. It is momentum, not transverse momentum
+					double tauY(2*leadChargedHadron->pt()/tau.et() - 1);
+					//Y= [ p_T^{trk} - (E_T - p_T^{trk} ]/E_T  = 2p_T^{trk}/E_T  - 1 . Which is practically Y = 2R' -1
+
+
+					LorentzVector mutauSystem (0, 0, 0, 0);
+					mutauSystem += selLeptons[0].p4();
+					mutauSystem += tau.p4();
+
+					mon.fillHisto("finalnbjets"         +var, tags, finalSelSingleLepBJets.size(), iweight);
+					mon.fillHisto("finaltaur"           +var, tags, tauR, iweight);
+					mon.fillHisto("finaltaupolarization"+var, tags, tauY, iweight);
+					mon.fillHisto("finaldphilepmet"     +var, tags, fabs(deltaPhi(newMET.phi(), selLeptons[0].phi())), iweight);
+					mon.fillHisto("finaldphitaumet"     +var, tags, fabs(deltaPhi(newMET.phi(), selTaus[0].phi())), iweight);
+					mon.fillHisto("finaldphileptau"     +var, tags, fabs(deltaPhi(selLeptons[0].phi(), selTaus[0].phi())), iweight);
+					mon.fillHisto("finaltaupt"          +var, tags, selTaus[0].pt(), iweight);
+					mon.fillHisto("finalmutaumass"      +var, tags, mutauSystem.mass(), iweight);
+
+					if(saveSummaryTree)
+						{
+						TDirectory* cwd = gDirectory;
+						summaryFile->cd();
+						summaryTree->Fill();
+						cwd->cd();
+						}
 					}
-				else if (varyBtagDown)
-					{
-					if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb - sfbunc,     beff);
-					else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5 - 2*sfbunc, beff);
-					else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl - sflunc,     leff);
-					}
-				if(hasCSVtag) finalSelSingleLepBJets.push_back(jet);
-				}
-				std::sort(finalSelSingleLepJets.begin(),  finalSelSingleLepJets.end(),  utils::sort_CandidatesByPt);
-				std::sort(finalSelSingleLepBJets.begin(), finalSelSingleLepBJets.end(), utils::sort_CandidatesByPt);
-
-				bool passFinalJetSelection(finalSelSingleLepJets.size()>1);
-				bool passFinalMetSelection(newMET.pt()>40.);
-				bool passFinalBtagsSelection(finalSelSingleLepBJets.size()>0);
-
-				if(!passFinalJetSelection || !passFinalMetSelection || !passFinalBtagsSelection) continue;
-				// Here fill stat plots
-				pat::Tau & tau = selTaus[0];
-				reco::CandidatePtr leadChargedHadron = tau.leadChargedHadrCand();
-				double tauR(leadChargedHadron->p() / tau.energy());  // Sic. It is momentum, not transverse momentum
-				double tauY(2*leadChargedHadron->pt()/tau.et() - 1);
-				//                Y= [ p_T^{trk} - (E_T - p_T^{trk} ]/E_T  = 2p_T^{trk}/E_T  - 1 . Which is practically Y = 2R' -1
-
-
-				LorentzVector mutauSystem (0, 0, 0, 0);
-				mutauSystem += selLeptons[0].p4();
-				mutauSystem += tau.p4();
-								
-				mon.fillHisto("finalnbjets"         +var, tags, finalSelSingleLepBJets.size(), iweight);
-				mon.fillHisto("finaltaur"           +var, tags, tauR, iweight);
-				mon.fillHisto("finaltaupolarization"+var, tags, tauY, iweight);
-				mon.fillHisto("finaldphilepmet"     +var, tags, fabs(deltaPhi(newMET.phi(), selLeptons[0].phi())), iweight);
-				mon.fillHisto("finaldphitaumet"     +var, tags, fabs(deltaPhi(newMET.phi(), selTaus[0].phi())), iweight);
-				mon.fillHisto("finaldphileptau"     +var, tags, fabs(deltaPhi(selLeptons[0].phi(), selTaus[0].phi())), iweight);
-				mon.fillHisto("finaltaupt"          +var, tags, selTaus[0].pt(), iweight);
-				mon.fillHisto("finalmutaumass"      +var, tags, mutauSystem.mass(), iweight);
-
-				if(saveSummaryTree)
-					{
-					TDirectory* cwd = gDirectory;
-					summaryFile->cd();
-					summaryTree->Fill();
-					cwd->cd();
-					}
-				}
-			} // End stat analysis
+				} // End stat analysis
 
 			*/
 			} // End single lepton full analysis
