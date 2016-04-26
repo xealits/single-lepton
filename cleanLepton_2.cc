@@ -516,7 +516,6 @@ int main (int argc, char *argv[])
   beff = 0.559;
 
 
-  // --------------------------------------- electron IDs, main and veto
   TString
     electronIdMainTag("cutBasedElectronID-Spring15-25ns-V1-standalone-loose"),
     electronIdVetoTag("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
@@ -561,104 +560,9 @@ int main (int argc, char *argv[])
         metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt");
   }
 
-  // --------------------------------------- jet energy scale and uncertainties 
-  TString jecDir = runProcess.getParameter < std::string > ("jecDir");
-  gSystem->ExpandPathName (jecDir);
-  FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector (jecDir, isMC);
-  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK4PFchs.txt").Data ());
-
-
-  //##############################################
-  //######## GET READY FOR THE EVENT LOOP ########
-  //##############################################
-  size_t totalEntries(0);
-
-  TFile* summaryFile = NULL;
-  TTree* summaryTree = NULL; //ev->;
-  
-  
-  //MC normalization (to 1/pb)
-  if(debug) cout << "DEBUG: xsec: " << xsec << endl;
-
-  // --------------------------------------- muon energy scale and uncertainties
-  MuScleFitCorrector *muCor = NULL; // FIXME: MuScle fit corrections for 13 TeV not available yet (more Zs are needed) getMuonCorrector (jecDir, dtag);
-
-  // --------------------------------------- lepton efficiencies
-  LeptonEfficiencySF lepEff;
-  
-  // --------------------------------------- b-tagging 
-  // Prescriptions taken from: https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation74X
-
-  // b-tagging working points for 50ns 
-  //   (pfC|c)ombinedInclusiveSecondaryVertexV2BJetTags
-  //      v2CSVv2L 0.605
-  //      v2CSVv2M 0.890
-  //      v2CSVv2T 0.970
-  double
-    btagLoose(0.605),
-    btagMedium(0.890),
-    btagTight(0.970);
-
-  //b-tagging: scale factors
-  //beff and leff must be derived from the MC sample using the discriminator vs flavor
-  //the scale factors are taken as average numbers from the pT dependent curves see:
-  //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC_EPS13_prescript
-  BTagSFUtil btsfutil;
-  double beff(0.68), sfb(0.99), sfbunc(0.015);
-  double leff(0.13), sfl(1.05), sflunc(0.12);
-
-
-  // Btag SF and eff from https://indico.cern.ch/event/437675/#preview:1629681
-  sfb = 0.861;
-  // sbbunc =;
-  beff = 0.559;
-
-
-  TString
-    electronIdMainTag("cutBasedElectronID-Spring15-25ns-V1-standalone-loose"),
-    electronIdVetoTag("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
-
-  // --------------------------------------- pileup weighting
-  edm::LumiReWeighting * LumiWeights = NULL;
-  utils::cmssw::PuShifter_t PuShifters;
-  double PUNorm[] = { 1, 1, 1 };
-  if (isMC)
-    {
-      std::vector<double> dataPileupDistributionDouble = runProcess.getParameter < std::vector < double >>("datapileup");
-      std::vector<float> dataPileupDistribution;
-      for (unsigned int i = 0; i < dataPileupDistributionDouble.size (); i++)
-        {
-          dataPileupDistribution.push_back (dataPileupDistributionDouble[i]);
-        }
-      std::vector<float> mcPileupDistribution;
-      utils::getMCPileupDistributionFromMiniAOD(urls, dataPileupDistribution.size (), mcPileupDistribution);
-      while(mcPileupDistribution.size() < dataPileupDistribution.size()) mcPileupDistribution.push_back(0.0);
-      while(mcPileupDistribution.size() > dataPileupDistribution.size()) dataPileupDistribution.push_back(0.0);
-      gROOT->cd ();             //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
-      LumiWeights = new edm::LumiReWeighting(mcPileupDistribution, dataPileupDistribution);
-      PuShifters = utils::cmssw::getPUshifters(dataPileupDistribution, 0.05);
-      utils::getPileupNormalization(mcPileupDistribution, PUNorm, LumiWeights, PuShifters);
-    }
-  
-  gROOT->cd ();                 //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
-  
-  //higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
- 
-
-  // --------------------------------------- hardcoded MET filter
-  patUtils::MetFilter metFiler;
-  if(!isMC) { 
-        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_csc2015.txt");
-        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_ecalscn1043093.txt");
-        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_csc2015.txt");
-        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_ecalscn1043093.txt");
-        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_csc2015.txt");
-        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt");
-  }
-
 
   // ----------------------------
-  // So here we got all the parameters from the config and the hardcoded ones
+  // So here we got all the parameters from the config
 
 
 
@@ -679,6 +583,9 @@ int main (int argc, char *argv[])
   TH1D* singlelep_ttbar_selected_el_events = (TH1D*) new TH1D("singlelep_ttbar_sele_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
   TH1D* singlelep_ttbar_selected2_mu_events = (TH1D*) new TH1D("singlelep_ttbar_sele2_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
   TH1D* singlelep_ttbar_selected2_el_events = (TH1D*) new TH1D("singlelep_ttbar_sele2_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
+
+  TH1D* singlelep_ttbar_maraselected_mu_events = (TH1D*) new TH1D("singlelep_ttbar_marasele_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
+  TH1D* singlelep_ttbar_maraselected_el_events = (TH1D*) new TH1D("singlelep_ttbar_marasele_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
 
 /*
   // ensure proper normalization
@@ -944,10 +851,6 @@ int main (int argc, char *argv[])
         edm::EventBase const & myEvent = ev;
 
 
-        // --------------------------------------------- several procedures follow
-        // --------------------------------------- I guess the following is weights for MC
-        // however, they are mixed and not clear -- TODO: figure out how all these weighting is done
-
         // ---------------------------------- these are weird NLO -1 weights
         // TODO: figure out what are these really
         // Take into account the negative weights from some NLO generators (otherwise some phase space will be double counted)
@@ -985,10 +888,10 @@ int main (int argc, char *argv[])
         std::vector < TString > tags (1, "all"); // Inclusive inclusiveness
         
         //
-        // --------------------------------------------- DERIVE WEIGHTS TO APPLY TO SAMPLE
+        // DERIVE WEIGHTS TO APPLY TO SAMPLE
         //
         
-        // ---------------------------- initialize pileup weight
+        // ---------------------------------- pileup weight
         double weight           (1.0);
         double rawWeight        (1.0);
         double TotalWeight_plus (1.0);
@@ -1005,11 +908,11 @@ int main (int argc, char *argv[])
         //     if (lheEPHandle->hepeup ().NUP > 5)  continue;
         //     mon.fillHisto ("nupfilt", "", lheEPHandle->hepeup ().NUP, 1);
         //   }
-
-        // HT-binned samples stitching:
-        // https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples
+        
+        // HT-binned samples stitching: https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples
         // -------------- it should be the creeppish merging of LO and NLO sets
         // not used now at all?
+        /*
         if(isV0JetsMC)
           {
             // access generator level HT               
@@ -1033,7 +936,8 @@ int main (int argc, char *argv[])
             // now one 1 NLO dataset is used for both WJets and DYJets
             // thus it is commented out here
             //weightGen *=   patUtils::getHTScaleFactor(dtag, lheHt);
-          }         
+          }
+        */
 
         weight *= weightGen;
         rawWeight *=weightGen;
@@ -1046,7 +950,7 @@ int main (int argc, char *argv[])
         fwlite::Handle<reco::VertexCollection> vtxHandle;
         vtxHandle.getByLabel(ev, "offlineSlimmedPrimaryVertices");
         if(vtxHandle.isValid() ) vtx = *vtxHandle;
-        // --------------------------------------------- Clean up vertex collection
+        // Clean up vertex collection
         for(size_t ivtx=0; ivtx<vtx.size(); ++ivtx)
           {
             if(utils::isGoodVertex(vtx[ivtx]))
@@ -1081,24 +985,23 @@ int main (int argc, char *argv[])
             TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
           }
 
-
-        /*
         // --------------------- save distributions of weights
-        mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
-        mon.fillHisto("initNorm", tags, 1., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
-        mon.fillHisto("initNorm", tags, 2., puWeight);
-        mon.fillHisto("initNorm", tags, 3., TotalWeight_plus);
-        mon.fillHisto("initNorm", tags, 4., TotalWeight_minus);
-        */
-
-
+        // TODO: make separate weight and number of events distrobutions
+        //mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
+        //mon.fillHisto("initNorm", tags, 1., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
+        //mon.fillHisto("initNorm", tags, 2., puWeight);
+        //mon.fillHisto("initNorm", tags, 3., TotalWeight_plus);
+        //mon.fillHisto("initNorm", tags, 4., TotalWeight_minus);
+        // probably, these are N events after re-forming MC
+        
         // ############################################   EVENT LOOP STARTS
 
         // ---------------------- Orthogonalize Run2015B PromptReco+17Jul15 mix
-        if(isRun2015B)
-          {
-            if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
-          }
+        // let's remove Run2015B
+        // if(isRun2015B)
+          // {
+            // if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
+          // }
         
         // -------------------------------------------------- Skip bad lumi
         if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
@@ -1119,8 +1022,7 @@ int main (int argc, char *argv[])
           return 0;
         }
 
-        // Need either to simulate the HLT
-        // (https://twiki.cern.ch/twiki/bin/view/CMS/TopTrigger#How_to_easily_emulate_HLT_paths) to match triggers.
+        // Need either to simulate the HLT (https://twiki.cern.ch/twiki/bin/view/CMS/TopTrigger#How_to_easily_emulate_HLT_paths) to match triggers.
         bool eTrigger    (
                           isMC ? 
                           utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")
@@ -1130,25 +1032,29 @@ int main (int argc, char *argv[])
         bool muTrigger   (
                           utils::passTriggerPatterns (tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*")
                           );
+        // Mara's triggers:
+        //bool eTrigger (isMC? utils::passTriggerPatterns (tr, "HLT_Ele23_WPLoose_Gsf*")
+        //               :
+        //               utils::passTriggerPatterns (tr, "HLT_Ele23_WPLoose_Gsf*));
+        //bool muTrigger (utils::passTriggerPatterns (tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*"));
+        // POG recommendation:
+        //bool muTrigger (utils::passTriggerPatterns (tr, "HLT_IsoMu18_v*"));
 
-/*
-        if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, nGoodPV, 1.);
-        if(!isMC && eTrigger)  mon.fillHisto("nvtx_singlee_pileup",  tags, nGoodPV, 1.);
-*/
-
+        // if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, nGoodPV, 1.);
+        // if(!isMC && eTrigger)  mon.fillHisto("nvtx_singlee_pileup",  tags, nGoodPV, 1.);
+        
         if(filterOnlySINGLEMU) {                    eTrigger = false; }
         if(filterOnlySINGLEE)  { muTrigger = false;                   }
         
         if (!(eTrigger || muTrigger)) continue;   //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
 
         // ------------------------------------------------- Apply MET filters
-        if( !isMC && !metFiler.passMetFilter( ev)) continue;
+        if( !isMC && !metFiler.passMetFilter( ev, isPromptReco)) continue;
  
 
 
         //------------------------- load all the objects we will need to access
 
-        // TODO: what are these?
         double rho = 0;
         fwlite::Handle<double> rhoHandle;
         rhoHandle.getByLabel(ev, "fixedGridRhoFastjetAll");
@@ -1170,6 +1076,7 @@ int main (int argc, char *argv[])
         //float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
         // TODO: what is this??
         // there was some wague answer from Pietro.....
+        /*
         if(isMC)
           {
             // FIXME: Considering add support for different generators (based on PYTHIA6) for comparison.
@@ -1248,7 +1155,8 @@ int main (int argc, char *argv[])
             if(mctruthmode==6 && (!isHad || !hasTop )) continue;
             
           }
-        if(debug) cout << "DEBUG: Event was not stopped by the ttbar sample categorization (either success, or it was not ttbar)" << endl;      
+        if(debug) cout << "DEBUG: Event was not stopped by the ttbar sample categorization (either success, or it was not ttbar)" << endl;
+        */
         
         // FIXME: Top pT reweighting to be reactivated as soon as corrections are released
         //      if(tPt>0 && tbarPt>0 && topPtWgt)
@@ -1260,8 +1168,8 @@ int main (int argc, char *argv[])
         //        }
 
 
-        // ----------------------------- initialize particle collections
-
+        // ------------------------------------ actual particles?
+        
         pat::MuonCollection muons;
         fwlite::Handle<pat::MuonCollection> muonsHandle;
         muonsHandle.getByLabel(ev, "slimmedMuons");
@@ -1300,7 +1208,7 @@ int main (int argc, char *argv[])
         fwlite::Handle<pat::TauCollection> tausHandle;
         tausHandle.getByLabel(ev, "slimmedTaus");
         if(tausHandle.isValid() ) taus = *tausHandle;
-
+        
 
         //
         //
@@ -1311,11 +1219,10 @@ int main (int argc, char *argv[])
         
         
         //
-        // --------------------------------------------- LEPTON ANALYSIS
+        // LEPTON ANALYSIS
         //
         
         // ------------------------------------ merging electrons and muons
-
         std::vector<patUtils::GenericLepton> leptons;
         for(size_t l=0; l<electrons.size(); ++l) leptons.push_back(patUtils::GenericLepton (electrons[l] ));
         for(size_t l=0; l<muons.size(); ++l)     leptons.push_back(patUtils::GenericLepton (muons[l]     ));
@@ -1438,7 +1345,7 @@ int main (int argc, char *argv[])
       std::sort (selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
       
       //
-      // --------------------------------------------- JET/MET ANALYSIS
+      // ----------------------------------------------- JET/MET ANALYSIS
       //
       if(debug) cout << "Now update Jet Energy Corrections" << endl;
       //add scale/resolution uncertainties and propagate to the MET      
@@ -1448,8 +1355,7 @@ int main (int argc, char *argv[])
       met=newMet[utils::cmssw::METvariations::NOMINAL];
       if(debug) cout << "Jet Energy Corrections updated" << endl;
       
-      // --------------------------------------------- Select the jets.
-      // I need different collections because of tau cleaning, but this is needed only for the single lepton channels, so the tau cleaning is performed later.
+      // Select the jets. I need different collections because of tau cleaning, but this is needed only for the single lepton channels, so the tau cleaning is performed later.
       pat::JetCollection
         selJets, selBJets;
       double mindphijmet (9999.);
@@ -1530,8 +1436,7 @@ int main (int argc, char *argv[])
       if(selLeptons.size()>0)
         slepId=selLeptons[0].pdgId();
       
-      // --------------------------------------------- Event classification.
-      // Single lepton triggers are used for offline selection of dilepton events. The "else if"s guarantee orthogonality
+      // Event classification. Single lepton triggers are used for offline selection of dilepton events. The "else if"s guarantee orthogonality
       bool 
         isSingleMu(false),
         isSingleE(false),
@@ -1593,11 +1498,10 @@ int main (int argc, char *argv[])
 
         std::sort(selSingleLepJets.begin(),  selSingleLepJets.end(),  utils::sort_CandidatesByPt);
         std::sort(selSingleLepBJets.begin(), selSingleLepBJets.end(), utils::sort_CandidatesByPt);
-        
-/*
-        mon.fillHisto("nvtx_pileup", tags, nGoodPV, weight);
-*/
-        
+
+
+        // mon.fillHisto("nvtx_pileup", tags, nGoodPV, weight);
+
         if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
         //int id (abs (selLeptons[0].pdgId()));
         //weight *= isMC ? lepEff.getLeptonEfficiency(selLeptons[0].pt(), selLeptons[0].eta(), id, id == 11 ? "loose" : "tight").first : 1.0;        
@@ -1608,38 +1512,49 @@ int main (int argc, char *argv[])
         bool passBtagsSelection(selSingleLepBJets.size()>0);
         bool passTauSelection(selTaus.size()==1);
         bool passOS(selTaus.size()>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0);
-        
+
+        if (passJetSelection)
+        {
+          if(isSingleMu) singlelep_ttbar_selected2_mu_events->Fill(1);
+          else if (isSingleE) singlelep_ttbar_selected2_el_events->Fill(1);
+        }
+
+        if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS )
+        {
+          if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
+          else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
+        }
+
+
+        // Mara's selection booleans
+        bool passMaraJetSelection(selSingleLepJets.size()>3); // 4 jets
+        bool passMaraBtagsSelection(selSingleLepBJets.size()>1); // 2 b-tag
+        bool passMaraLeptonSelection( selLeptons.size()>0 ); // 1 lepton
+
+        if(passMaraJetSelection && passMaraBtagsSelection && passMaraLeptonSelection)
+        {
+          if(isSingleMu) singlelep_ttbar_maraselected_mu_events->Fill(1);
+          else if (isSingleE) singlelep_ttbar_maraselected_el_events->Fill(1);
+        }
+
+        /* // old crap with smartmon:
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats;
         ctrlCats.clear ();
-
-/*
                                                                                                       { ctrlCats.push_back ("step1"); mon.fillHisto("xseceventflowslep", tags, 0, weight); mon.fillHisto("chhiggseventflowslep", tags, 0, weight); }
         if(passJetSelection   )                                                                       { ctrlCats.push_back ("step2"); mon.fillHisto("xseceventflowslep", tags, 1, weight); mon.fillHisto("chhiggseventflowslep", tags, 1, weight);
-           if(isSingleMu) singlelep_ttbar_selected2_mu_events->Fill(1);
-           else if (isSingleE) singlelep_ttbar_selected2_el_events->Fill(1);
         }
         if(passJetSelection && passMetSelection )                                                     { ctrlCats.push_back ("step3"); mon.fillHisto("xseceventflowslep", tags, 2, weight); mon.fillHisto("chhiggseventflowslep", tags, 2, weight); }
         if(passJetSelection && passMetSelection && passBtagsSelection )                               { ctrlCats.push_back ("step4"); mon.fillHisto("xseceventflowslep", tags, 3, weight); mon.fillHisto("chhiggseventflowslep", tags, 3, weight); }
         if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection )           { ctrlCats.push_back ("step5"); mon.fillHisto("xseceventflowslep", tags, 4, weight); mon.fillHisto("chhiggseventflowslep", tags, 4, weight); }
         if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS ) { ctrlCats.push_back ("step6"); mon.fillHisto("xseceventflowslep", tags, 5, weight); mon.fillHisto("chhiggseventflowslep", tags, 5, weight);
-           if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
-           else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
         }
-*/
-
-        if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS ) {
-          //ctrlCats.push_back ("step6"); mon.fillHisto("xseceventflowslep", tags, 5, weight); mon.fillHisto("chhiggseventflowslep", tags, 5, weight);
-           if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
-           else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
-        }
-
+        
 
         bool passBtagsSelection_0(selSingleLepBJets.size()==0);
         bool passBtagsSelection_1(selSingleLepBJets.size()==1);
         bool passBtagsSelection_2(selSingleLepBJets.size()>1);
 
-/*
                                                                                     { ctrlCats.push_back("altstep1"); mon.fillHisto("xsecalteventflowslep", tags, 0, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 0, weight); }
         if(passMetSelection)                                                        { ctrlCats.push_back("altstep2"); mon.fillHisto("xsecalteventflowslep", tags, 1, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 1, weight); }
         if(passMetSelection && passTauSelection)                                    { ctrlCats.push_back("altstep3"); mon.fillHisto("xsecalteventflowslep", tags, 2, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 2, weight); }
@@ -1647,9 +1562,7 @@ int main (int argc, char *argv[])
         if(passMetSelection && passTauSelection && passOS && passBtagsSelection_0)  { ctrlCats.push_back("altstep5"); mon.fillHisto("xsecalteventflowslep", tags, 4, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 4, weight); }
         if(passMetSelection && passTauSelection && passOS && passBtagsSelection_1)  { ctrlCats.push_back("altstep6"); mon.fillHisto("xsecalteventflowslep", tags, 5, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 5, weight); }
         if(passMetSelection && passTauSelection && passOS && passBtagsSelection_2)  { ctrlCats.push_back("altstep7"); mon.fillHisto("xsecalteventflowslep", tags, 6, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 6, weight); }
-*/
 
-/*
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
           
@@ -1701,8 +1614,6 @@ int main (int argc, char *argv[])
               mon.fillHisto ("csv" + jetFlav, tags, csv, weight);
             }
         }
-*/
-
         //
         // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
         //
@@ -1829,8 +1740,7 @@ int main (int argc, char *argv[])
                 LorentzVector mutauSystem (0, 0, 0, 0);
                 mutauSystem += selLeptons[0].p4();
                 mutauSystem += tau.p4();
-
-/*
+                
                 mon.fillHisto("finalnbjets"         +var, tags, finalSelSingleLepBJets.size(), iweight);
                 mon.fillHisto("finaltaur"           +var, tags, tauR, iweight);
                 mon.fillHisto("finaltaupolarization"+var, tags, tauY, iweight);
@@ -1839,7 +1749,6 @@ int main (int argc, char *argv[])
                 mon.fillHisto("finaldphileptau"     +var, tags, fabs(deltaPhi(selLeptons[0].phi(), selTaus[0].phi())), iweight);
                 mon.fillHisto("finaltaupt"          +var, tags, selTaus[0].pt(), iweight);
                 mon.fillHisto("finalmutaumass"      +var, tags, mutauSystem.mass(), iweight);
-*/
 
                 if(saveSummaryTree)
                   {
@@ -1851,6 +1760,7 @@ int main (int argc, char *argv[])
               }
           } // End stat analysis
         
+      */
       } // End single lepton full analysis
 
       } // End single file event loop 
@@ -1888,6 +1798,9 @@ int main (int argc, char *argv[])
   singlelep_ttbar_selected_el_events->Write();
   singlelep_ttbar_selected2_mu_events->Write();
   singlelep_ttbar_selected2_el_events->Write();
+
+  singlelep_ttbar_maraselected_mu_events->Write();
+  singlelep_ttbar_maraselected_el_events->Write();
 
   ofile->Close();
 
