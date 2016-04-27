@@ -838,7 +838,8 @@ for(size_t f=0; f<urls.size();++f){
 		if (num_inters>99) num_inters = 99;
 		//if (num_inters<0)  num_inters = 0;
 		if (weightGen<0) negative_event_nvtx[num_inters] += 1;
-                else positive_event_nvtx[num_inters] += 1;
+		else positive_event_nvtx[num_inters] += 1;
+		// TODO: save weighted distributions as well?
 
 		// TODO: make separate weight and number of events distrobutions
 		//mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
