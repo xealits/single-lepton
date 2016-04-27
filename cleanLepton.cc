@@ -818,8 +818,8 @@ for(size_t f=0; f<urls.size();++f){
 			//num_inters = 1;
 			// debugging:
 			//fprintf(csv_out, "\npu-num-inters:%d\n", num_inters);
-			// FIXME: hopefully the length of the array is enough. Increse to 100 bins.
-			if (num_inters<40) {puWeight = direct_pileup_reweight[num_inters];}
+			// now the array is 100 bins long (supposed to be):
+			if (num_inters<100) {puWeight = direct_pileup_reweight[num_inters];}
 			else {puWeight = 1.5e-16;}
 			weight *= puWeight;//Weight; //* puWeight;
 			// implement error margins of pile-up
