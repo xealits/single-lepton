@@ -634,10 +634,14 @@ for(size_t f=0; f<urls.size();++f){
 	double marasel_sum_weights = 0;
 	unsigned int negative_event_nvtx[100];
 	unsigned int positive_event_nvtx[100];
+	double negative_event_pernvtx_weight[100];
+	double positive_event_pernvtx_weight[100];
 	for (int i=0; i<100; i++)
 		{
 		negative_event_nvtx[i] = 0;
 		positive_event_nvtx[i] = 0;
+		negative_event_pernvtx_weight[i] = 0;
+		positive_event_pernvtx_weight[i] = 0;
 		}
 
 	int treeStep (ev.size()/50);
@@ -837,9 +841,16 @@ for(size_t f=0; f<urls.size();++f){
 		//num_inters = 1;
 		if (num_inters>99) num_inters = 99;
 		//if (num_inters<0)  num_inters = 0;
-		if (weightGen<0) negative_event_nvtx[num_inters] += 1;
-		else positive_event_nvtx[num_inters] += 1;
-		// TODO: save weighted distributions as well?
+		if (weightGen<0)
+			{
+			negative_event_nvtx[num_inters] += 1;
+			negative_event_pernvtx_weight[num_inters] += weight;
+			}
+                else
+			{
+			positive_event_nvtx[num_inters] += 1;
+			positive_event_pernvtx_weight[num_inters] += weight;
+			}
 
 		// TODO: make separate weight and number of events distrobutions
 		//mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
@@ -1781,6 +1792,15 @@ for(size_t f=0; f<urls.size();++f){
 	fprintf(csv_out, "positive_events_nvtx:");
         for (int i=0; i<100; i++)
                 { fprintf(csv_out, "%d,", positive_event_nvtx[i]); }
+	fprintf(csv_out, "\n");
+
+	fprintf(csv_out, "negative_event_pernvtx_weight:");
+        for (int i=0; i<100; i++)
+                { fprintf(csv_out, "%g,", negative_event_pernvtx_weight[i]); }
+	fprintf(csv_out, "\n");
+	fprintf(csv_out, "positive_event_pernvtx_weight:");
+        for (int i=0; i<100; i++)
+                { fprintf(csv_out, "%g,", positive_event_pernvtx_weight[i]); }
 	fprintf(csv_out, "\n");
 	printf("\n");
 
