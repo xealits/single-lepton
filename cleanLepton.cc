@@ -1079,7 +1079,7 @@ for(size_t f=0; f<urls.size();++f)
 					//if(hasLeptonAsDaughter(gen[igen]))
 					//	cout << "Tau " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
 					}
-						
+
 				if(debug && (ngenTausStatus3==1 && ngenLeptonsStatus3==1 )  ) cout << "Event: " << iev << ". Leptons: " << ngenLeptonsStatus3 << ". Leptons notaus: " << ngenLeptonsNonTauSonsStatus3 << ". Taus: " << ngenTausStatus3 << ". Quarks: " << ngenQuarksStatus3 << endl;
 						
 				// Dileptons:
@@ -1116,7 +1116,7 @@ for(size_t f=0; f<urls.size();++f)
 
 		if(debug) cout << "DEBUG: Event was not stopped by the ttbar sample categorization (either success, or it was not ttbar)" << endl;
 */
-				
+
 		// FIXME: Top pT reweighting to be reactivated as soon as corrections are released
 		// if(tPt>0 && tbarPt>0 && topPtWgt)
 		//   {
