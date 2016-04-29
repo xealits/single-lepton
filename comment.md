@@ -157,17 +157,19 @@ channel selection & selection steps.
 The steps of Pietro's code with changes.
 
 * MC shaping to data properties
-  + weird NLO -1 weights -> **0 leave as is**
-  + *removed*[creeppish merging of LO and NLO sets (HT binning)]
+  + NLO -1 weights -> **0 leave as is**
+  + *removed* merging-stitching of LO and NLO sets (HT/phat binning)
   + count N good verteces (used as pile-up in data?)
-  + Apply pileup reweighting -> *manual reweight Y*
+  + Apply pileup reweighting -> **manual reweight**
   + save distributions of weights -> **1**
-  + ?(all weight is applied -- there should be an overall integral here)
 * basic event selection
   + remove Run2015B[Orthogonalize Run2015B PromptReco+17Jul15 mix] **0**
   + Skip bad lumi -> **check for lumicert for new datasets 1**
-  + apply trigger -> new triggers **1**
-  + Apply MET filters -> **bug in metFilter, running bug-less * cleanLepton**
+  + apply trigger -> **new triggers**
+    muons --- `HLT_IsoMu20` or `HLT_IsoTkMu20` for data and MC
+    (to update to `HLT_IsoMu18)
+    electrons --- `HLT_Ele23_WPLoose_Gsf` for data and MC
+  + Apply MET filters -> **bug in metFilter, disabled**
 * load all the objects we will need to access
 * "TODO: what is this??" thing -> **0 commented out**
    (it should be the electron-muon split)
@@ -177,42 +179,54 @@ The steps of Pietro's code with changes.
   - jets,
   - gammas,
   - METs (collection of MET -- there are different MET algorithms!)
-     **check which MET we use**
+     **we use the 0th MET**
   - taus
 * merging electrons and muons
 * leptons selection
   + apply muon corrections, muCor
-  + kinematics, main and veto -> new threshold **1**
-  + lepton IDs and isolation -> new isolation **1**
-* select the taus -> **0 ?? leave as is**
+  + kinematics, good and veto, lepton IDs and isolation -> **new isolation**
+    - muons:
+      good: P_T > 26, eta < 2.4, I_rel,PF < 0.15, Tight muon ID
+      veto: P_T > 10, eta < 2.5, I_rel,PF < 0.25 (and loose ID?)
+    - electrons:
+      good: P_T > 30, eta < 2.4, I_rel,PF < 0.15, Electron MVATrigV0 > 0.9
+      veto: P_T > 15, eta < 2.5, I_rel,PF < 0.25, MVATrigV0 > 0
+* select the taus -> **0 leave as is**
   + tau pt, eta
   + overlap with selLeptons
   + 4 tau ID discriminators (**check if up to date**)
   + pixel hits cut (*"should be available out of the mox in new MINIAOD"* - ?)
-* JET/MET ANALYSIS -> **0 ?? leave as is** -> update b-jets
+* JET/MET ANALYSIS -> **0 leave as is** -> update b-jets **what else to Mara?**
   + it only selects jets, some of them -- as b-tagged
   + only 1 parameter is obtained from MET
   + updateJEC
   + newMet = getMETvariations
   + selecting jets:
-      pt, eta, **mctruth (?)**, cross-clean with l/gamma dR, jet ID
+      - pt, eta, *mctruth (?), cross-clean with l/gamma dR, jet ID
+      - Mara's analysis:
+        P_T > 30, eta < 2.4, lepton-jet dR > 0.4,
+        b-tagging --- CSVv2 > 0.8 (medium WP) (pfCombinedInclusiveSecondaryVertexV2BJetTags --- ?),
+        jet ID is loose
   + dphijmet = fabs( deltaPhi(curr_jet, met) ) -- and save the min
   + b-tagging via hasCSVtag
 * ASSIGN CHANNEL
 * Single lepton full analysis
   + Clean jet collection from selected taus
   + only selections and filling histograms
-  + 6 selection steps -> **0 + Mara's selection: 1 lepton, 4 jets, 2btags**
+  + our selection -> **0 + Mara's selection: 1 lepton, 4 jets, 2btags**
 
 -- more steps?
 
 Other Mara's steps:
 
-* in MC normalization
+* MC normalization
   + MC weights twiki/bin/viewauth/CMS/LHEReaderCMSSW#How_to_use_weights
   + pile-up weighting -- **the same now**
   + Muon eff, isolation, ID, trigger (??)
   + b-tagging efficiencies twiki/bin/viewauth/CMS/BtagRecommendation76X
 * different datasets (**switched to them**)
 
+What about trigger efficiency? Do data and MC really match above the threshold?
+
+Are electron and muon datasets of the same run orthogonal?
 

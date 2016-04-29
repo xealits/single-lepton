@@ -846,7 +846,7 @@ for(size_t f=0; f<urls.size();++f){
 			negative_event_nvtx[num_inters] += 1;
 			negative_event_pernvtx_weight[num_inters] += weight;
 			}
-                else
+		else
 			{
 			positive_event_nvtx[num_inters] += 1;
 			positive_event_pernvtx_weight[num_inters] += weight;
