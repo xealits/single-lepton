@@ -192,8 +192,8 @@ The steps of Pietro's code with changes.
       good: P_T > 30, eta < 2.4, I_rel,PF < 0.15, Electron MVATrigV0 > 0.9
       veto: P_T > 15, eta < 2.5, I_rel,PF < 0.25, MVATrigV0 > 0
 * select the taus -> **0 leave as is**
-  + tau pt, eta
-  + overlap with selLeptons
+  + tau pt > 20, eta < 2.3
+  + overlap with selLeptons dR > 0.4
   + 4 tau ID discriminators (**check if up to date**)
   + pixel hits cut (*"should be available out of the mox in new MINIAOD"* - ?)
 * JET/MET ANALYSIS -> **0 leave as is** -> update b-jets **what else to Mara?**
@@ -203,6 +203,10 @@ The steps of Pietro's code with changes.
   + newMet = getMETvariations
   + selecting jets:
       - pt, eta, *mctruth (?), cross-clean with l/gamma dR, jet ID
+        our selection:
+        we do a loose selection on kinematics, then cross-clean leptons, **taus**,
+        and do the tighter final kinematics, ID and cleanup selection,
+        which is the same as Mara's except 0.89 b-tag working point and **tau** cleanup
       - Mara's analysis:
         P_T > 30, eta < 2.4, lepton-jet dR > 0.4,
         b-tagging --- CSVv2 > 0.8 (medium WP) (pfCombinedInclusiveSecondaryVertexV2BJetTags --- ?),
