@@ -158,7 +158,7 @@ The steps of Pietro's code with changes.
 
 * MC shaping to data properties
   + NLO -1 weights -> **0 leave as is**
-  + *removed* merging-stitching of LO and NLO sets (HT/phat binning)
+  + *removed* merging-stitching of LO and NLO sets (via HT/phat binning)
   + count N good verteces (used as pile-up in data?)
   + Apply pileup reweighting -> **manual reweight**
   + save distributions of weights -> **1**
@@ -171,7 +171,7 @@ The steps of Pietro's code with changes.
     muons --- `HLT_IsoMu20` or `HLT_IsoTkMu20` for data and MC
     (to update to `HLT_IsoMu18)
     electrons --- `HLT_Ele23_WPLoose_Gsf` for data and MC
-  + Apply MET filters -> **bug in metFilter, disabled**
+  + *Apply MET filters* -> **bug in metFilter, disabled**
 * load all the objects we will need to access
 * "TODO: what is this??" thing -> **0 commented out**
    (it should be the electron-muon split)
@@ -236,7 +236,7 @@ The steps of Pietro's code with changes.
   + pixel hits cut (*"should be available out of the mox in new MINIAOD"* --- ?):
     basically now we check if tau.signalChargedHadrCands
     have at least 1 element with numberOfPixelHits > 0
-* JET/MET ANALYSIS -> **0 leave as is** -> update b-jets **what else to Mara?**
+* JET/MET ANALYSIS -> **0 leave as is** -> update b-jets working point to 0.8
   + it only selects jets, some of them -- as b-tagged
   + only 1 parameter is obtained from MET
   + updateJEC
@@ -244,7 +244,7 @@ The steps of Pietro's code with changes.
   + selecting jets:
       - pt, eta, *mctruth (?), cross-clean with l/gamma dR, jet ID
         our selection:
-        we do a loose selection on kinematics, then cross-clean leptons, **taus**,
+        we do a loose selection on kinematics, then cross-clean with leptons and **taus**,
         and do the tighter final kinematics, ID and cleanup selection,
         which is the same as Mara's except 0.89 b-tag working point and **tau** cleanup
       - Mara's analysis:
@@ -255,7 +255,7 @@ The steps of Pietro's code with changes.
   + b-tagging via hasCSVtag
 * ASSIGN CHANNEL
 * Single lepton full analysis
-  + Clean jet collection from selected taus
+  + *Clean jet collection from selected taus* moved it up to common selection
   + only selections and filling histograms
   + our selection -> **0 + Mara's selection: 1 lepton, 4 jets, 2btags**
 
@@ -268,7 +268,7 @@ Other Mara's steps:
   + pile-up weighting -- **the same now**
   + Muon eff, isolation, ID, trigger (??)
   + b-tagging efficiencies twiki/bin/viewauth/CMS/BtagRecommendation76X
-* different datasets (**switched to them**)
+* different datasets (**using them now**)
 
 What about trigger efficiency? Do data and MC really match above the threshold?
 
