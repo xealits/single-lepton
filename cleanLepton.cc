@@ -488,6 +488,10 @@ MuScleFitCorrector *muCor = NULL; // FIXME: MuScle fit corrections for 13 TeV no
 LeptonEfficiencySF lepEff;
 	
 // --------------------------------------- b-tagging 
+// TODO: move all these numbers to where they are applied??
+// btagMedium is used twice in the code
+// merge those tagging procedures and eliminated the variable?
+
 // Prescriptions taken from: https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation74X
 
 // b-tagging working points for 50ns 
@@ -496,9 +500,9 @@ LeptonEfficiencySF lepEff;
 //      v2CSVv2M 0.890
 //      v2CSVv2T 0.970
 double
-	btagLoose(0.605),
-	btagMedium(0.890),
-	btagTight(0.970);
+	btagLoose(0.605), // not used anywhere in the code
+	btagMedium(0.890), // used twice in the code
+	btagTight(0.970); // not used anywhere in the code
 
 //b-tagging: scale factors
 //beff and leff must be derived from the MC sample using the discriminator vs flavor
@@ -513,9 +517,12 @@ sfb = 0.861;
 // sbbunc =;
 beff = 0.559;
 
-TString
-	electronIdMainTag("cutBasedElectronID-Spring15-25ns-V1-standalone-loose"),
-	electronIdVetoTag("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
+
+// ------------------------------ electron IDs
+// does not appear anywhere in the code at all
+// TString
+	// electronIdMainTag("cutBasedElectronID-Spring15-25ns-V1-standalone-loose"),
+	// electronIdVetoTag("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
 
 // --------------------------------------- pileup weighting
 /*
@@ -524,20 +531,20 @@ utils::cmssw::PuShifter_t PuShifters;
 double PUNorm[] = { 1, 1, 1 };
 if (isMC)
 	{
-		std::vector<double> dataPileupDistributionDouble = runProcess.getParameter < std::vector < double >>("datapileup");
-		std::vector<float> dataPileupDistribution;
-		for (unsigned int i = 0; i < dataPileupDistributionDouble.size (); i++)
-			{
-				dataPileupDistribution.push_back (dataPileupDistributionDouble[i]);
-			}
-		std::vector<float> mcPileupDistribution;
-		utils::getMCPileupDistributionFromMiniAOD(urls, dataPileupDistribution.size (), mcPileupDistribution);
-		while(mcPileupDistribution.size() < dataPileupDistribution.size()) mcPileupDistribution.push_back(0.0);
-		while(mcPileupDistribution.size() > dataPileupDistribution.size()) dataPileupDistribution.push_back(0.0);
-		gROOT->cd ();             //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
-		LumiWeights = new edm::LumiReWeighting(mcPileupDistribution, dataPileupDistribution);
-		PuShifters = utils::cmssw::getPUshifters(dataPileupDistribution, 0.05);
-		utils::getPileupNormalization(mcPileupDistribution, PUNorm, LumiWeights, PuShifters);
+	std::vector<double> dataPileupDistributionDouble = runProcess.getParameter < std::vector < double >>("datapileup");
+	std::vector<float> dataPileupDistribution;
+	for (unsigned int i = 0; i < dataPileupDistributionDouble.size (); i++)
+		{
+		dataPileupDistribution.push_back (dataPileupDistributionDouble[i]);
+		}
+	std::vector<float> mcPileupDistribution;
+	utils::getMCPileupDistributionFromMiniAOD(urls, dataPileupDistribution.size (), mcPileupDistribution);
+	while(mcPileupDistribution.size() < dataPileupDistribution.size()) mcPileupDistribution.push_back(0.0);
+	while(mcPileupDistribution.size() > dataPileupDistribution.size()) dataPileupDistribution.push_back(0.0);
+	gROOT->cd ();             //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
+	LumiWeights = new edm::LumiReWeighting(mcPileupDistribution, dataPileupDistribution);
+	PuShifters = utils::cmssw::getPUshifters(dataPileupDistribution, 0.05);
+	utils::getPileupNormalization(mcPileupDistribution, PUNorm, LumiWeights, PuShifters);
 	}
  */
  // pile-up is done directly with direct_pileup_reweight
@@ -724,11 +731,11 @@ for(size_t f=0; f<urls.size();++f){
 		// This must remain deactivated if you use HT-binned samples (it was for pthat-binned samples)
 		// if (isV0JetsMC)
 		//   {
-		//     fwlite::Handle < LHEEventProduct > lheEPHandle;
-		//     lheEPHandle.getByLabel (ev, "externalLHEProducer");
-		//     mon.fillHisto ("nup", "", lheEPHandle->hepeup ().NUP, 1);
-		//     if (lheEPHandle->hepeup ().NUP > 5)  continue;
-		//     mon.fillHisto ("nupfilt", "", lheEPHandle->hepeup ().NUP, 1);
+		//   fwlite::Handle < LHEEventProduct > lheEPHandle;
+		//   lheEPHandle.getByLabel (ev, "externalLHEProducer");
+		//   mon.fillHisto ("nup", "", lheEPHandle->hepeup ().NUP, 1);
+		//   if (lheEPHandle->hepeup ().NUP > 5)  continue;
+		//   mon.fillHisto ("nupfilt", "", lheEPHandle->hepeup ().NUP, 1);
 		//   }
 
 		// HT-binned samples stitching: https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples
@@ -746,10 +753,12 @@ for(size_t f=0; f<urls.size();++f){
 			std::vector<lhef::HEPEUP::FiveVector> lheParticles = lheEvent.PUP;
 			double lheHt = 0.;
 			size_t numParticles = lheParticles.size();
-			for ( size_t idxParticle = 0; idxParticle < numParticles; ++idxParticle ) {
+			for ( size_t idxParticle = 0; idxParticle < numParticles; ++idxParticle )
+				{
 				int absPdgId = TMath::Abs(lheEvent.IDUP[idxParticle]);
 				int status = lheEvent.ISTUP[idxParticle];
-				if ( status == 1 && ((absPdgId >= 1 && absPdgId <= 6) || absPdgId == 21) ) {
+				if ( status == 1 && ((absPdgId >= 1 && absPdgId <= 6) || absPdgId == 21) )
+					{
 					// quarks and gluons
 					lheHt += TMath::Sqrt(TMath::Power(lheParticles[idxParticle][0], 2.) + TMath::Power(lheParticles[idxParticle][1], 2.));
 					// first entry is px, second py
@@ -914,7 +923,8 @@ for(size_t f=0; f<urls.size();++f){
 		
 		if (!(eTrigger || muTrigger)) continue;   //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
 
-		if(debug){
+		if(debug)
+			{
 			cout << "Set triggers" << endl;
 			}
 
@@ -922,7 +932,8 @@ for(size_t f=0; f<urls.size();++f){
 		//if( !isMC && !metFiler.passMetFilter( ev, isPromptReco)) continue;
 		
 
-		if(debug){
+		if(debug)
+			{
 			cout << "met filters are commented out here" << endl;
 			}
 
@@ -956,7 +967,8 @@ for(size_t f=0; f<urls.size();++f){
 		if(isMC)
 			{
 			// FIXME: Considering add support for different generators (based on PYTHIA6) for comparison.
-			for(size_t igen=0; igen<gen.size(); igen++){
+			for(size_t igen=0; igen<gen.size(); igen++)
+				{
 				// FIXME: Should pass to the new status scheme from: https://github.com/cms-sw/cmssw/pull/7791
 				// ////// if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
 
@@ -968,7 +980,8 @@ for(size_t f=0; f<urls.size();++f){
 
 				////// if(absid==6 && gen[igen].isHardProcess()){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
 				if(absid==6 && gen[igen].status()==62)
-					{ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass). Josh says 62 (last in chain)
+					{
+					// particles of the hardest subprocess 22 : intermediate (intended to have preserved mass). Josh says 62 (last in chain)
 					hasTop=true;
 					// FIXME: Top pT reweighting. 13 TeV values not propagated yet, so not using.
 					//if(isTTbarMC){
@@ -991,58 +1004,61 @@ for(size_t f=0; f<urls.size();++f){
 					if(!hasTauAsMother(gen[igen]))
 						ngenLeptonsNonTauSonsStatus3++;
 					}
-					if(absid==15 && gen[igen].status()==2 )
-						{
-						ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
-						//    if(hasLeptonAsDaughter(gen[igen])) cout << "Tau " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
-						}
-					if (absid<=5) ngenQuarksStatus3++;
+
+				if(absid==15 && gen[igen].status()==2 )
+					{
+					ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
+					//if(hasLeptonAsDaughter(gen[igen]))
+					//	cout << "Tau " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
 					}
-						
-				if(debug && (ngenTausStatus3==1 && ngenLeptonsStatus3==1 )  ) cout << "Event: " << iev << ". Leptons: " << ngenLeptonsStatus3 << ". Leptons notaus: " << ngenLeptonsNonTauSonsStatus3 << ". Taus: " << ngenTausStatus3 << ". Quarks: " << ngenQuarksStatus3 << endl;
-						
-				// Dileptons:
-				//    ttbar dileptons --> 1
-				//    ttbar other     --> 2
-				if(mctruthmode==1 && (ngenLeptonsStatus3+ngenTausStatus3!=2 || !hasTop )) continue;
-				if(mctruthmode==2 && (ngenLeptonsStatus3+ngenTausStatus3==2 || !hasTop )) continue;
-				// FIXME: port tt+bb splitting from 8 TeV (check the reference to the matched genjet)
-				//if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
-				//if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
-				//if(mcTruthMode==3 && (ngenBQuarksStatus23<4 || !hasTop))                           continue;
-						
-				// lepton-tau:
-				//    ttbar ltau      --> 3
-				//    ttbar dileptons --> 4
-				//    ttbar ljets     --> 5
-				//    ttbar hadrons   --> 6
-				if(mctruthmode==3 && (ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1  || !hasTop )) continue; // This is bugged, as it is obvious
-				if(mctruthmode==4 && (ngenLeptonsNonTauSonsStatus3!=2                        || !hasTop )) continue;
-				if(mctruthmode==5 && (ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1        || !hasTop )) continue;
-						
-				bool isHad(false);
-				if (
-					(ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1 ) &&
-					(ngenLeptonsNonTauSonsStatus3!=2                      ) &&
-					(ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1      ) 
-					)
-				isHad=true;
-					
-				//if(mctruthmode==6 && (ngenLeptonsNonTauSonsStatus3!=0 || ngenTausStatus3!=0  || !hasTop )) continue;
-				if(mctruthmode==6 && (!isHad || !hasTop )) continue;
-						
+				if (absid<=5) ngenQuarksStatus3++;
+				}
+
+			if(debug && (ngenTausStatus3==1 && ngenLeptonsStatus3==1 )  )
+				cout << "Event: " << iev << ". Leptons: " << ngenLeptonsStatus3 << ". Leptons notaus: " << ngenLeptonsNonTauSonsStatus3 << ". Taus: " << ngenTausStatus3 << ". Quarks: " << ngenQuarksStatus3 << endl;
+
+			// Dileptons:
+			//    ttbar dileptons --> 1
+			//    ttbar other     --> 2
+			if(mctruthmode==1 && (ngenLeptonsStatus3+ngenTausStatus3!=2 || !hasTop )) continue;
+			if(mctruthmode==2 && (ngenLeptonsStatus3+ngenTausStatus3==2 || !hasTop )) continue;
+			// FIXME: port tt+bb splitting from 8 TeV (check the reference to the matched genjet)
+			//if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
+			//if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
+			//if(mcTruthMode==3 && (ngenBQuarksStatus23<4 || !hasTop))                           continue;
+
+			// lepton-tau:
+			//    ttbar ltau      --> 3
+			//    ttbar dileptons --> 4
+			//    ttbar ljets     --> 5
+			//    ttbar hadrons   --> 6
+			if(mctruthmode==3 && (ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1  || !hasTop )) continue; // This is bugged, as it is obvious
+			if(mctruthmode==4 && (ngenLeptonsNonTauSonsStatus3!=2                        || !hasTop )) continue;
+			if(mctruthmode==5 && (ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1        || !hasTop )) continue;
+
+			bool isHad(false);
+			if (
+				(ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1 ) &&
+				(ngenLeptonsNonTauSonsStatus3!=2                      ) &&
+				(ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1      ) 
+				)
+			isHad=true;
+
+			//if(mctruthmode==6 && (ngenLeptonsNonTauSonsStatus3!=0 || ngenTausStatus3!=0  || !hasTop )) continue;
+			if(mctruthmode==6 && (!isHad || !hasTop )) continue;
+
 			}
 
 		if(debug) cout << "DEBUG: Event was not stopped by the ttbar sample categorization (either success, or it was not ttbar)" << endl;
 		*/
-				
+
 		// FIXME: Top pT reweighting to be reactivated as soon as corrections are released
 		// if(tPt>0 && tbarPt>0 && topPtWgt)
 		//   {
-		//     topPtWgt->computeWeight(tPt,tbarPt);
-		//     topPtWgt->getEventWeight(wgtTopPt, wgtTopPtUp, wgtTopPtDown);
-		//     wgtTopPtUp /= wgtTopPt;
-		//     wgtTopPtDown /= wgtTopPt;
+		//   topPtWgt->computeWeight(tPt,tbarPt);
+		//   topPtWgt->getEventWeight(wgtTopPt, wgtTopPtUp, wgtTopPtDown);
+		//   wgtTopPtUp /= wgtTopPt;
+		//   wgtTopPtDown /= wgtTopPt;
 		//   }
 
 
