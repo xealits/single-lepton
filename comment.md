@@ -243,6 +243,10 @@ The steps of Pietro's code with changes.
   + newMet = getMETvariations
   + selecting jets:
       - pt, eta, *mctruth (?), cross-clean with l/gamma dR, jet ID
+        our selection:
+        we do a loose selection on kinematics, then cross-clean leptons, **taus**,
+        and do the tighter final kinematics, ID and cleanup selection,
+        which is the same as Mara's except 0.89 b-tag working point and **tau** cleanup
       - Mara's analysis:
         P_T > 30, eta < 2.4, lepton-jet dR > 0.4,
         b-tagging --- CSVv2 > 0.8 (medium WP) (pfCombinedInclusiveSecondaryVertexV2BJetTags --- ?),
