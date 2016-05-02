@@ -66,11 +66,11 @@
 using namespace std;
 
 namespace utils
-{
-	namespace cmssw
 	{
-		std::vector<double> smearJER(double pt, double eta, double genPt)
+	namespace cmssw
 		{
+		std::vector<double> smearJER(double pt, double eta, double genPt)
+			{
 			std::vector<double> toReturn(3,pt);
 			if(genPt<=0) return toReturn;
 			
@@ -88,11 +88,11 @@ namespace utils
 			toReturn[1]=TMath::Max(0.,(genPt+(ptSF+ptSF_err)*(pt-genPt)));
 			toReturn[2]=TMath::Max(0.,(genPt+(ptSF-ptSF_err)*(pt-genPt)));
 			return toReturn;
-		}
+			}
 
 		//
 		std::vector<double> smearJES(double pt, double eta, JetCorrectionUncertainty *jecUnc)
-		{
+			{
 			jecUnc->setJetEta(eta);
 			jecUnc->setJetPt(pt);
 			double relShift=fabs(jecUnc->getUncertainty(true));
@@ -100,61 +100,61 @@ namespace utils
 			toRet.push_back((1.0+relShift)*pt);
 			toRet.push_back((1.0-relShift)*pt);
 			return toRet;
-		}
+			}
 		
 		void updateJEC(pat::JetCollection &jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC)
-		{
+			{
 			for(size_t ijet=0; ijet<jets.size(); ijet++)
 				{
-					pat::Jet jet = jets[ijet];
-					//correct JES
-					LorentzVector rawJet = jet.correctedP4("Uncorrected");
-					//double toRawSF=jet.correctedJet("Uncorrected").pt()/jet.pt();
-					//LorentzVector rawJet(jet*toRawSF);
-					jesCor->setJetEta(rawJet.eta());
-					jesCor->setJetPt(rawJet.pt());
-					jesCor->setJetA(jet.jetArea());
-					jesCor->setRho(rho);
-					jesCor->setNPV(nvtx);
-					double newJECSF=jesCor->getCorrection();
-					rawJet *= newJECSF;
+				pat::Jet jet = jets[ijet];
+				//correct JES
+				LorentzVector rawJet = jet.correctedP4("Uncorrected");
+				//double toRawSF=jet.correctedJet("Uncorrected").pt()/jet.pt();
+				//LorentzVector rawJet(jet*toRawSF);
+				jesCor->setJetEta(rawJet.eta());
+				jesCor->setJetPt(rawJet.pt());
+				jesCor->setJetA(jet.jetArea());
+				jesCor->setRho(rho);
+				jesCor->setNPV(nvtx);
+				double newJECSF=jesCor->getCorrection();
+				rawJet *= newJECSF;
+				//jet.SetPxPyPzE(rawJet.px(),rawJet.py(),rawJet.pz(),rawJet.energy());
+				jet.setP4(rawJet);
+
+				//smear JER
+				double newJERSF(1.0);
+				if(isMC)
+					{
+					const reco::GenJet* genJet=jet.genJet();
+					double genjetpt( genJet ? genJet->pt(): 0.);
+					std::vector<double> smearJER=utils::cmssw::smearJER(jet.pt(),jet.eta(),genjetpt);
+					newJERSF=smearJER[0]/jet.pt();
+					rawJet *= newJERSF;
 					//jet.SetPxPyPzE(rawJet.px(),rawJet.py(),rawJet.pz(),rawJet.energy());
 					jet.setP4(rawJet);
-
-					//smear JER
-					double newJERSF(1.0);
-					if(isMC)
-						{
-							const reco::GenJet* genJet=jet.genJet();
-							double genjetpt( genJet ? genJet->pt(): 0.);
-							std::vector<double> smearJER=utils::cmssw::smearJER(jet.pt(),jet.eta(),genjetpt);
-							newJERSF=smearJER[0]/jet.pt();
-							rawJet *= newJERSF;
-							//jet.SetPxPyPzE(rawJet.px(),rawJet.py(),rawJet.pz(),rawJet.energy());
-							jet.setP4(rawJet);
-							// FIXME: change the way this is stored (to not storing it)
-							// //set the JER up/down alternatives 
-							// jets[ijet].setVal("jerup",   smearJER[1] );
-							// jets[ijet].setVal("jerdown", smearJER[2] );
-						}
-			
 					// FIXME: change the way this is stored (to not storing it)
-					////set the JES up/down pT alternatives
-					//std::vector<float> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
-					//jets[ijet].setVal("jesup",    ptUnc[0] );
-					//jets[ijet].setVal("jesdown",  ptUnc[1] );
-			
-					// FIXME: this is not to be re-set. Check that this is a desired non-feature.
-					// i.e. check that the uncorrectedJet remains the same even when the corrected momentum is changed by this routine. 
-					//to get the raw jet again
-					//jets[ijet].setVal("torawsf",1./(newJECSF*newJERSF));  
+					// //set the JER up/down alternatives 
+					// jets[ijet].setVal("jerup",   smearJER[1] );
+					// jets[ijet].setVal("jerdown", smearJER[2] );
+					}
+
+				// FIXME: change the way this is stored (to not storing it)
+				////set the JES up/down pT alternatives
+				//std::vector<float> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
+				//jets[ijet].setVal("jesup",    ptUnc[0] );
+				//jets[ijet].setVal("jesdown",  ptUnc[1] );
+
+				// FIXME: this is not to be re-set. Check that this is a desired non-feature.
+				// i.e. check that the uncorrectedJet remains the same even when the corrected momentum is changed by this routine. 
+				//to get the raw jet again
+				//jets[ijet].setVal("torawsf",1./(newJECSF*newJERSF));  
 				}
-		}
+			}
 
 		enum METvariations { NOMINAL, JERUP, JERDOWN, JESUP, JESDOWN, UMETUP, UMETDOWN, LESUP, LESDOWN };    
-		//
+
 		std::vector<LorentzVector> getMETvariations(LorentzVector &rawMETP4, pat::JetCollection &jets, std::vector<patUtils::GenericLepton> &leptons,bool isMC)
-		{
+			{
 			std::vector<LorentzVector> newMetsP4(9,rawMETP4);
 			if(!isMC) return newMetsP4;
 			
@@ -162,62 +162,62 @@ namespace utils
 			//recompute the clustered and unclustered fluxes with energy variations
 			for(size_t ivar=1; ivar<=8; ivar++)
 				{
-					
-					//leptonic flux
-					LorentzVector leptonFlux(nullP4), lepDiff(nullP4);
-					for(size_t ilep=0; ilep<leptons.size(); ilep++) {
-						LorentzVector lepton = leptons[ilep].p4();
-						double varSign( (ivar==LESUP ? 1.0 : (ivar==LESDOWN ? -1.0 : 0.0) ) );
-						int id( abs(leptons[ilep].pdgId()) );
-						double sf(1.0);
-						if(id==13) sf=(1.0+varSign*0.01);
-						if(id==11) {
-							if(fabs(leptons[ilep].eta())<1.442) sf=(1.0+varSign*0.02);
-							else                                sf=(1.0-varSign*0.05);
+				//leptonic flux
+				LorentzVector leptonFlux(nullP4), lepDiff(nullP4);
+				for(size_t ilep=0; ilep<leptons.size(); ilep++)
+					{
+					LorentzVector lepton = leptons[ilep].p4();
+					double varSign( (ivar==LESUP ? 1.0 : (ivar==LESDOWN ? -1.0 : 0.0) ) );
+					int id( abs(leptons[ilep].pdgId()) );
+					double sf(1.0);
+					if(id==13) sf=(1.0+varSign*0.01);
+					if(id==11)
+						{
+						if(fabs(leptons[ilep].eta())<1.442) sf=(1.0+varSign*0.02);
+						else                                sf=(1.0-varSign*0.05);
 						}
-						leptonFlux += lepton;
-						lepDiff += (sf-1)*lepton;
+					leptonFlux += lepton;
+					lepDiff += (sf-1)*lepton;
 					}
 			
-					//clustered flux
-					LorentzVector jetDiff(nullP4), clusteredFlux(nullP4);
-					for(size_t ijet=0; ijet<jets.size(); ijet++)
-						{
-							if(jets[ijet].pt()==0) continue;
-							double jetsf(1.0);
-							// FIXME: change the way this is stored (to not storing it)              
-							/// if(ivar==JERUP)   jetsf=jets[ijet].getVal("jerup")/jets[ijet].pt();
-							/// if(ivar==JERDOWN) jetsf=jets[ijet].getVal("jerdown")/jets[ijet].pt();
-							/// if(ivar==JESUP)   jetsf=jets[ijet].getVal("jesup")/jets[ijet].pt();
-							/// if(ivar==JESDOWN) jetsf=jets[ijet].getVal("jesdown")/jets[ijet].pt();
-							//LorentzVector newJet( jets[ijet] ); newJet *= jetsf;
-							LorentzVector newJet = jets[ijet].p4(); newJet *= jetsf;
-							jetDiff       += (newJet-jets[ijet].p4());
-							clusteredFlux += jets[ijet].p4();
-						}
-					LorentzVector iMet=rawMETP4-jetDiff-lepDiff;
+				//clustered flux
+				LorentzVector jetDiff(nullP4), clusteredFlux(nullP4);
+				for(size_t ijet=0; ijet<jets.size(); ijet++)
+					{
+					if(jets[ijet].pt()==0) continue;
+					double jetsf(1.0);
+					// FIXME: change the way this is stored (to not storing it)              
+					/// if(ivar==JERUP)   jetsf=jets[ijet].getVal("jerup")/jets[ijet].pt();
+					/// if(ivar==JERDOWN) jetsf=jets[ijet].getVal("jerdown")/jets[ijet].pt();
+					/// if(ivar==JESUP)   jetsf=jets[ijet].getVal("jesup")/jets[ijet].pt();
+					/// if(ivar==JESDOWN) jetsf=jets[ijet].getVal("jesdown")/jets[ijet].pt();
+					//LorentzVector newJet( jets[ijet] ); newJet *= jetsf;
+					LorentzVector newJet = jets[ijet].p4(); newJet *= jetsf;
+					jetDiff       += (newJet-jets[ijet].p4());
+					clusteredFlux += jets[ijet].p4();
+					}
+				LorentzVector iMet=rawMETP4-jetDiff-lepDiff;
 
-					//unclustered flux
-					if(ivar==UMETUP || ivar==UMETDOWN)
-						{
-							LorentzVector unclusteredFlux=-(iMet+clusteredFlux+leptonFlux);
-							unclusteredFlux *= (ivar==UMETUP ? 1.1 : 0.9); 
-							iMet = -clusteredFlux -leptonFlux - unclusteredFlux;
-						}
+				//unclustered flux
+				if(ivar==UMETUP || ivar==UMETDOWN)
+					{
+					LorentzVector unclusteredFlux=-(iMet+clusteredFlux+leptonFlux);
+					unclusteredFlux *= (ivar==UMETUP ? 1.1 : 0.9); 
+					iMet = -clusteredFlux -leptonFlux - unclusteredFlux;
+					}
 			
-					//save new met
-					newMetsP4[ivar]=iMet;
+				//save new met
+				newMetsP4[ivar]=iMet;
 				}
-	
+
 			//all done here
 			return newMetsP4;
+			}
 		}
+	}
 
-}
-}
-bool passPFJetID(std::string label,
-								 pat::Jet jet){
-	
+bool passPFJetID(std::string label, pat::Jet jet)
+{
 	bool passID(false); 
 	
 	float rawJetEn(jet.correctedJet("Uncorrected").energy() );
@@ -233,15 +233,14 @@ bool passPFJetID(std::string label,
 	float muf(jet.muonEnergy()/rawJetEn); 
 
 	// Set of cuts from the POG group: https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
-	if(label=="Loose")
+	if (label=="Loose")
 		passID = ( ((nhf<0.99 && nef<0.99 && nconst>1) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.99) || abs(eta)>2.4)) && abs(eta)<=3.0 );
-	if(label=="Tight")
+	if (label=="Tight")
 		passID = ( ((nhf<0.90 && nef<0.90 && nconst>1) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.90) || abs(eta)>2.4)) && abs(eta) <=3.0);
 	
 	// Should be added the abs(eta)>3.0 part, but we never consider such jets, so... Meh!
 	
 	return passID; 
-	
 }
 
 
@@ -254,15 +253,17 @@ bool hasLeptonAsDaughter(const reco::GenParticle p)
 	// cout << "Particle " << p.pdgId() << " with status " << p.status() << " and " << p.numberOfDaughters() << endl;
 	const reco::Candidate *part = &p;
 	// loop on the daughter particles to check if it has an e/mu as daughter
-	while ((part->numberOfDaughters()>0)) {
+	while ((part->numberOfDaughters()>0))
+		{
 		const reco::Candidate* DaughterPart = part->daughter(0);
 		// cout << "\t\t Daughter: " << DaughterPart->pdgId() << " with status " << DaughterPart->status() << endl;
-		if (fabs(DaughterPart->pdgId()) == 11 || fabs(DaughterPart->pdgId() == 13)){
+		if (fabs(DaughterPart->pdgId()) == 11 || fabs(DaughterPart->pdgId() == 13))
+			{
 			foundL = true;
 			break;
-		}
+			}
 		part=DaughterPart;
-	}
+		}
 	return foundL;
 }
 
@@ -273,32 +274,35 @@ bool hasWasMother(const reco::GenParticle  p)
 	if(p.numberOfMothers()==0) return foundW;
 	const reco::Candidate* part =&p; // (p.mother());
 	// loop on the mother particles to check if it has a W as mother
-	while ((part->numberOfMothers()>0)) {
+	while ((part->numberOfMothers()>0))
+		{
 		const reco::Candidate* MomPart =part->mother();
-		if (fabs(MomPart->pdgId())==24){
+		if (fabs(MomPart->pdgId())==24)
+			{
 			foundW = true;
 			break;
-		}
+			}
 		part = MomPart;
-	}
+		}
 	return foundW;
 }
 
 bool hasTauAsMother(const reco::GenParticle  p)
 {
 	bool foundTau(false);
-	if(p.numberOfMothers()==0) return foundTau;
+	if (p.numberOfMothers()==0) return foundTau;
 	const reco::Candidate* part = &p; //(p.mother());
 	// loop on the mother particles to check if it has a tau as mother
-	while ((part->numberOfMothers()>0)) {
+	while ((part->numberOfMothers()>0))
+		{
 		const reco::Candidate* MomPart =part->mother();
 		if (fabs(MomPart->pdgId())==15)// && MomPart->status() == 2) // Not sure the status check is needed.
 			{
-				foundTau = true;
-				break;
+			foundTau = true;
+			break;
 			}
 		part = MomPart;
-	}
+		}
 	return foundTau;
 }
 
@@ -1202,7 +1206,8 @@ for(size_t f=0; f<urls.size();++f){
 			{
 			pat::Tau& tau = taus[itau];
 			if (tau.pt() < 20. || fabs (tau.eta()) > 2.3) continue;
-					
+
+			// cross-cleaning taus with leptons
 			bool overlapWithLepton(false);
 			for(int l=0; l<(int)selLeptons.size();++l)
 				{
@@ -1273,7 +1278,7 @@ for(size_t f=0; f<urls.size();++f){
 			const reco::GenJet * genJet = jet.genJet();
 			TString jetType (genJet && genJet->pt() > 0 ? "truejetsid" : "pujetsid");
 
-			//cross-clean with selected leptons and photons
+			// cross-clean with selected leptons and photons
 			double minDRlj (9999.), minDRlg (9999.), minDRljSingleLep(9999.);
 			// and taus
 			double minDRtj(9999.);
