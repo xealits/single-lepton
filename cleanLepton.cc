@@ -1411,8 +1411,13 @@ for(size_t f=0; f<urls.size();++f){
 			if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
 
 			// Event selection booleans
+			// the particle collection consists of particles which pass the selection
+			// by at least one corrected value
+			// thus, basically the corrections are included here
 			bool passJetSelection(selJetsNoLepNoTau.size()>1); // 2 jets
-			bool passMetSelection(met.pt()>40.); // MET > 40
+			// bool passMetSelection(met.pt()>40.); // MET > 40
+			// all METs:
+			bool passMetSelection(met_values[0]>40. || met_values[1]>40. || met_values[2]>40. || met_values[3]>40. || met_values[4]>40. || met_values[5]>40. || met_values[6]>40.);
 			bool passBtagsSelection(selBJets.size()>0); // 1 b jet
 
 			bool passTauSelection(selTausNoLep.size()==1); // only 1 tau
