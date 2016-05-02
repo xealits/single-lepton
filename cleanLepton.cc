@@ -606,7 +606,7 @@ for (int i=0; i<512; i++)
 	}
 
 fprintf(csv_out, "crossel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
-fprintf(csv_out, "oursel: iev, pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, tau_px,tau_py,tau_pz,tau_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
+fprintf(csv_out, "oursel: iev, pu_num_inters,nGoodPV, rawWeight, weight, isElectron,l_vz, l_px,l_py,l_pz,l_e,tau_vz, tau_px,tau_py,tau_pz,tau_e, b1_vz, b1_px,b1_py,b1_pz,b1_e, j1_vz, j1_px,j1_py,j1_pz,j1_e, j2_vz, j2_px,j2_py,j2_pz,j2_e\n");
 fprintf(csv_out, "marasel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e,b2_px,b2_py,b2_pz,b2_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e,j3_px,j3_py,j3_pz,j3_e,j4_px,j4_py,j4_pz,j4_e\n");
 
 fprintf(csv_out, "\n");
@@ -1589,11 +1589,20 @@ for(size_t f=0; f<urls.size();++f)
 				oursel_sum_weights_raw += rawWeight;
 				oursel_sum_weights += weight;
 
+				fprintf(csv_out, "%g,", pl.vz());
 				fprintf(csv_out, "%g,%g,%g,%g,",  selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
+				//fprintf(csv_out, "%g,", selTausNoLep[0].vz());
+				fprintf(csv_out, "%g,", selTaus[0].vz());
 				fprintf(csv_out, "%g,%g,%g,%g,", selTaus[0].px(), selTaus[0].py(), selTaus[0].pz(), selTaus[0].pt() );
+				fprintf(csv_out, "%g,", selSingleLepBJets[0].vz());
 				fprintf(csv_out, "%g,%g,%g,%g,",  selSingleLepBJets[0].px(), selSingleLepBJets[0].py(), selSingleLepBJets[0].pz(), selSingleLepBJets[0].pt());
+				//fprintf(csv_out, "%g,", selJetsNoLepNoTau[0].vz());
+				fprintf(csv_out, "%g,", selSingleLepJets[0].vz());
 				fprintf(csv_out, "%g,%g,%g,%g,", selSingleLepJets[0].px(), selSingleLepJets[0].py(), selSingleLepJets[0].pz(), selSingleLepJets[0].pt() );
+				//fprintf(csv_out, "%g,", selJetsNoLepNoTau[1].vz());
+				fprintf(csv_out, "%g,", selSingleLepJets[1].vz());
 				fprintf(csv_out, "%g,%g,%g,%g\n", selSingleLepJets[1].px(), selSingleLepJets[1].py(), selSingleLepJets[1].pz(), selSingleLepJets[1].pt() );
+
 				}
 
 			// Mara's selection booleans
