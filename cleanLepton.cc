@@ -1281,7 +1281,7 @@ for(size_t f=0; f<urls.size();++f)
 		met = newMet[utils::cmssw::METvariations::NOMINAL];
 		if(debug) cout << "Jet Energy Corrections updated" << endl;
 
-		// should MET corrections be done here?
+		// TODO: should MET corrections be done here?
 		// METs with corrections
 		std::vector<LorentzVector> met_values;
 		met_values.push_back(met)
@@ -1322,7 +1322,14 @@ for(size_t f=0; f<urls.size();++f)
 			double pt  = jet.pt();
 			// corrections:
 			// TODO: are they MC-only?
-			std::vector<double> pt_values = utils::cmssw::smearJES(pt, eta, totalJESUnc);
+			std::vector<double> pt_values;
+			if (isMC)
+				pt_values = utils::cmssw::smearJES(pt, eta, totalJESUnc);
+			else
+				{
+				pt_values.push_back(pt);
+				pt_values.push_back(pt);
+				}
 			// vary JesUp   is pt_values[0]
 			// vary JesDown is pt_values[1]
 			if (passPFloose && (pt > 30. || pt_values[0] > 30. || pt_values[1] > 30.) && fabs(eta) < 2.5)
@@ -1384,6 +1391,7 @@ for(size_t f=0; f<urls.size();++f)
 
 			// bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
 			bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.8); // new working point -- according to Mara's analysis
+			bool hasCSVtag_BTagUp(false), hasCSVtag_BTagDown(false);
 
 			if (isMC)
 				{
@@ -1391,10 +1399,18 @@ for(size_t f=0; f<urls.size();++f)
 				if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
 				else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
 				else                     btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
+
+				if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag_BTagUp, sfb + sfbunc,   beff);
+				else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag_BTagUp, sfb/5 + 2*sfbunc, beff);
+				else                     btsfutil.modifyBTagsWithSF(hasCSVtag_BTagUp, sfl + sfbunc,   leff);
+
+				if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag_BTagDown, sfb - sfbunc,   beff);
+				else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag_BTagDown, sfb/5 - 2*sfbunc, beff);
+				else                     btsfutil.modifyBTagsWithSF(hasCSVtag_BTagDown, sfl - sfbunc,   leff);
 				}
 
-			if(!hasCSVtag) continue;
-			selBJets.push_back(jet);
+			if(hasCSVtag || hasCSVtag_BTagUp || hasCSVtag_BTagDown)
+				selBJets.push_back(jet);
 			}
 
 
