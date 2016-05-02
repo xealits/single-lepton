@@ -1199,7 +1199,7 @@ for(size_t f=0; f<urls.size();++f){
 		LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
 
 
-		// ------------------------------------------ select the taus
+		// ------------------------------------------ select the individual taus
 		pat::TauCollection selTaus;
 		int ntaus (0);
 		for (size_t itau = 0; itau < taus.size(); ++itau)
@@ -1208,12 +1208,12 @@ for(size_t f=0; f<urls.size();++f){
 			if (tau.pt() < 20. || fabs (tau.eta()) > 2.3) continue;
 
 			// cross-cleaning taus with leptons
-			bool overlapWithLepton(false);
-			for(int l=0; l<(int)selLeptons.size();++l)
-				{
-				if(reco::deltaR(tau, selLeptons[l])<0.4) {overlapWithLepton=true; break;}
-				}
-			if(overlapWithLepton) continue;
+			// bool overlapWithLepton(false);
+			// for(int l=0; l<(int)selLeptons.size();++l)
+			// 	{
+			// 	if(reco::deltaR(tau, selLeptons[l])<0.4) {overlapWithLepton=true; break;}
+			// 	}
+			// if(overlapWithLepton) continue;
 					
 			// if(!tau.isPFTau()) continue; // Only PFTaus // It should be false for slimmedTaus
 			// if(tau.emFraction() >=2.) continue;
@@ -1245,6 +1245,24 @@ for(size_t f=0; f<urls.size();++f){
 			ntaus++;
 			}
 		std::sort (selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
+
+		// ------------------------------------------ select the taus cleaned from leptons
+
+		pat::TauCollection selTausNoLep;
+		for (size_t itau = 0; itau < selTaus.size(); ++itau)
+			{
+			pat::Tau& tau = selTaus[itau];
+
+			// cross-cleaning taus with leptons
+			bool overlapWithLepton(false);
+			for(int l=0; l<(int)selLeptons.size();++l)
+				{
+				if(reco::deltaR(tau, selLeptons[l])<0.4) {overlapWithLepton=true; break;}
+				}
+			if(overlapWithLepton) continue;
+
+			selTausNoLep.push_back(tau);
+			}
 
 		//
 		// ----------------------------------------------- JET/MET ANALYSIS
@@ -1294,9 +1312,14 @@ for(size_t f=0; f<urls.size();++f){
 				minDRljSingleLep = TMath::Min(minDRljSingleLep, reco::deltaR (jet, selLeptons[ilep]));
 
 			// ---------------------------- Clean jet collection from selected taus
-			for(size_t itau=0; itau<selTaus.size(); ++itau)
+			// for(size_t itau=0; itau < selTaus.size(); ++itau)
+				// {
+				// minDRtj = TMath::Min(minDRtj, reco::deltaR(jet, selTaus[itau]));
+				// }
+			//selTausNoLep
+			for(size_t itau=0; itau < selTausNoLep.size(); ++itau)
 				{
-				minDRtj = TMath::Min(minDRtj, reco::deltaR(jet, selTaus[itau]));
+				minDRtj = TMath::Min(minDRtj, reco::deltaR(jet, selTausNoLep[itau]));
 				}
 
 			/*
@@ -1447,8 +1470,12 @@ for(size_t f=0; f<urls.size();++f){
 			bool passMetSelection(met.pt()>40.); // MET > 40
 			// bool passBtagsSelection(selSingleLepBJets.size()>0); // 1 b jet
 			bool passBtagsSelection(selBJets.size()>0); // 1 b jet
-			bool passTauSelection(selTaus.size()==1); // only 1 tau
-			bool passOS(selTaus.size()>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0); // Oposite sign
+
+			// bool passTauSelection(selTaus.size()==1); // only 1 tau
+			// bool passOS(selTaus.size()>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0); // Oposite sign
+			//selTausNoLep
+			bool passTauSelection(selTausNoLep.size()==1); // only 1 tau
+			bool passOS(selTausNoLep.size()>0 ? selLeptons[0].pdgId() * selTausNoLep[0].pdgId() < 0 : 0); // Oposite sign
 
 			if (passJetSelection)
 				{
@@ -1515,7 +1542,9 @@ for(size_t f=0; f<urls.size();++f){
 				//fprintf(csv_out, "%g, %g, %g\n", (pl+pb).Angle(prest.Vect()), pl.Angle(pb.Vect()), plb.Angle(pbb.Vect()));
 				//fprintf(csv_out, "kino2:\n");
 				fprintf(csv_out, "%g,%g,%g,%g,",  pl.X(), pl.Y(), pl.Z(), pl.E());
-				fprintf(csv_out, "%g,%g,%g,%g,", selTaus[0].px(), selTaus[0].py(), selTaus[0].pz(), selTaus[0].pt() );
+				// fprintf(csv_out, "%g,%g,%g,%g,", selTaus[0].px(), selTaus[0].py(), selTaus[0].pz(), selTaus[0].pt() );
+				// selTausNoLep
+				fprintf(csv_out, "%g,%g,%g,%g,", selTausNoLep[0].px(), selTausNoLep[0].py(), selTausNoLep[0].pz(), selTausNoLep[0].pt() );
 				//fprintf(csv_out, "%g,%g,%g,%g,", plb.X(), plb.Y(), plb.Z(), plb.E());
 				fprintf(csv_out, "%g,%g,%g,%g,",  pb.X(), pb.Y(), pb.Z(), pb.E());
 				fprintf(csv_out, "%g,%g,%g,%g,", selJets[0].px(), selJets[0].py(), selJets[0].pz(), selJets[0].pt() );
