@@ -1097,6 +1097,16 @@ for(size_t f=0; f<urls.size();++f)
 		if(metsHandle.isValid() ) mets = *metsHandle;
 		LorentzVector met = mets[0].p4 ();
 
+		// METs with corrections
+		std::vector<LorentzVector> met_values;
+		met_values.push_back(met)
+		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp));
+		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown));
+		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp));
+		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown));
+		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredUp));
+		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredDown));
+
 		if(debug){
 			// MET try:
 			double mypt = mets[0].shiftedPt(pat::MET::METUncertainty::JetEnUp);
