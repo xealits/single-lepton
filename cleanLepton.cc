@@ -1257,9 +1257,10 @@ for(size_t f=0; f<urls.size();++f){
 			bool overlapWithLepton(false);
 			for(int l=0; l<(int)selLeptons.size();++l)
 				{
-				if(reco::deltaR(tau, selLeptons[l])<0.4) {overlapWithLepton=true; break;}
+				if (reco::deltaR(tau, selLeptons[l])<0.4)
+					{ overlapWithLepton=true; break; }
 				}
-			if(overlapWithLepton) continue;
+			if (overlapWithLepton) continue;
 
 			selTausNoLep.push_back(tau);
 			}
@@ -1276,8 +1277,7 @@ for(size_t f=0; f<urls.size();++f){
 		if(debug) cout << "Jet Energy Corrections updated" << endl;
 
 		// Select the jets. I need different collections because of tau cleaning, but this is needed only for the single lepton channels, so the tau cleaning is performed later.
-		pat::JetCollection
-			selJets, selBJets;
+		pat::JetCollection selJets;//, selBJets;
 		// TODO: do all jet selection right here
 		// now selBJets are not used anywhere
 		// selJets pass cross-cleaning with taus later
@@ -1297,19 +1297,20 @@ for(size_t f=0; f<urls.size();++f){
 			TString jetType (genJet && genJet->pt() > 0 ? "truejetsid" : "pujetsid");
 
 			// cross-clean with selected leptons and photons
-			double minDRlj (9999.), minDRlg (9999.), minDRljSingleLep(9999.);
+			// double minDRlj (9999.), minDRlg (9999.); //, minDRljSingleLep(9999.);
 			// and taus
-			double minDRtj(9999.);
+			// double minDRtj(9999.);
 
-			for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
-				minDRlj = TMath::Min(minDRlj, reco::deltaR (jet, selLeptons[ilep]));
+			// ---------------------------- Clean jet collection from selected leptons
+			// for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
+				// minDRlj = TMath::Min(minDRlj, reco::deltaR (jet, selLeptons[ilep]));
+
 			// don't want to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
 			// don't want to mess with photon ID //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
 			// if (minDRlj < 0.4 /*|| minDRlg<0.4 */ ) continue;
 
-			// ---------------------------- Clean jet collection from selected leptons
-			for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
-				minDRljSingleLep = TMath::Min(minDRljSingleLep, reco::deltaR (jet, selLeptons[ilep]));
+			// for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
+				// minDRljSingleLep = TMath::Min(minDRljSingleLep, reco::deltaR (jet, selLeptons[ilep]));
 
 			// ---------------------------- Clean jet collection from selected taus
 			// for(size_t itau=0; itau < selTaus.size(); ++itau)
@@ -1317,10 +1318,10 @@ for(size_t f=0; f<urls.size();++f){
 				// minDRtj = TMath::Min(minDRtj, reco::deltaR(jet, selTaus[itau]));
 				// }
 			//selTausNoLep
-			for(size_t itau=0; itau < selTausNoLep.size(); ++itau)
-				{
-				minDRtj = TMath::Min(minDRtj, reco::deltaR(jet, selTausNoLep[itau]));
-				}
+			// for(size_t itau=0; itau < selTausNoLep.size(); ++itau)
+			// 	{
+			// 	minDRtj = TMath::Min(minDRtj, reco::deltaR(jet, selTausNoLep[itau]));
+			// 	}
 
 			/*
 			// pat::JetCollection
@@ -1361,12 +1362,78 @@ for(size_t f=0; f<urls.size();++f){
 
 			// and now the tighter final selection
 			if (!passPFloose || jet.pt() <30. || fabs(jet.eta()) > 2.5) continue;
-			if (minDRlj < 0.4 || minDRtj < 0.4) continue;
+			// if (minDRlj < 0.4 || minDRtj < 0.4) continue;
 
 			selJets.push_back(jet);
 
 			double dphijmet = fabs (deltaPhi (met.phi(), jet.phi()));
 			if (dphijmet < mindphijmet) mindphijmet = dphijmet;
+			// FIXME: mindphijmet is not used anywhere now
+
+			// ------------------------------ B-tagging
+
+			// bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
+			// bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.8); // new working point -- according to Mara's analysis
+
+			// if (isMC)
+				// {
+				// int flavId = jet.partonFlavour();
+				// if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
+				// else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
+				// else                     btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
+				// }
+
+			// if(!hasCSVtag) continue;
+			// selBJets.push_back(jet);
+			}
+
+		std::sort (selJets.begin(),  selJets.end(),  utils::sort_CandidatesByPt);
+		// std::sort (selBJets.begin(), selBJets.end(), utils::sort_CandidatesByPt);
+
+		// ---------------------------- Clean jet collections from selected leptons
+		// TODO: add gamma-cleaning as well?
+
+		pat::JetCollection selJetsNoLep;
+		for (size_t ijet = 0; ijet < selJets.size(); ++ijet)
+			{
+			pat::Jet& jet = selJets[ijet];
+
+			double minDRlj (9999.);
+
+			for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
+				minDRlj = TMath::Min(minDRlj, reco::deltaR (jet, selLeptons[ilep]));
+
+			if (minDRlj < 0.4) continue;
+
+			selJetsNoLep.push_back(jet);
+			}
+
+
+
+		// ---------------------------- Clean jet collection from selected taus
+		pat::JetCollection selJetsNoLepNoTau;
+
+		for (size_t ijet = 0; ijet < selJetsNoLep.size(); ++ijet)
+			{
+			pat::Jet& jet = selJetsNoLep[ijet];
+
+			double minDRtj(9999.);
+
+			for(size_t itau=0; itau < selTausNoLep.size(); ++itau)
+				minDRtj = TMath::Min(minDRtj, reco::deltaR(jet, selTausNoLep[itau]));
+
+			if (minDRtj < 0.4) continue;
+
+			selJetsNoLepNoTau.push_back(jet);
+			}
+
+
+		// --------------------------- B-tagged jets
+		pat::JetCollection selBJets;
+
+		for (size_t ijet = 0; ijet < selJetsNoLepNoTau.size(); ++ijet)
+			{
+			pat::Jet& jet = selJetsNoLepNoTau[ijet];
 
 			// bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
 			bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.8); // new working point -- according to Mara's analysis
@@ -1381,10 +1448,8 @@ for(size_t f=0; f<urls.size();++f){
 
 			if(!hasCSVtag) continue;
 			selBJets.push_back(jet);
-			}
 
-		std::sort (selJets.begin(),  selJets.end(),  utils::sort_CandidatesByPt);
-		std::sort (selBJets.begin(), selBJets.end(), utils::sort_CandidatesByPt);
+			}
 
 		//
 		// -------------------------------------------------- ASSIGN CHANNEL
@@ -1466,7 +1531,8 @@ for(size_t f=0; f<urls.size();++f){
 
 			// Event selection booleans
 			// bool passJetSelection(selJets.size()>1); // 2 jets
-			bool passJetSelection(selJets.size()>1); // 2 jets
+			//selJetsNoLepNoTau
+			bool passJetSelection(selJetsNoLepNoTau.size()>1); // 2 jets
 			bool passMetSelection(met.pt()>40.); // MET > 40
 			// bool passBtagsSelection(selSingleLepBJets.size()>0); // 1 b jet
 			bool passBtagsSelection(selBJets.size()>0); // 1 b jet
@@ -1547,8 +1613,11 @@ for(size_t f=0; f<urls.size();++f){
 				fprintf(csv_out, "%g,%g,%g,%g,", selTausNoLep[0].px(), selTausNoLep[0].py(), selTausNoLep[0].pz(), selTausNoLep[0].pt() );
 				//fprintf(csv_out, "%g,%g,%g,%g,", plb.X(), plb.Y(), plb.Z(), plb.E());
 				fprintf(csv_out, "%g,%g,%g,%g,",  pb.X(), pb.Y(), pb.Z(), pb.E());
-				fprintf(csv_out, "%g,%g,%g,%g,", selJets[0].px(), selJets[0].py(), selJets[0].pz(), selJets[0].pt() );
-				fprintf(csv_out, "%g,%g,%g,%g\n", selJets[1].px(), selJets[1].py(), selJets[1].pz(), selJets[1].pt() );
+				// fprintf(csv_out, "%g,%g,%g,%g,", selJets[0].px(), selJets[0].py(), selJets[0].pz(), selJets[0].pt() );
+				// fprintf(csv_out, "%g,%g,%g,%g\n", selJets[1].px(), selJets[1].py(), selJets[1].pz(), selJets[1].pt() );
+				//selJetsNoLepNoTau
+				fprintf(csv_out, "%g,%g,%g,%g,", selJetsNoLepNoTau[0].px(), selJetsNoLepNoTau[0].py(), selJetsNoLepNoTau[0].pz(), selJetsNoLepNoTau[0].pt() );
+				fprintf(csv_out, "%g,%g,%g,%g\n", selJetsNoLepNoTau[1].px(), selJetsNoLepNoTau[1].py(), selJetsNoLepNoTau[1].pz(), selJetsNoLepNoTau[1].pt() );
 				//fprintf(csv_out, "%g,%g,%g,%g\n", pbb.X(), pbb.Y(), pbb.Z(), pbb.E());
 				}
 
@@ -1578,7 +1647,9 @@ for(size_t f=0; f<urls.size();++f){
 			*/
 
 			// Mara's selection booleans
-			bool passMaraJetSelection(selJets.size()>3); // 4 jets
+			// bool passMaraJetSelection(selJets.size()>3); // 4 jets
+			//selJetsNoLepNoTau
+			bool passMaraJetSelection(selJetsNoLepNoTau.size()>3); // 4 jets
 			bool passMaraBtagsSelection(selBJets.size()>1); // 2 b-tag
 			bool passMaraLeptonSelection( selLeptons.size()>0 ); // 1 lepton
 
@@ -1599,10 +1670,15 @@ for(size_t f=0; f<urls.size();++f){
 				//fprintf(csv_out, "%g,%g,%g,%g,", plb.X(), plb.Y(), plb.Z(), plb.E());
 				fprintf(csv_out, "%g,%g,%g,%g,", pb.X(), pb.Y(), pb.Z(), pb.E());
 				fprintf(csv_out, "%g,%g,%g,%g,", pbb.X(), pbb.Y(), pbb.Z(), pbb.E());
-				fprintf(csv_out, "%g,%g,%g,%g,", selJets[0].px(), selJets[0].py(), selJets[0].pz(), selJets[0].pt() );
-				fprintf(csv_out, "%g,%g,%g,%g,", selJets[1].px(), selJets[1].py(), selJets[1].pz(), selJets[1].pt() );
-				fprintf(csv_out, "%g,%g,%g,%g,", selJets[2].px(), selJets[2].py(), selJets[2].pz(), selJets[2].pt() );
-				fprintf(csv_out, "%g,%g,%g,%g\n", selJets[3].px(), selJets[3].py(), selJets[3].pz(), selJets[3].pt() );
+				// fprintf(csv_out, "%g,%g,%g,%g,", selJets[0].px(), selJets[0].py(), selJets[0].pz(), selJets[0].pt() );
+				// fprintf(csv_out, "%g,%g,%g,%g,", selJets[1].px(), selJets[1].py(), selJets[1].pz(), selJets[1].pt() );
+				// fprintf(csv_out, "%g,%g,%g,%g,", selJets[2].px(), selJets[2].py(), selJets[2].pz(), selJets[2].pt() );
+				// fprintf(csv_out, "%g,%g,%g,%g\n", selJets[3].px(), selJets[3].py(), selJets[3].pz(), selJets[3].pt() );
+				//selJetsNoLepNoTau
+				fprintf(csv_out, "%g,%g,%g,%g,", selJetsNoLepNoTau[0].px(), selJetsNoLepNoTau[0].py(), selJetsNoLepNoTau[0].pz(), selJetsNoLepNoTau[0].pt() );
+				fprintf(csv_out, "%g,%g,%g,%g,", selJetsNoLepNoTau[1].px(), selJetsNoLepNoTau[1].py(), selJetsNoLepNoTau[1].pz(), selJetsNoLepNoTau[1].pt() );
+				fprintf(csv_out, "%g,%g,%g,%g,", selJetsNoLepNoTau[2].px(), selJetsNoLepNoTau[2].py(), selJetsNoLepNoTau[2].pz(), selJetsNoLepNoTau[2].pt() );
+				fprintf(csv_out, "%g,%g,%g,%g\n", selJetsNoLepNoTau[3].px(), selJetsNoLepNoTau[3].py(), selJetsNoLepNoTau[3].pz(), selJetsNoLepNoTau[3].pt() );
 				}
 
 			/* // old crap with smartmon:
