@@ -1262,7 +1262,7 @@ for(size_t f=0; f<urls.size();++f)
 		LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
 
 
-		// ------------------------------------------ select the taus
+		// ------------------------------------------ select the individual taus
 		pat::TauCollection selTaus;
 		int ntaus (0);
 		for (size_t itau = 0; itau < taus.size(); ++itau)
@@ -1271,12 +1271,12 @@ for(size_t f=0; f<urls.size();++f)
 			if (tau.pt() < 20. || fabs (tau.eta()) > 2.3) continue;
 
 			// cross-cleaning taus with leptons
-			bool overlapWithLepton(false);
-			for(int l=0; l<(int)selLeptons.size();++l)
-				{
-				if(reco::deltaR(tau, selLeptons[l])<0.4) {overlapWithLepton=true; break;}
-				}
-			if(overlapWithLepton) continue;
+			// bool overlapWithLepton(false);
+			// for(int l=0; l<(int)selLeptons.size();++l)
+			// 	{
+			// 	if(reco::deltaR(tau, selLeptons[l])<0.4) {overlapWithLepton=true; break;}
+			// 	}
+			// if(overlapWithLepton) continue;
 					
 			// if(!tau.isPFTau()) continue; // Only PFTaus // It should be false for slimmedTaus
 			// if(tau.emFraction() >=2.) continue;
@@ -1308,6 +1308,24 @@ for(size_t f=0; f<urls.size();++f)
 			ntaus++;
 			}
 		std::sort (selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
+
+		// ------------------------------------------ select the taus cleaned from leptons
+
+		pat::TauCollection selTausNoLep;
+		for (size_t itau = 0; itau < selTaus.size(); ++itau)
+			{
+			pat::Tau& tau = selTaus[itau];
+
+			// cross-cleaning taus with leptons
+			bool overlapWithLepton(false);
+			for(int l=0; l<(int)selLeptons.size();++l)
+				{
+				if(reco::deltaR(tau, selLeptons[l])<0.4) {overlapWithLepton=true; break;}
+				}
+			if(overlapWithLepton) continue;
+
+			selTausNoLep.push_back(tau);
+			}
 
 		//
 		// ----------------------------------------------- JET/MET ANALYSIS
@@ -1357,9 +1375,14 @@ for(size_t f=0; f<urls.size();++f)
 				minDRljSingleLep = TMath::Min(minDRljSingleLep, reco::deltaR (jet, selLeptons[ilep]));
 
 			// ---------------------------- Clean jet collection from selected taus
-			for(size_t itau=0; itau<selTaus.size(); ++itau)
+			// for(size_t itau=0; itau < selTaus.size(); ++itau)
+				// {
+				// minDRtj = TMath::Min(minDRtj, reco::deltaR(jet, selTaus[itau]));
+				// }
+			//selTausNoLep
+			for(size_t itau=0; itau < selTausNoLep.size(); ++itau)
 				{
-				minDRtj = TMath::Min(minDRtj, reco::deltaR(jet, selTaus[itau]));
+				minDRtj = TMath::Min(minDRtj, reco::deltaR(jet, selTausNoLep[itau]));
 				}
 
 			/*
