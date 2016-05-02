@@ -1571,6 +1571,8 @@ for(size_t f=0; f<urls.size();++f)
 			/* Use the same selections as in multiselect
 			bool passJetSelection(selSingleLepJets.size()>1); // 2 jets
 			bool passMetSelection(met.pt()>40.); // MET > 40
+			// all METs:
+			bool passMetSelection(met_values[0]>40. || met_values[1]>40. || met_values[2]>40. || met_values[3]>40. || met_values[4]>40. || met_values[5]>40. || met_values[6]>40.);
 			bool passBtagsSelection(selBJets.size()>0); // 1 b jet
 			bool passTauSelection(selTaus.size()==1); // only 1 tau
 			bool passOS(selTaus.size()>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0); // Oposite sign
