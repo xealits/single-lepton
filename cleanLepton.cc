@@ -597,7 +597,15 @@ fprintf(csv_out, "Headers\n");
 fprintf(csv_out, "acceptances:filename, num_events, sum_rawWeight, sum_weight, cross_sum_rawWeight,cross_sum_weight, oursel_sum_rawWeight,oursel_sum_weight, marasel_sum_rawWeight,marasel_sum_weight\n");
 
 fprintf(csv_out, "crossel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
-fprintf(csv_out, "oursel:pu_num_inters,nGoodPV,  rawWeight, weight, isElectron,l_vz, l_px,l_py,l_pz,l_e,tau_vz, tau_px,tau_py,tau_pz,tau_e, b1_vz, b1_px,b1_py,b1_pz,b1_e, j1_vz, j1_px,j1_py,j1_pz,j1_e, j2_vz, j2_px,j2_py,j2_pz,j2_e\n");
+
+fprintf(csv_out, "oursel:pu_num_inters,nGoodPV,  rawWeight, weight, isElectron,");
+fprintf(csv_out, "met_0, met_1, met_2, met_3, met_4, met_5, met_6,");
+fprintf(csv_out, "l_vz, l_px,l_py,l_pz,l_e,");
+fprintf(csv_out, "tau_vz,tau_px,tau_py,tau_pz,tau_e,");
+fprintf(csv_out, "b1_vz, b1_px,b1_py,b1_pz,b1_e,");
+fprintf(csv_out, "j1_vz, j1_pt, j1_pt_up, j1_pt_down, j1_px,j1_py,j1_pz,j1_e,");
+fprintf(csv_out, "j2_vz, j2_pt, j2_pt_up, j2_pt_down, j2_px,j2_py,j2_pz,j2_e\n");
+
 fprintf(csv_out, "marasel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e,b2_px,b2_py,b2_pz,b2_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e,j3_px,j3_py,j3_pz,j3_e,j4_px,j4_py,j4_pz,j4_e\n");
 
 for(size_t f=0; f<urls.size();++f){
@@ -1219,14 +1227,15 @@ for(size_t f=0; f<urls.size();++f){
 
 		// TODO: should MET corrections be done here?
 		// METs with corrections
-		std::vector<LorentzVector> met_values;
-		met_values.push_back(met)
-		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp));
-		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown));
-		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp));
-		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown));
-		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredUp));
-		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredDown));
+		//
+		LorentzVector met_values[7];
+		met_values[0] = met;
+		met_values[1] = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp);
+		met_values[2] = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown);
+		met_values[3] = mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp);
+		met_values[4] = mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown);
+		met_values[5] = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredUp);
+		met_values[6] = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredDown);
 
 		// Select the jets. I need different collections because of tau cleaning, but this is needed only for the single lepton channels, so the tau cleaning is performed later.
 		pat::JetCollection selJets;
@@ -1461,6 +1470,10 @@ for(size_t f=0; f<urls.size();++f){
 				fprintf(csv_out, "oursel:%d,%d,%g,%g,%d,", num_inters, nGoodPV, rawWeight, weight, isSingleE);
 				oursel_sum_weights_raw += rawWeight;
 				oursel_sum_weights += weight;
+
+				// METs with corrections
+				// LorentzVector met_values[7];
+				fprintf(csv_out, "%g,%g,%g,%g,%g,%g,%g,", met_values[0], met_values[1], met_values[2], met_values[3], met_values[4], met_values[5], met_values[6]);
 				pb.SetPxPyPzE( selBJets[0].px(), selBJets[0].py(), selBJets[0].pz(), selBJets[0].pt()); // 
 
 				pl.SetPxPyPzE( selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
@@ -1472,9 +1485,32 @@ for(size_t f=0; f<urls.size();++f){
 				fprintf(csv_out, "%g,%g,%g,%g,", selTausNoLep[0].px(), selTausNoLep[0].py(), selTausNoLep[0].pz(), selTausNoLep[0].pt() );
 				fprintf(csv_out, "%g,", pb.vz());
 				fprintf(csv_out, "%g,%g,%g,%g,",  pb.X(), pb.Y(), pb.Z(), pb.E());
+
+				// jets with corrections
+				double eta = selJetsNoLepNoTau[0].eta();
+				double pt  = selJetsNoLepNoTau[0].pt();
+				std::vector<double> pt_values;
+				// if (isMC)
+				// FIXME: testing smearedJES on data as well!
+					pt_values = utils::cmssw::smearJES(pt, eta, totalJESUnc);
+				// else
+					// {
+					// pt_values.push_back(pt);
+					// pt_values.push_back(pt);
+					// }
+
 				fprintf(csv_out, "%g,", selJetsNoLepNoTau[0].vz());
+				fprintf(csv_out, "%g,%g,%g,", pt, pt_values[0], pt_values[1]);
 				fprintf(csv_out, "%g,%g,%g,%g,", selJetsNoLepNoTau[0].px(), selJetsNoLepNoTau[0].py(), selJetsNoLepNoTau[0].pz(), selJetsNoLepNoTau[0].pt() );
+
+				pt_values.clear();
+
+				eta = selJetsNoLepNoTau[1].eta();
+				pt  = selJetsNoLepNoTau[1].pt();
+				pt_values = utils::cmssw::smearJES(pt, eta, totalJESUnc);
+
 				fprintf(csv_out, "%g,", selJetsNoLepNoTau[1].vz());
+				fprintf(csv_out, "%g,%g,%g,", pt, pt_values[0], pt_values[1]);
 				fprintf(csv_out, "%g,%g,%g,%g\n", selJetsNoLepNoTau[1].px(), selJetsNoLepNoTau[1].py(), selJetsNoLepNoTau[1].pz(), selJetsNoLepNoTau[1].pt() );
 				}
 
