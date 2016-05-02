@@ -1039,15 +1039,6 @@ for(size_t f=0; f<urls.size();++f){
 		if(metsHandle.isValid() ) mets = *metsHandle;
 		LorentzVector met = mets[0].p4 ();
 
-		// METs with corrections
-		std::vector<LorentzVector> met_values;
-		met_values.push_back(met)
-		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp));
-		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown));
-		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp));
-		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown));
-		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredUp));
-		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredDown));
 
 		if(debug){
 			// MET try:
@@ -1216,12 +1207,26 @@ for(size_t f=0; f<urls.size();++f){
 		// ----------------------------------------------- JET/MET ANALYSIS
 		//
 		if(debug) cout << "Now update Jet Energy Corrections" << endl;
-		//add scale/resolution uncertainties and propagate to the MET      
-		utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,nGoodPV,isMC);
+		//add scale/resolution uncertainties and propagate to the MET
+		utils::cmssw::updateJEC(jets, jesCor, totalJESUnc, rho, nGoodPV, isMC);
+
+		// FIXME: So are these MET corrections?
 		if(debug) cout << "Update also MET" << endl;
-		std::vector<LorentzVector> newMet=utils::cmssw::getMETvariations(met/*recoMet*/,jets,selLeptons,isMC); // FIXME: Must choose a lepton collection. Perhaps loose leptons?
-		met=newMet[utils::cmssw::METvariations::NOMINAL];
+		std::vector<LorentzVector> newMet = utils::cmssw::getMETvariations(met/*recoMet*/,jets,selLeptons,isMC);
+		// FIXME: Must choose a lepton collection. Perhaps loose leptons?
+		met = newMet[utils::cmssw::METvariations::NOMINAL];
 		if(debug) cout << "Jet Energy Corrections updated" << endl;
+
+		// should MET corrections be done here?
+		// METs with corrections
+		std::vector<LorentzVector> met_values;
+		met_values.push_back(met)
+		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp));
+		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown));
+		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp));
+		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown));
+		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredUp));
+		met_values.push_back(mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredDown));
 
 		// Select the jets. I need different collections because of tau cleaning, but this is needed only for the single lepton channels, so the tau cleaning is performed later.
 		pat::JetCollection selJets;
@@ -1236,27 +1241,34 @@ for(size_t f=0; f<urls.size();++f){
 
 			// TODO: what do we do here exactly?
 			// a loose selection on jets, and then tighten it later?
-			if (jet.pt() < 15 || fabs (jet.eta()) > 3.0) continue;
+			// if (jet.pt() < 15 || fabs (jet.eta()) > 3.0) continue;
 			// Was 4.7 in eta. Tightened for computing time. 3.0 ensures that we don't cut associations with leptons (0.4 from 2.4)
 
 			//mc truth for this jet
 			const reco::GenJet * genJet = jet.genJet();
 			TString jetType (genJet && genJet->pt() > 0 ? "truejetsid" : "pujetsid");
-
+			// TODO: this mctruth for jets it is never used in the code
 
 			//jet id
 			bool passPFloose = passPFJetID("Loose", jet); 
 			// FIXME: check when pileup ID will come out
 
 			// and now the tighter final selection
-			if (!passPFloose || jet.pt() <30. || fabs(jet.eta()) > 2.5) continue;
+			double eta = jet.eta();
+			double pt  = jet.pt();
+			// corrections:
+			// TODO: are they MC-only?
+			std::vector<double> pt_values = utils::cmssw::smearJES(pt, eta, totalJESUnc);
+			// vary JesUp   is pt_values[0]
+			// vary JesDown is pt_values[1]
+			if (passPFloose && (pt > 30. || pt_values[0] > 30. || pt_values[1] > 30.) && fabs(eta) < 2.5)
+				{
+				selJets.push_back(jet);
 
-			selJets.push_back(jet);
-
-			double dphijmet = fabs (deltaPhi (met.phi(), jet.phi()));
-			if (dphijmet < mindphijmet) mindphijmet = dphijmet;
-			// FIXME: mindphijmet is not used anywhere now
-
+				double dphijmet = fabs (deltaPhi (met.phi(), jet.phi()));
+				if (dphijmet < mindphijmet) mindphijmet = dphijmet;
+				// FIXME: mindphijmet is not used anywhere now
+				}
 			}
 
 		std::sort (selJets.begin(),  selJets.end(),  utils::sort_CandidatesByPt);
@@ -1319,7 +1331,6 @@ for(size_t f=0; f<urls.size();++f){
 
 			if(!hasCSVtag) continue;
 			selBJets.push_back(jet);
-
 			}
 
 		//
