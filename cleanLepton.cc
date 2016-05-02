@@ -139,7 +139,7 @@ namespace utils
 					// jets[ijet].setVal("jerup",   smearJER[1] );
 					// jets[ijet].setVal("jerdown", smearJER[2] );
 					}
-			
+
 				// FIXME: change the way this is stored (to not storing it)
 				////set the JES up/down pT alternatives
 				//std::vector<float> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
@@ -154,7 +154,7 @@ namespace utils
 			}
 
 		enum METvariations { NOMINAL, JERUP, JERDOWN, JESUP, JESDOWN, UMETUP, UMETDOWN, LESUP, LESDOWN };    
-		//
+
 		std::vector<LorentzVector> getMETvariations(LorentzVector &rawMETP4, pat::JetCollection &jets, std::vector<patUtils::GenericLepton> &leptons,bool isMC)
 			{
 			std::vector<LorentzVector> newMetsP4(9,rawMETP4);
@@ -164,7 +164,6 @@ namespace utils
 			//recompute the clustered and unclustered fluxes with energy variations
 			for(size_t ivar=1; ivar<=8; ivar++)
 				{
-
 				//leptonic flux
 				LorentzVector leptonFlux(nullP4), lepDiff(nullP4);
 				for(size_t ilep=0; ilep<leptons.size(); ilep++)
@@ -182,7 +181,7 @@ namespace utils
 					leptonFlux += lepton;
 					lepDiff += (sf-1)*lepton;
 					}
-			
+
 				//clustered flux
 				LorentzVector jetDiff(nullP4), clusteredFlux(nullP4);
 				for(size_t ijet=0; ijet<jets.size(); ijet++)
@@ -216,13 +215,11 @@ namespace utils
 			//all done here
 			return newMetsP4;
 			}
-
 		}
 	}
 
 bool passPFJetID(std::string label, pat::Jet jet)
 	{
-
 	bool passID(false); 
 
 	float rawJetEn(jet.correctedJet("Uncorrected").energy() );
@@ -238,15 +235,14 @@ bool passPFJetID(std::string label, pat::Jet jet)
 	float muf(jet.muonEnergy()/rawJetEn); 
 
 	// Set of cuts from the POG group: https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
-	if(label=="Loose")
+	if (label=="Loose")
 		passID = ( ((nhf<0.99 && nef<0.99 && nconst>1) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.99) || abs(eta)>2.4)) && abs(eta)<=3.0 );
-	if(label=="Tight")
+	if (label=="Tight")
 		passID = ( ((nhf<0.90 && nef<0.90 && nconst>1) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.90) || abs(eta)>2.4)) && abs(eta) <=3.0);
 
 	// Should be added the abs(eta)>3.0 part, but we never consider such jets, so... Meh!
 
 	return passID; 
-
 	}
 
 
@@ -296,7 +292,7 @@ bool hasWasMother(const reco::GenParticle  p)
 bool hasTauAsMother(const reco::GenParticle  p)
 	{
 	bool foundTau(false);
-	if(p.numberOfMothers()==0) return foundTau;
+	if (p.numberOfMothers()==0) return foundTau;
 	const reco::Candidate* part = &p; //(p.mother());
 	// loop on the mother particles to check if it has a tau as mother
 	while ((part->numberOfMothers()>0))
@@ -1273,7 +1269,8 @@ for(size_t f=0; f<urls.size();++f)
 			{
 			pat::Tau& tau = taus[itau];
 			if (tau.pt() < 20. || fabs (tau.eta()) > 2.3) continue;
-					
+
+			// cross-cleaning taus with leptons
 			bool overlapWithLepton(false);
 			for(int l=0; l<(int)selLeptons.size();++l)
 				{
@@ -1344,7 +1341,7 @@ for(size_t f=0; f<urls.size();++f)
 			const reco::GenJet * genJet = jet.genJet();
 			TString jetType (genJet && genJet->pt() > 0 ? "truejetsid" : "pujetsid");
 
-			//cross-clean with selected leptons and photons
+			// cross-clean with selected leptons and photons
 			double minDRlj (9999.), minDRlg (9999.), minDRljSingleLep(9999.);
 			// and taus
 			double minDRtj(9999.);
