@@ -597,7 +597,7 @@ fprintf(csv_out, "Headers\n");
 fprintf(csv_out, "acceptances:filename, num_events, sum_rawWeight, sum_weight, cross_sum_rawWeight,cross_sum_weight, oursel_sum_rawWeight,oursel_sum_weight, marasel_sum_rawWeight,marasel_sum_weight\n");
 
 fprintf(csv_out, "crossel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
-fprintf(csv_out, "oursel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, tau_px,tau_py,tau_pz,tau_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
+fprintf(csv_out, "oursel:pu_num_inters,nGoodPV,  rawWeight, weight, isElectron,l_vz, l_px,l_py,l_pz,l_e,tau_vz, tau_px,tau_py,tau_pz,tau_e, b1_vz, b1_px,b1_py,b1_pz,b1_e, j1_vz, j1_px,j1_py,j1_pz,j1_e, j2_vz, j2_px,j2_py,j2_pz,j2_e\n");
 fprintf(csv_out, "marasel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e,b2_px,b2_py,b2_pz,b2_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e,j3_px,j3_py,j3_pz,j3_e,j4_px,j4_py,j4_pz,j4_e\n");
 
 for(size_t f=0; f<urls.size();++f){
@@ -1427,10 +1427,17 @@ for(size_t f=0; f<urls.size();++f){
 				pb.SetPxPyPzE( selBJets[0].px(), selBJets[0].py(), selBJets[0].pz(), selBJets[0].pt()); // 
 
 				pl.SetPxPyPzE( selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
+
+				//fprintf(csv_out, "oursel:pu_num_inters,nGoodPV,  rawWeight, weight, isElectron, l_vz, l_px,l_py,l_pz,l_e, tau_vz, tau_px,tau_py,tau_pz,tau_e, b1_vz, b1_px,b1_py,b1_pz,b1_e, j1_vz, j1_px,j1_py,j1_pz,j1_e, j2_vz, j2_px,j2_py,j2_pz,j2_e\n")
+				fprintf(csv_out, "%g,", pl.vz());
 				fprintf(csv_out, "%g,%g,%g,%g,",  pl.X(), pl.Y(), pl.Z(), pl.E());
+				fprintf(csv_out, "%g,", selTausNoLep[0].vz());
 				fprintf(csv_out, "%g,%g,%g,%g,", selTausNoLep[0].px(), selTausNoLep[0].py(), selTausNoLep[0].pz(), selTausNoLep[0].pt() );
+				fprintf(csv_out, "%g,", pb.vz());
 				fprintf(csv_out, "%g,%g,%g,%g,",  pb.X(), pb.Y(), pb.Z(), pb.E());
+				fprintf(csv_out, "%g,", selJetsNoLepNoTau[0].vz());
 				fprintf(csv_out, "%g,%g,%g,%g,", selJetsNoLepNoTau[0].px(), selJetsNoLepNoTau[0].py(), selJetsNoLepNoTau[0].pz(), selJetsNoLepNoTau[0].pt() );
+				fprintf(csv_out, "%g,", selJetsNoLepNoTau[1].vz());
 				fprintf(csv_out, "%g,%g,%g,%g\n", selJetsNoLepNoTau[1].px(), selJetsNoLepNoTau[1].py(), selJetsNoLepNoTau[1].pz(), selJetsNoLepNoTau[1].pt() );
 				}
 
