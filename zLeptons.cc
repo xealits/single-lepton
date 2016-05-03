@@ -1287,7 +1287,10 @@ for(size_t f=0; f<urls.size();++f){
 		} // End single file event loop
 
 	fprintf(csv_out, "N good muon pairs:%d\n",     n_good_muon_pairs);
+	fprintf(csv_out, "distr of N selected muons:%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", muon_selection_control[0],muon_selection_control[1],muon_selection_control[2],muon_selection_control[3],muon_selection_control[4], muon_selection_control[5],muon_selection_control[6],muon_selection_control[7],muon_selection_control[8],muon_selection_control[9], muon_selection_control[10]);
 	fprintf(csv_out, "N good electron pairs:%d\n", n_good_electron_pairs);
+	fprintf(csv_out, "distr of N selected electrons:%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", electron_selection_control[0],electron_selection_control[1],electron_selection_control[2],electron_selection_control[3],electron_selection_control[4], electron_selection_control[5],electron_selection_control[6],electron_selection_control[7],electron_selection_control[8],electron_selection_control[9], electron_selection_control[10]);
+
 	printf("\n");
 
 	delete file;
