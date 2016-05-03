@@ -1231,8 +1231,9 @@ for(size_t f=0; f<urls.size();++f){
 				for (int u = i + 1; u < selMuons.size(); ++u)
 					{
 					int muon_u_id = selMuons[u].pdgId();
-					LorentzVector dileptonSystem = selMuons[u].p4() + selMuons[i].p4();
-					if ( (muon_u_id*muon_i_id > 0) && dileptonSystem.M() > 50  && dileptonSystem.M() < 150 )
+					Double_t dileptonSystem_mass = (selMuons[u].p4() + selMuons[i].p4()).M();
+					// different sign and mass in the range
+					if ( (muon_u_id*muon_i_id < 0) && dileptonSystem_mass > 50  && dileptonSystem_mass < 150 )
 						{
 						std::pair<int,int> good_pair;
 						good_pair.first =  i;
@@ -1243,8 +1244,10 @@ for(size_t f=0; f<urls.size();++f){
 				}
 			}
 
+		n_good_muon_pairs += muon_z_pairs.size();
+
 		std::vector<pair<int,int>> electron_z_pairs;
-		if(selElectrons.size()>=2)
+		if (selElectrons.size()>=2)
 			{
 			for (int i = 0; i < selElectrons.size() - 1; ++i)
 				{
@@ -1252,8 +1255,9 @@ for(size_t f=0; f<urls.size();++f){
 				for (int u = i + 1; u < selElectrons.size(); ++u)
 					{
 					int u_id = selElectrons[u].pdgId();
-					LorentzVector dileptonSystem = selElectrons[u].p4() + selElectrons[i].p4();
-					if ( (u_id*i_id > 0) && dileptonSystem.M() > 50  && dileptonSystem.M() < 150 )
+					Double_t dileptonSystem_mass = (selElectrons[u].p4() + selElectrons[i].p4()).M();
+					// different sign and mass in the range
+					if ( (u_id*i_id < 0) && dileptonSystem_mass > 50.  && dileptonSystem_mass < 150. )
 						{
 						std::pair<int,int> good_pair;
 						good_pair.first =  i;
@@ -1264,7 +1268,6 @@ for(size_t f=0; f<urls.size();++f){
 				}
 			}
 
-		n_good_muon_pairs += muon_z_pairs.size();
 		n_good_electron_pairs += electron_z_pairs.size();
 
 		if(debug){
@@ -1275,8 +1278,8 @@ for(size_t f=0; f<urls.size();++f){
 
 		} // End single file event loop
 
-	fprintf(csv_out, "N good muon pairs:%d",     n_good_muon_pairs);
-	fprintf(csv_out, "N good electron pairs:%d", n_good_electron_pairs);
+	fprintf(csv_out, "N good muon pairs:%d\n",     n_good_muon_pairs);
+	fprintf(csv_out, "N good electron pairs:%d\n", n_good_electron_pairs);
 	printf("\n");
 
 	delete file;
