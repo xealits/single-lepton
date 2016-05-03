@@ -604,6 +604,8 @@ for(size_t f=0; f<urls.size();++f){
 
 	unsigned int n_good_muon_pairs = 0;
 	unsigned int n_good_electron_pairs = 0;
+	unsigned int muon_selection_control[11]     = {0,0,0,0,0, 0,0,0,0,0, 0};
+	unsigned int electron_selection_control[11] = {0,0,0,0,0, 0,0,0,0,0, 0};
 
 	// acceptance parameters
 	int iev(0); // number of events
@@ -1211,6 +1213,12 @@ for(size_t f=0; f<urls.size();++f){
 
 		std::sort(selMuons.begin(),   selMuons.end(),   utils::sort_CandidatesByPt);
 		std::sort(selElectrons.begin(),   selElectrons.end(),   utils::sort_CandidatesByPt);
+
+		if (selMuons.size()<10) muon_selection_control[selMuons.size()] +=1;
+		else muon_selection_control[10] +=1;
+
+		if (selElectrons.size()<10) electron_selection_control[selElectrons.size()] +=1;
+		else electron_selection_control[10] +=1;
 
 		// LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
 
