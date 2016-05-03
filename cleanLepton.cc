@@ -610,7 +610,7 @@ fprintf(csv_out, "Headers\n");
 //fprintf(csv_out, "kino:\npl.E, plb.E, pb.E, pbb.E,\nprest-sqr, prest-XY-sqr, met.pt,\nprest-o-plpb, pl-o-pb, plb-o-pbb,\nsame 3 angles\n");
 //fprintf(csv_out, "kino2:\n(pl1) x,y,z,e\n(pl2) x,y,z,e\n(pb1) x,y,z,e\n(pb2) x,y,z,e\n\n");
 
-fprintf(csv_out, "acceptances:filename, num_events, sum_rawWeight, sum_weight, cross_sum_rawWeight,cross_sum_weight, oursel_sum_rawWeight,oursel_sum_weight, marasel_sum_rawWeight,marasel_sum_weight\n");
+fprintf(csv_out, "acceptances:filename, num_events, sum_rawWeight, sum_weight, cross_sum_rawWeight,cross_sum_weight, oursel_sum_rawWeight,oursel_sum_weight, oursel_sum_weight_el,oursel_sum_weight_mu, marasel_sum_rawWeight,marasel_sum_weight\n");
 
 fprintf(csv_out, "crossel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
 fprintf(csv_out, "oursel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, tau_px,tau_py,tau_pz,tau_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
@@ -624,14 +624,20 @@ for(size_t f=0; f<urls.size();++f){
 
 	// acceptance parameters
 	int iev(0); // number of events
+
 	double sum_weights_raw = 0; // sum of raw weights
 	double sum_weights = 0; // sum of final weights
+
 	double crossel_sum_weights_raw = 0; // crossel
 	double crossel_sum_weights = 0;
 	double oursel_sum_weights_raw = 0; // oursel
 	double oursel_sum_weights = 0;
+	double oursel_sum_weights_el = 0;
+	double oursel_sum_weights_mu = 0;
 	double marasel_sum_weights_raw = 0; // marasel
 	double marasel_sum_weights = 0;
+
+
 	unsigned int negative_event_nvtx[100];
 	unsigned int positive_event_nvtx[100];
 	double negative_event_pernvtx_weight[100];
@@ -952,7 +958,7 @@ for(size_t f=0; f<urls.size();++f){
 		//float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
 		// TODO: what is this??
 		// there was some wague answer from Pietro.....
-		/*
+
 		if(isMC)
 			{
 			// FIXME: Considering add support for different generators (based on PYTHIA6) for comparison.
@@ -1458,11 +1464,20 @@ for(size_t f=0; f<urls.size();++f){
 			// oursel: 2 jets, 1 b, 1 iso lepton, 1 tau
 			if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS )
 				{
-				if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
-				else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
+				if(isSingleMu)
+					{
+					singlelep_ttbar_selected_mu_events->Fill(1);
+					oursel_sum_weights_mu += weight;
+					}
+				else if (isSingleE)
+					{
+					singlelep_ttbar_selected_el_events->Fill(1);
+					oursel_sum_weights_el += weight;
+					}
 				fprintf(csv_out, "oursel:%d,%d,%g,%g,%d,", num_inters, nGoodPV, rawWeight, weight, isSingleE);
 				oursel_sum_weights_raw += rawWeight;
 				oursel_sum_weights += weight;
+
 				pb.SetPxPyPzE( selSingleLepBJets[0].px(), selSingleLepBJets[0].py(), selSingleLepBJets[0].pz(), selSingleLepBJets[0].pt()); // 
 				//pbb.SetPxPyPzE( selSingleLepJets[1].px(), selSingleLepJets[1].py(), selSingleLepJets[1].pz(), selSingleLepJets[1].pt()); // or take another B???
 				pl.SetPxPyPzE( selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
@@ -1783,6 +1798,7 @@ for(size_t f=0; f<urls.size();++f){
 	fprintf(csv_out, "%d,%g,%g,", iev, sum_weights_raw, sum_weights);
 	fprintf(csv_out, "%g,%g,",  crossel_sum_weights_raw, crossel_sum_weights);
 	fprintf(csv_out, "%g,%g,",  oursel_sum_weights_raw, oursel_sum_weights);
+	fprintf(csv_out, "%g,%g,",  oursel_sum_weights_el, oursel_sum_weights_mu);
 	fprintf(csv_out, "%g,%g\n", marasel_sum_weights_raw, marasel_sum_weights);
 
 	fprintf(csv_out, "negative_events_nvtx:");
