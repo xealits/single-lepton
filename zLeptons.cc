@@ -1089,19 +1089,20 @@ for(size_t f=0; f<urls.size();++f){
 		// ---------------------------------- leptons selection
 		LorentzVector muDiff(0., 0., 0., 0.);
 
-		std::vector<patUtils::Electron> selElectrons;
-		std::vector<patUtils::Muon> selMuons;
+		std::vector<pat::Electron> selElectrons;
+		std::vector<pat::Muon> selMuons;
 
 		unsigned int nVetoE(0), nVetoMu(0);
 		for(size_t ilep=0; ilep<muons.size (); ++ilep)
 			{
-			patUtils::GenericLepton& muon = muons[ilep];
+			//patUtils::GenericLepton& muon = muons[ilep];
+			pat::Muon& muon = muons[ilep];
 
 			bool 
 				passKin(true),     passId(true),     passIso(true),
 				passVetoKin(true), passVetoId(true), passVetoIso(true);
 						
-			int lid(lepton.pdgId());
+			int lid(muon.pdgId());
 						
 			//apply muon corrections
 			if(muCor)
@@ -1125,7 +1126,7 @@ for(size_t f=0; f<urls.size();++f){
 			// no need to mess with photon ID // if(minDRlg<0.1) continue;
 
 			// ---------------------------- kinematics
-			double leta(fabs(lepton.eta()));
+			double leta(fabs(muon.eta()));
 
 			// ---------------------- Main lepton kin
 			if(muon.pt() < 30.)                      passKin = false;
@@ -1172,7 +1173,7 @@ for(size_t f=0; f<urls.size();++f){
 				passVetoKin(true), passVetoId(true), passVetoIso(true);
 
 			// ---------------------------- kinematics
-			double leta(fabs(electron.el.superCluster()->eta()));
+			double leta(fabs(electron.superCluster()->eta()));
 
 			// ---------------------- Main lepton kin
 			if(electron.pt() < 30.)                      passKin = false;

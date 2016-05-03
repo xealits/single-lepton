@@ -1293,14 +1293,14 @@ for(size_t f=0; f<urls.size();++f)
 		// TODO: should MET corrections be done here?
 		// METs with corrections
 		//
-		LorentzVector met_values[7];
-		met_values[0] = met;
-		met_values[1] = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp);
-		met_values[2] = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown);
-		met_values[3] = mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp);
-		met_values[4] = mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown);
-		met_values[5] = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredUp);
-		met_values[6] = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredDown);
+		double met_pt_values[7];
+		met_pt_values[0] = met.pt();
+		met_pt_values[1] = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp).pt();
+		met_pt_values[2] = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown).pt();
+		met_pt_values[3] = mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp).pt();
+		met_pt_values[4] = mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown).pt();
+		met_pt_values[5] = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnUp).pt();
+		met_pt_values[6] = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnDown).pt();
 
 		// Select the jets. I need different collections because of tau cleaning, but this is needed only for the single lepton channels, so the tau cleaning is performed later.
 		pat::JetCollection selJets;
@@ -1572,7 +1572,7 @@ for(size_t f=0; f<urls.size();++f)
 			bool passJetSelection(selSingleLepJets.size()>1); // 2 jets
 			bool passMetSelection(met.pt()>40.); // MET > 40
 			// all METs:
-			bool passMetSelection(met_values[0]>40. || met_values[1]>40. || met_values[2]>40. || met_values[3]>40. || met_values[4]>40. || met_values[5]>40. || met_values[6]>40.);
+			bool passMetSelection(met_pt_values[0]>40. || met_pt_values[1]>40. || met_pt_values[2]>40. || met_pt_values[3]>40. || met_pt_values[4]>40. || met_pt_values[5]>40. || met_pt_values[6]>40.);
 			bool passBtagsSelection(selBJets.size()>0); // 1 b jet
 			bool passTauSelection(selTaus.size()==1); // only 1 tau
 			bool passOS(selTaus.size()>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0); // Oposite sign
@@ -1641,7 +1641,6 @@ for(size_t f=0; f<urls.size();++f)
 				// METs with corrections
 				// LorentzVector met_values[7];
 				fprintf(csv_out, "%g,%g,%g,%g,%g,%g,%g,", met_values[0], met_values[1], met_values[2], met_values[3], met_values[4], met_values[5], met_values[6]);
-
 				fprintf(csv_out, "%g,", selLeptons[0].vz());
 				fprintf(csv_out, "%g,%g,%g,%g,",  selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
 				//fprintf(csv_out, "%g,", selTausNoLep[0].vz());
