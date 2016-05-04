@@ -574,6 +574,7 @@ if(!isMC)
 // Removed the SmartSelectionMonitor
 // SmartSelectionMonitor mon;
 
+/* These counter histograms are dissabled -- use int for that
 TH1D* singlelep_ttbar_initialevents  = (TH1D*) new TH1D("singlelep_ttbar_init",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
 TH1D* singlelep_ttbar_preselectedevents = (TH1D*) new TH1D("singlelep_ttbar_presele",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
 TH1D* singlelep_ttbar_selected_mu_events = (TH1D*) new TH1D("singlelep_ttbar_sele_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
@@ -583,7 +584,7 @@ TH1D* singlelep_ttbar_selected2_el_events = (TH1D*) new TH1D("singlelep_ttbar_se
 
 TH1D* singlelep_ttbar_maraselected_mu_events = (TH1D*) new TH1D("singlelep_ttbar_marasele_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
 TH1D* singlelep_ttbar_maraselected_el_events = (TH1D*) new TH1D("singlelep_ttbar_marasele_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-
+*/
 
 // Kinematic parameters of the decay
 TLorentzVector pl, plb, pb, pbb, prest;
@@ -656,7 +657,7 @@ for(size_t f=0; f<urls.size();++f){
 	//int nDuplicates(0);
 	for (ev.toBegin(); !ev.atEnd(); ++ev)
 		{
-		singlelep_ttbar_initialevents->Fill(1);
+		//singlelep_ttbar_initialevents->Fill(1);
 		iev++;
 		totalEntries++;
 		if (iev % treeStep == 0)
@@ -1374,7 +1375,7 @@ for(size_t f=0; f<urls.size();++f){
 		// ------------------------------------------ Single lepton full analysis
 		//if(tags[1] == "singlemu" || tags[1] == "singlee")
 		if(isSingleMu || isSingleE){
-			singlelep_ttbar_preselectedevents->Fill(1);
+			//singlelep_ttbar_preselectedevents->Fill(1);
 
 			// ---------------------------- Clean jet collection from selected taus
 			pat::JetCollection
@@ -1420,11 +1421,13 @@ for(size_t f=0; f<urls.size();++f){
 			bool passTauSelection(selTaus.size()==1); // only 1 tau
 			bool passOS(selTaus.size()>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0); // Oposite sign
 
+			/* TODO: re-enable these steps and other control points
 			if (passJetSelection)
 				{
 				if(isSingleMu) singlelep_ttbar_selected2_mu_events->Fill(1);
 				else if (isSingleE) singlelep_ttbar_selected2_el_events->Fill(1);
 				}
+			*/
 
 
 			// Mara's selection booleans
@@ -1435,8 +1438,10 @@ for(size_t f=0; f<urls.size();++f){
 			// common-selection
 			if(passJetSelection && passBtagsSelection) // 2 jets, 1 b jet, 1 isolated lepton
 				{
+				/* now these histograms are dissabled -- use counters to substitute them
 				if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
 				else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
+				*/
 				crossel_sum_weights_raw += rawWeight;
 				crossel_sum_weights += weight;
 				/*
@@ -1469,12 +1474,12 @@ for(size_t f=0; f<urls.size();++f){
 				{
 				if(isSingleMu)
 					{
-					singlelep_ttbar_selected_mu_events->Fill(1);
+					//singlelep_ttbar_selected_mu_events->Fill(1);
 					oursel_sum_weights_mu += weight;
 					}
 				else if (isSingleE)
 					{
-					singlelep_ttbar_selected_el_events->Fill(1);
+					//singlelep_ttbar_selected_el_events->Fill(1);
 					oursel_sum_weights_el += weight;
 					}
 				fprintf(csv_out, "oursel:%d,%d,%g,%g,%d,", num_inters, nGoodPV, rawWeight, weight, isSingleE);
@@ -1534,8 +1539,10 @@ for(size_t f=0; f<urls.size();++f){
 
 			if(passMaraJetSelection && passMaraBtagsSelection && passMaraLeptonSelection)
 				{
+				/* now these histograms are disabled -- counters to substitute them
 				if(isSingleMu) singlelep_ttbar_maraselected_mu_events->Fill(1);
 				else if (isSingleE) singlelep_ttbar_maraselected_el_events->Fill(1);
+				*/
 				marasel_sum_weights_raw += rawWeight;
 				marasel_sum_weights += weight;
 				fprintf(csv_out, "marasel:%d,%d,%g,%g,%d,", num_inters, nGoodPV, rawWeight, weight, isSingleE);
@@ -1848,7 +1855,7 @@ printf ("\n");
 //save control plots to file
 printf ("Results save in %s\n", outUrl.Data());
 
-//save all to the file
+/* disabled the ROOT output
 TFile *ofile = TFile::Open (outUrl + ".root", "recreate");
 // mon.Write();
 
@@ -1863,6 +1870,7 @@ singlelep_ttbar_maraselected_mu_events->Write();
 singlelep_ttbar_maraselected_el_events->Write();
 
 ofile->Close();
+*/
 
 if (outTxtFile) fclose (outTxtFile);
 
