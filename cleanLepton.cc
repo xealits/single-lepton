@@ -1040,7 +1040,7 @@ for(size_t f=0; f<urls.size();++f){
 			}
 
 		if(debug) cout << "DEBUG: Event was not stopped by the ttbar sample categorization (either success, or it was not ttbar)" << endl;
-		*/
+		//*/
 				
 		// FIXME: Top pT reweighting to be reactivated as soon as corrections are released
 		// if(tPt>0 && tbarPt>0 && topPtWgt)
