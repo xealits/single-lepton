@@ -181,7 +181,7 @@ The steps of Pietro's code with changes.
   - jets,
   - gammas,
   - METs (collection of MET -- there are different MET algorithms!)
-     **we use the 0th MET**
+     **we use the 0th MET of slimmedMETs collection in 76x MINIAODs v2 -- it is type 1 MET**
   - taus
 * merging electrons and muons
 * leptons selection
@@ -237,6 +237,7 @@ The steps of Pietro's code with changes.
     basically now we check if tau.signalChargedHadrCands
     have at least 1 element with numberOfPixelHits > 0
 * JET/MET ANALYSIS -> **0 leave as is** -> update b-jets working point to 0.8
+  + MET 0 is used
   + it only selects jets, some of them -- as b-tagged
   + only 1 parameter is obtained from MET
   + updateJEC
@@ -244,15 +245,19 @@ The steps of Pietro's code with changes.
   + selecting jets:
       - pt, eta, *mctruth (?), cross-clean with l/gamma dR, jet ID
         our selection:
-        we do a loose selection on kinematics, then cross-clean with leptons and **taus**,
+        we do a loose selection on kinematics,
+        then cross-clean with leptons and **taus**,
         and do the tighter final kinematics, ID and cleanup selection,
         which is the same as Mara's except 0.89 b-tag working point and **tau** cleanup
+        pt > 30, eta < 2.5, dR > 0.4 with leptons and taus,
+        jet ID is loose according to https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
       - Mara's analysis:
         P_T > 30, eta < 2.4, lepton-jet dR > 0.4,
         b-tagging --- CSVv2 > 0.8 (medium WP) (pfCombinedInclusiveSecondaryVertexV2BJetTags --- ?),
         jet ID is loose
   + dphijmet = fabs( deltaPhi(curr_jet, met) ) -- and save the min
-  + b-tagging via hasCSVtag
+  + b-tagging via hasCSVtag:
+      "pfCombinedInclusiveSecondaryVertexV2BJetTags" > 0.8
 * ASSIGN CHANNEL
 * Single lepton full analysis
   + *Clean jet collection from selected taus* moved it up to common selection
