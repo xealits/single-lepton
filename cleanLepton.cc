@@ -610,7 +610,7 @@ fprintf(csv_out, "Headers\n");
 //fprintf(csv_out, "kino:\npl.E, plb.E, pb.E, pbb.E,\nprest-sqr, prest-XY-sqr, met.pt,\nprest-o-plpb, pl-o-pb, plb-o-pbb,\nsame 3 angles\n");
 //fprintf(csv_out, "kino2:\n(pl1) x,y,z,e\n(pl2) x,y,z,e\n(pb1) x,y,z,e\n(pb2) x,y,z,e\n\n");
 
-fprintf(csv_out, "acceptances:filename, num_events, sum_rawWeight, sum_weight, cross_sum_rawWeight,cross_sum_weight, oursel_sum_rawWeight,oursel_sum_weight, oursel_sum_weight_el,oursel_sum_weight_mu, marasel_sum_rawWeight,marasel_sum_weight\n");
+fprintf(csv_out, "acceptances:filename, num_events, num_events_pass_lumi, sum_rawWeight, sum_weight, cross_sum_rawWeight,cross_sum_weight, oursel_sum_rawWeight,oursel_sum_weight, oursel_sum_weight_el,oursel_sum_weight_mu, marasel_sum_rawWeight,marasel_sum_weight\n");
 
 fprintf(csv_out, "crossel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
 fprintf(csv_out, "oursel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, tau_px,tau_py,tau_pz,tau_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
@@ -623,7 +623,8 @@ for(size_t f=0; f<urls.size();++f){
 	printf ("Scanning the ntuple %2lu/%2lu :",f+1, urls.size());
 
 	// acceptance parameters
-	int iev(0); // number of events
+	unsigned int iev(0); // number of events
+	unsigned int n_events_pass_lumi(0); // number of events lassing lumi
 
 	double sum_weights_raw = 0; // sum of raw weights
 	double sum_weights = 0; // sum of final weights
@@ -879,6 +880,7 @@ for(size_t f=0; f<urls.size();++f){
 		// people say the new datasets for CMSSW76 don't have it implemented yet
 		// testing if the procedure from 74 works with 76:
 		if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
+		n_events_pass_lumi += 1;
 		
 		// --------------------------------------------- apply trigger
 		// ---------------- and require compatibilitiy of the event with the PD
@@ -1795,7 +1797,7 @@ for(size_t f=0; f<urls.size();++f){
 	//fprintf(csv_out, "In the file, num_events, sum_weights_raw, sum_weights: %d, %g, %g\n", iev, sum_weights_raw, sum_weights);
 	fprintf(csv_out, "acceptances:");
 	fprintf(csv_out, "%s,", urls[f].c_str());
-	fprintf(csv_out, "%d,%g,%g,", iev, sum_weights_raw, sum_weights);
+	fprintf(csv_out, "%d,%d,%g,%g,", iev, n_events_pass_lumi, sum_weights_raw, sum_weights);
 	fprintf(csv_out, "%g,%g,",  crossel_sum_weights_raw, crossel_sum_weights);
 	fprintf(csv_out, "%g,%g,",  oursel_sum_weights_raw, oursel_sum_weights);
 	fprintf(csv_out, "%g,%g,",  oursel_sum_weights_el, oursel_sum_weights_mu);
