@@ -1833,6 +1833,8 @@ for(size_t f=0; f<urls.size();++f){
 	delete file;
 	} // End loop on files
 
+fprintf(csv_out, "End of file loop.\n");
+
 fclose(csv_out);
 
 if(saveSummaryTree)
