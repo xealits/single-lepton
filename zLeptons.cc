@@ -339,7 +339,7 @@ if (argc < 2)
 gSystem->Load ("libFWCoreFWLite");
 AutoLibraryLoader::enable ();
 	
-// configure the process
+// ------------------- get the settings/corrections/etc from *_cfg.py file and configure the process
 const edm::ParameterSet & runProcess = edm::readPSetsFrom (argv[1])->getParameter < edm::ParameterSet > ("runProcess");
 
 bool debug           = runProcess.getParameter<bool>  ("debug");
@@ -348,6 +348,10 @@ bool saveSummaryTree = runProcess.getParameter<bool>  ("saveSummaryTree");
 bool isMC            = runProcess.getParameter<bool>  ("isMC");
 double xsec          = runProcess.getParameter<double>("xsec");
 int mctruthmode      = runProcess.getParameter<int>   ("mctruthmode");
+
+// dtag is our own custom string, a "nickname" for the dataset
+// sometimes we do some custom handling on each dataset
+// and dtag is used do distinguish them in that
 TString dtag         = runProcess.getParameter<std::string>("dtag");
 	
 const edm::ParameterSet& myVidElectronIdConf = runProcess.getParameterSet("electronidparas");
@@ -359,17 +363,13 @@ VersionedPatElectronSelector electronVidVetoId(myVidElectronVetoIdWPConf);
 	
 TString suffix = runProcess.getParameter < std::string > ("suffix");
 std::vector < std::string > urls = runProcess.getUntrackedParameter < std::vector < std::string > >("input");
-//TString baseDir = runProcess.getParameter < std::string > ("dirName");
-//  if (mctruthmode != 0) //FIXME
-//    {
-//      outFileUrl += "_filt";
-//      outFileUrl += mctruthmode;
-//    }
 TString outUrl = runProcess.getParameter<std::string>("outfile");
 	
 // Good lumi mask
 lumiUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));
 
+
+// these are used to orthogonalize events of SingleMuon and SingleElectron triggers of data
 bool
 	filterOnlySINGLEE  (false),
 	filterOnlySINGLEMU (false);
@@ -379,11 +379,9 @@ if (!isMC)
 	if (dtag.Contains ("SingleEle"))  filterOnlySINGLEE  = true;
 	}
 
-bool isV0JetsMC   (isMC && (dtag.Contains ("DYJetsToLL") || dtag.Contains ("WJets")));
-// Reactivate for diboson shapes  
-// bool isMC_ZZ      (isMC && (string (dtag.Data ()).find ("TeV_ZZ") != string::npos));
-// bool isMC_WZ      (isMC && (string (dtag.Data ()).find ("TeV_WZ") != string::npos));
-	
+// some more custom characteristics of the datasets
+// it seems neither is used anymore
+bool isV0JetsMC   (isMC && (dtag.Contains ("DYJetsToLL") || dtag.Contains ("WJets")));	
 bool isTTbarMC    (isMC && (dtag.Contains("TTJets") || dtag.Contains("_TT_") )); // Is this still useful?
 bool isPromptReco (!isMC && dtag.Contains("PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
 bool isRun2015B   (!isMC && dtag.Contains("Run2015B"));
@@ -394,10 +392,10 @@ FILE *outTxtFile = NULL;
 if (!isMC) outTxtFile = fopen (outTxtUrl.Data (), "w");
 printf ("TextFile URL = %s\n", outTxtUrl.Data ());
 
-//tree info
+// TODO: tree info, remove it, not used anymore
 TString dirname = runProcess.getParameter < std::string > ("dirName");
 
-//systematics
+// TODO: systematics, the procedure is changing, remove these
 std::vector<TString> systVars(1,"");
 if(runSystematics && isMC)
 	{
@@ -448,34 +446,6 @@ std::string weightsDir (allWeightsURL.size ()? allWeightsURL[0] : "");
 //##############################################
 size_t totalEntries(0);
 
-TFile* summaryFile = NULL;
-TTree* summaryTree = NULL; //ev->;
-
-//  
-//  if(saveSummaryTree)
-//    {
-//      TDirectory* cwd = gDirectory;
-//      std::string summaryFileName(outUrl); 
-//      summaryFileName.replace(summaryFileName.find(".root", 0), 5, "_summary.root");
-//      
-//      summaryFile = new TFile(summaryFileName.c_str() "recreate");
-//      
-//      summaryTree = new TTree("Events", "Events");
-//      KEY: TTreeMetaData;1
-//      KEY: TTreeParameterSets;1
-//      KEY: TTreeParentage;1
-//      KEY: TTreeEvents;1
-//      KEY: TTreeLuminosityBlocks;1
-//      KEY: TTreeRuns;
-//      summaryTree->SetDirectory(summaryFile);  // This line is probably not needed
-//      
-//      summmaryTree->Branch(
-//
-//      cwd->cd();
-//    }
-//
-
-
 //MC normalization (to 1/pb)
 if(debug) cout << "DEBUG: xsec: " << xsec << endl;
 
@@ -493,6 +463,8 @@ MuScleFitCorrector *muCor = NULL;
 LeptonEfficiencySF lepEff;
 	
 // --------------------------------------- b-tagging 
+// -------- b-tagging is used in ttbar
+// TODO: remove it from here
 // TODO: move all these numbers to where they are applied??
 // btagMedium is used twice in the code
 // merge those tagging procedures and eliminated the variable?
@@ -558,22 +530,13 @@ if(!isMC)
 //########    INITIATING HISTOGRAMS     ########
 //##############################################
 
-// Removed the SmartSelectionMonitor
-// SmartSelectionMonitor mon;
+// histograms are not used now
+// output goes into simple text file of coma-separated format
+FILE *csv_out;
+string FileName = ((outUrl.ReplaceAll(".root",""))+".csv").Data();
+csv_out = fopen(FileName.c_str(), "w");
 
-TH1D* singlelep_ttbar_initialevents  = (TH1D*) new TH1D("singlelep_ttbar_init",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-TH1D* singlelep_ttbar_preselectedevents = (TH1D*) new TH1D("singlelep_ttbar_presele",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-TH1D* singlelep_ttbar_selected_mu_events = (TH1D*) new TH1D("singlelep_ttbar_sele_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-TH1D* singlelep_ttbar_selected_el_events = (TH1D*) new TH1D("singlelep_ttbar_sele_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-TH1D* singlelep_ttbar_selected2_mu_events = (TH1D*) new TH1D("singlelep_ttbar_sele2_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-TH1D* singlelep_ttbar_selected2_el_events = (TH1D*) new TH1D("singlelep_ttbar_sele2_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-
-TH1D* singlelep_ttbar_maraselected_mu_events = (TH1D*) new TH1D("singlelep_ttbar_marasele_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-TH1D* singlelep_ttbar_maraselected_el_events = (TH1D*) new TH1D("singlelep_ttbar_marasele_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
-
-
-// Kinematic parameters of the decay
-TLorentzVector pl, plb, pb, pbb, prest;
+fprintf(csv_out, "Headers\n");
 
 // -------------------------------
 // Here the output histograms and other object should be initialized
@@ -587,13 +550,7 @@ TLorentzVector pl, plb, pb, pbb, prest;
 //loop on all the events
 printf ("Progressing Bar     :0%%       20%%       40%%       60%%       80%%       100%%\n");
 
-int nMultiChannel(0);
-FILE *csv_out;
-string FileName = ((outUrl.ReplaceAll(".root",""))+".csv").Data();
-csv_out = fopen(FileName.c_str(), "w");
-
-fprintf(csv_out, "Headers\n");
-
+int nMultiChannel(0); // TODO: remove this multichannel counter -- not used here
 
 for(size_t f=0; f<urls.size();++f){
 	fprintf(csv_out, "Processing file: %s\n", urls[f].c_str());
@@ -611,12 +568,8 @@ for(size_t f=0; f<urls.size();++f){
 	int iev(0); // number of events
 	double sum_weights_raw = 0; // sum of raw weights
 	double sum_weights = 0; // sum of final weights
-	double crossel_sum_weights_raw = 0; // crossel
-	double crossel_sum_weights = 0;
-	double oursel_sum_weights_raw = 0; // oursel
-	double oursel_sum_weights = 0;
-	double marasel_sum_weights_raw = 0; // marasel
-	double marasel_sum_weights = 0;
+
+	// TODO: these are not outputed into csv now
 	unsigned int negative_event_nvtx[100];
 	unsigned int positive_event_nvtx[100];
 	double negative_event_pernvtx_weight[100];
@@ -633,7 +586,6 @@ for(size_t f=0; f<urls.size();++f){
 
 	for (ev.toBegin(); !ev.atEnd(); ++ev)
 		{
-		singlelep_ttbar_initialevents->Fill(1);
 		iev++;
 		totalEntries++;
 		if (iev % treeStep == 0)
@@ -643,6 +595,17 @@ for(size_t f=0; f<urls.size();++f){
 			}
 
 		edm::EventBase const & myEvent = ev;
+
+		// -------------------------------------   Basic event selection
+		// check good luminosity in the data, trigger in both data and MC
+		// "reshape" MC to match characteristics of real data:
+		//     here it is only real data Pile-Up (number of collisions per bunch crossing)
+		
+		// -------------------------------------------------- Skip bad lumi
+		// people say the new datasets for CMSSW76 don't have it implemented yet
+		// testing if the procedure from 74 works with 76:
+		if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
+
 
 		// ---------------------------------- MC shaping to data
 		// MC is weighted according to distributions of a bunch of data properties
@@ -660,12 +623,16 @@ for(size_t f=0; f<urls.size();++f){
 
 		// final weight of the event
 		double weight           (1.0);
-		// and systematic corrections? TODO: check how TotalWeight_plus is used?
-		double TotalWeight_plus (1.0);
+		// TODO: and systematic corrections? check how TotalWeight_plus is used?
+		double TotalWeight_plus (1.0); // never used now
 		double TotalWeight_minus(1.0);
 
 
 		// ---------------------------------- these are weird NLO -1 weights
+		// our (2016) NLO MC datasets are not perfect
+		// for some reason, some of the events have to be taken with -1 weight
+		// to match the real NLO distribution
+		// better MC should not have such flaws
 		// TODO: figure out how exactly they correct for NLO
 		// Take into account the negative weights from some NLO generators (otherwise some phase space will be double counted)
 		if(isNLOMC)
@@ -702,50 +669,13 @@ for(size_t f=0; f<urls.size();++f){
 		// DERIVE WEIGHTS TO APPLY TO SAMPLE
 		//
 
+		// MC is generated for broad range of parameters
+		// so that later it can be applied for different real data
+		//
+		// here we correct for real Pile-Up distribution of the data
+		// there can be other corrections, shaping MC to real data characteristics
+		// such as Parton Density, corrections to the simulation of the detector and so on
 
-		// -------------- it should be the creeppish merging of LO and NLO sets
-		// not used now at all?
-		// This must remain deactivated if you use HT-binned samples (it was for pthat-binned samples)
-		// if (isV0JetsMC)
-		//   {
-		//   fwlite::Handle < LHEEventProduct > lheEPHandle;
-		//   lheEPHandle.getByLabel (ev, "externalLHEProducer");
-		//   mon.fillHisto ("nup", "", lheEPHandle->hepeup ().NUP, 1);
-		//   if (lheEPHandle->hepeup ().NUP > 5)  continue;
-		//   mon.fillHisto ("nupfilt", "", lheEPHandle->hepeup ().NUP, 1);
-		//   }
-
-		// HT-binned samples stitching: https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples
-		/*
-		if(isV0JetsMC)
-			{
-			// access generator level HT               
-			fwlite::Handle<LHEEventProduct> lheEventProduct;
-			lheEventProduct.getByLabel(ev, "externalLHEProducer");
-			//edm::Handle<LHEEventProduct> lheEventProduct;
-			//ev.getByLabel( 'externalLHEProducer', lheEventProduct);
-			const lhef::HEPEUP& lheEvent = lheEventProduct->hepeup(); 
-			std::vector<lhef::HEPEUP::FiveVector> lheParticles = lheEvent.PUP;
-			double lheHt = 0.;
-			size_t numParticles = lheParticles.size();
-			for ( size_t idxParticle = 0; idxParticle < numParticles; ++idxParticle )
-				{
-				int absPdgId = TMath::Abs(lheEvent.IDUP[idxParticle]);
-				int status = lheEvent.ISTUP[idxParticle];
-				if ( status == 1 && ((absPdgId >= 1 && absPdgId <= 6) || absPdgId == 21) )
-					{
-					// quarks and gluons
-					lheHt += TMath::Sqrt(TMath::Power(lheParticles[idxParticle][0], 2.) + TMath::Power(lheParticles[idxParticle][1], 2.));
-					// first entry is px, second py
-					}                                        
-				}
-			if(debug) cout << "Sample: " << dtag << ", lheHt: " << lheHt << ", scale factor from spreadsheet: " << patUtils::getHTScaleFactor(dtag, lheHt) << endl;
-			// getHTScaleFactor works on combining several LO datasets with NLO
-			// now one 1 NLO dataset is used for both WJets and DYJets
-			// thus it is commented out here
-			//weightGen *=   patUtils::getHTScaleFactor(dtag, lheHt);
-			}
-		*/
 
 		weight *= weightGen;
 		rawWeight *=weightGen;
@@ -829,21 +759,7 @@ for(size_t f=0; f<urls.size();++f){
 			positive_event_pernvtx_weight[num_inters] += weight;
 			}
 
-		// -------------------------------------   Basic event selection
 
-		// ---------------------- Orthogonalize Run2015B PromptReco+17Jul15 mix
-		// let's remove Run2015B
-		// if(isRun2015B)
-		// {
-		// if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
-		// }
-		// it's not needed with the latest versions of RunB rereconstruction
-		
-		// -------------------------------------------------- Skip bad lumi
-		// people say the new datasets for CMSSW76 don't have it implemented yet
-		// testing if the procedure from 74 works with 76:
-		if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
-		
 		// --------------------------------------------- apply trigger
 		// ---------------- and require compatibilitiy of the event with the PD
 		edm::TriggerResultsByName tr = ev.triggerResultsByName ("HLT");
@@ -880,6 +796,7 @@ for(size_t f=0; f<urls.size();++f){
 
 		// ------------------------------------------------- Apply MET filters
 		//if( !isMC && !metFiler.passMetFilter( ev, isPromptReco)) continue;
+		// it crashed with CMSSW_7_6 and corresponding MINIAODs -- dissabled it
 		
 
 		if(debug)
@@ -901,7 +818,8 @@ for(size_t f=0; f<urls.size();++f){
 		fwlite::Handle<reco::GenParticleCollection> genHandle;
 		genHandle.getByLabel(ev, "prunedGenParticles");
 		if(genHandle.isValid() ) gen = *genHandle;
-		
+
+		// TODO: remove, these were used in ttbar samples
 		// FIXME: Save time and don't load the rest of the objects when selecting by mctruthmode :)
 		bool hasTop(false);
 		int
@@ -909,107 +827,6 @@ for(size_t f=0; f<urls.size();++f){
 		ngenLeptonsNonTauSonsStatus3(0),
 		ngenTausStatus3(0),
 		ngenQuarksStatus3(0);
-		//double tPt(0.), tbarPt(0.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop
-		//float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
-		// TODO: what is this?? it should be the ttbar channel split
-		// there was some vague answer from Pietro.....
-		/*
-		if(isMC)
-			{
-			// FIXME: Considering add support for different generators (based on PYTHIA6) for comparison.
-			for(size_t igen=0; igen<gen.size(); igen++)
-				{
-				// FIXME: Should pass to the new status scheme from: https://github.com/cms-sw/cmssw/pull/7791
-				// ////// if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
-
-				if(gen[igen].status() != 1 &&  gen[igen].status() !=2 && gen[igen].status() !=62 ) continue;
-				int absid=abs(gen[igen].pdgId());
-				// OK, so taus should be checked as status 2, and quarks as 71 or 23. More testing needed
-				//if( absid==15 && hasWasMother(gen[igen]) ) cout << "Event " << iev << ", Particle " << igen << " has " << gen[igen].numberOfDaughters() << " daughters, pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", mothers " << gen[igen].numberOfMothers() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
-
-
-				////// if(absid==6 && gen[igen].isHardProcess()){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
-				if(absid==6 && gen[igen].status()==62)
-					{
-					// particles of the hardest subprocess 22 : intermediate (intended to have preserved mass). Josh says 62 (last in chain)
-					hasTop=true;
-					// FIXME: Top pT reweighting. 13 TeV values not propagated yet, so not using.
-					//if(isTTbarMC){
-					//  if(gen[igen].get("id") > 0) tPt=gen[igen].pt();
-					//  else                        tbarPt=gen[igen].pt();
-					//}
-					} 
-
-
-				//if(!gen[igen].isPromptFinalState() ) continue;
-				if( (gen[igen].status() != 1 && gen[igen].status()!= 2 ) || !hasWasMother(gen[igen])) continue;
-
-				if((absid==11 || absid==13) && hasLeptonAsDaughter(gen[igen]))
-					cout << "Electron or muon " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
-
-				if((absid==11 || absid==13) && gen[igen].status()==1)
-					{
-					ngenLeptonsStatus3++;
-
-					if(!hasTauAsMother(gen[igen]))
-						ngenLeptonsNonTauSonsStatus3++;
-					}
-
-				if(absid==15 && gen[igen].status()==2 )
-					{
-					ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
-					//if(hasLeptonAsDaughter(gen[igen]))
-					//	cout << "Tau " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
-					}
-				if (absid<=5) ngenQuarksStatus3++;
-				}
-
-			if(debug && (ngenTausStatus3==1 && ngenLeptonsStatus3==1 )  )
-				cout << "Event: " << iev << ". Leptons: " << ngenLeptonsStatus3 << ". Leptons notaus: " << ngenLeptonsNonTauSonsStatus3 << ". Taus: " << ngenTausStatus3 << ". Quarks: " << ngenQuarksStatus3 << endl;
-
-			// Dileptons:
-			//    ttbar dileptons --> 1
-			//    ttbar other     --> 2
-			if(mctruthmode==1 && (ngenLeptonsStatus3+ngenTausStatus3!=2 || !hasTop )) continue;
-			if(mctruthmode==2 && (ngenLeptonsStatus3+ngenTausStatus3==2 || !hasTop )) continue;
-			// FIXME: port tt+bb splitting from 8 TeV (check the reference to the matched genjet)
-			//if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
-			//if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
-			//if(mcTruthMode==3 && (ngenBQuarksStatus23<4 || !hasTop))                           continue;
-
-			// lepton-tau:
-			//    ttbar ltau      --> 3
-			//    ttbar dileptons --> 4
-			//    ttbar ljets     --> 5
-			//    ttbar hadrons   --> 6
-			if(mctruthmode==3 && (ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1  || !hasTop )) continue; // This is bugged, as it is obvious
-			if(mctruthmode==4 && (ngenLeptonsNonTauSonsStatus3!=2                        || !hasTop )) continue;
-			if(mctruthmode==5 && (ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1        || !hasTop )) continue;
-
-			bool isHad(false);
-			if (
-				(ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1 ) &&
-				(ngenLeptonsNonTauSonsStatus3!=2                      ) &&
-				(ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1      ) 
-				)
-			isHad=true;
-
-			//if(mctruthmode==6 && (ngenLeptonsNonTauSonsStatus3!=0 || ngenTausStatus3!=0  || !hasTop )) continue;
-			if(mctruthmode==6 && (!isHad || !hasTop )) continue;
-
-			}
-
-		if(debug) cout << "DEBUG: Event was not stopped by the ttbar sample categorization (either success, or it was not ttbar)" << endl;
-		*/
-
-		// FIXME: Top pT reweighting to be reactivated as soon as corrections are released
-		// if(tPt>0 && tbarPt>0 && topPtWgt)
-		//   {
-		//   topPtWgt->computeWeight(tPt,tbarPt);
-		//   topPtWgt->getEventWeight(wgtTopPt, wgtTopPtUp, wgtTopPtDown);
-		//   wgtTopPtUp /= wgtTopPt;
-		//   wgtTopPtDown /= wgtTopPt;
-		//   }
 
 
 		// ------------------------------------ actual particles?
@@ -1025,11 +842,11 @@ for(size_t f=0; f<urls.size();++f){
 		if(electronsHandle.isValid() ) electrons = *electronsHandle;
 
 		// these "Collections" should be defined as:
-		//typedef std::vector< pat::Electron > 	PatElectronCollection
+		// typedef std::vector< pat::Electron > 	PatElectronCollection
  		// "define a PatElectronCollection as a vector of PatElectrons"
 
-
-		/* No Jets, Photons, Taus and MET in Z
+		// Other particles, used in ttbar
+		/*
 		pat::JetCollection jets;
 		fwlite::Handle<pat::JetCollection>jetsHandle;
 		jetsHandle.getByLabel(ev, "slimmedJets");
@@ -1040,7 +857,7 @@ for(size_t f=0; f<urls.size();++f){
 		photonsHandle.getByLabel(ev, "slimmedPhotons");
 		if(photonsHandle.isValid() ) photons = *photonsHandle;
 
-		pat::METCollection mets;
+		pat::METCollection mets; // Missing Transverse Energy is a separate object in the products of the decay
 		fwlite::Handle<pat::METCollection> metsHandle;
 		metsHandle.getByLabel(ev, "slimmedMETs");
 		if(metsHandle.isValid() ) mets = *metsHandle;
@@ -1061,12 +878,6 @@ for(size_t f=0; f<urls.size();++f){
 		if(tausHandle.isValid() ) taus = *tausHandle;
 		*/
 
-		//
-		//
-		// BELOW FOLLOWS THE ANALYSIS OF THE MAIN SELECTION WITH N-1 PLOTS. Whatever that means
-		//
-		//
-		
 
 
 		if(debug){
@@ -1076,23 +887,22 @@ for(size_t f=0; f<urls.size();++f){
 		//
 		// LEPTON ANALYSIS
 		//
-		
-		// ------------------------------------ merging electrons and muons
-		// Don't merge them in Z analysis
-		// std::vector<patUtils::GenericLepton> leptons;
-		// for(size_t l=0; l<electrons.size(); ++l) leptons.push_back(patUtils::GenericLepton (electrons[l] ));
-		// for(size_t l=0; l<muons.size(); ++l)     leptons.push_back(patUtils::GenericLepton (muons[l]     ));
-
-		// let's leave sort for now
-		std::sort(electrons.begin(), electrons.end(), utils::sort_CandidatesByPt);
-		std::sort(muons.begin(), muons.end(), utils::sort_CandidatesByPt);
-
 
 		// ---------------------------------- leptons selection
 		LorentzVector muDiff(0., 0., 0., 0.);
 
 		std::vector<pat::Electron> selElectrons;
 		std::vector<pat::Muon> selMuons;
+
+		// Usually (in ttbar at least)
+		// we select "good" muons and electrons, based on their transverse momentum P_T and eta
+		// also -- ID and Isolation -- which are separate algorithms or output parameters of ParticleFlow -- CMS algorithm separating the particles
+		// and so on
+		// also we count "not so good" muons and electrons -- veto muons and electrons
+		// which have less restrictions
+		// and then we select the event, if there are no "veto" particles
+		// i.e. we can make a clear choice which leptons are good
+		// but in Z-ll it is most likely not needed
 
 		unsigned int nVetoE(0), nVetoMu(0);
 		for(size_t ilep=0; ilep<muons.size (); ++ilep)
@@ -1117,36 +927,20 @@ for(size_t f=0; f<urls.size();++f){
 				muDiff += muon.p4();
 				}
 
-			//no need for charge info any longer
-			// lid = abs(lid);
-			// TString lepStr(lid == 13 ? "mu" : "e");
-					
-			// no need to mess with photon ID // //veto nearby photon (loose electrons are many times photons...)
-			// no need to mess with photon ID // double minDRlg(9999.);
-			// no need to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-			// no need to mess with photon ID //   minDRlg=TMath::Min(minDRlg,deltaR(leptons[ilep].p4(),selPhotons[ipho].p4()));
-			// no need to mess with photon ID // if(minDRlg<0.1) continue;
-
 			// ---------------------------- kinematics
 			double leta(fabs(muon.eta()));
 
 			// ---------------------- Main lepton kin
 			if(muon.pt() < 30.)                      passKin = false;
 			if(leta > 2.1)                                    passKin = false;
-			// if(lid == 11 && (leta > 1.4442 && leta < 1.5660)) passKin = false; // Crack veto
 
 			// ---------------------- Veto lepton kin
 			if (muon.pt () < 20)                      passVetoKin = false;
 			if (leta > 2.1)                                    passVetoKin = false;
-			// if (lid == 11 && (leta > 1.4442 && leta < 1.5660)) passVetoKin = false; // Crack veto
 
 			//Cut based identification
 
-			//std::vector<pat::Electron> dummyShit; dummyShit.push_back(leptons[ilep].el);
-
 			// ------------------------- lepton IDs
-			// passId     = lid == 11 ? patUtils::passId(electronVidMainId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdTight);
-			// passVetoId = lid == 11 ? patUtils::passId(electronVidVetoId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdLoose);
 			passId     = patUtils::passId(muon, goodPV, patUtils::llvvMuonId::StdTight);
 			passVetoId = patUtils::passId(muon, goodPV, patUtils::llvvMuonId::StdLoose);
 			// Notice:
@@ -1155,8 +949,6 @@ for(size_t f=0; f<urls.size();++f){
 			// thus all leptons having some ID come from _the_same_ vertex
 
 			// ------------------------- lepton isolation
-			// passIso     = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Tight); // Electron iso is included within the ID
-			// passVetoIso = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Loose); // Electron iso is included within the ID
 			passIso     = patUtils::passIso(muon, patUtils::llvvMuonIso::Tight);
 			passVetoIso = patUtils::passIso(muon, patUtils::llvvMuonIso::Loose);
 
@@ -1167,7 +959,6 @@ for(size_t f=0; f<urls.size();++f){
 
 		for(size_t ilep=0; ilep<electrons.size (); ++ilep)
 			{
-			// patUtils::GenericLepton& muon = electrons[ilep];
 			pat::Electron& electron = electrons[ilep];
 
 			bool 
@@ -1189,11 +980,8 @@ for(size_t f=0; f<urls.size();++f){
 
 			//Cut based identification
 
-			//std::vector<pat::Electron> dummyShit; dummyShit.push_back(leptons[ilep].el);
 
 			// ------------------------- lepton IDs
-			// passId     = lid == 11 ? patUtils::passId(electronVidMainId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdTight);
-			// passVetoId = lid == 11 ? patUtils::passId(electronVidVetoId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdLoose);
 			passId     = patUtils::passId(electronVidMainId, myEvent, electron);
 			passVetoId = patUtils::passId(electronVidVetoId, myEvent, electron);
 			// Notice:
@@ -1202,8 +990,6 @@ for(size_t f=0; f<urls.size();++f){
 			// thus all leptons having some ID come from _the_same_ vertex
 
 			// ------------------------- lepton isolation
-			// passIso     = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Tight); // Electron iso is included within the ID
-			// passVetoIso = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Loose); // Electron iso is included within the ID
 			passIso     = true;
 			passVetoIso = true;
 
@@ -1220,8 +1006,6 @@ for(size_t f=0; f<urls.size();++f){
 		if (selElectrons.size()<10) electron_selection_control[selElectrons.size()] +=1;
 		else electron_selection_control[10] +=1;
 
-		// LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
-
 		//
 		// --------------------------------------------------
 		//
@@ -1230,6 +1014,7 @@ for(size_t f=0; f<urls.size();++f){
 		// find candidates among selected electrons and muons
 		// go through the array of particles
 		// select pairs which have the mass around Z mass
+		// TODO: also check the scalar product of their momenta
 		std::vector<pair<int,int>> muon_z_pairs;
 		if(selMuons.size()>=2)
 			{
@@ -1286,9 +1071,9 @@ for(size_t f=0; f<urls.size();++f){
 
 		} // End single file event loop
 
-	fprintf(csv_out, "N good muon pairs:%d\n",     n_good_muon_pairs);
+	fprintf(csv_out, "N good muon pairs:%u\n",     n_good_muon_pairs);
 	fprintf(csv_out, "distr of N selected muons:%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", muon_selection_control[0],muon_selection_control[1],muon_selection_control[2],muon_selection_control[3],muon_selection_control[4], muon_selection_control[5],muon_selection_control[6],muon_selection_control[7],muon_selection_control[8],muon_selection_control[9], muon_selection_control[10]);
-	fprintf(csv_out, "N good electron pairs:%d\n", n_good_electron_pairs);
+	fprintf(csv_out, "N good electron pairs:%u\n", n_good_electron_pairs);
 	fprintf(csv_out, "distr of N selected electrons:%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", electron_selection_control[0],electron_selection_control[1],electron_selection_control[2],electron_selection_control[3],electron_selection_control[4], electron_selection_control[5],electron_selection_control[6],electron_selection_control[7],electron_selection_control[8],electron_selection_control[9], electron_selection_control[10]);
 
 	printf("\n");
@@ -1296,33 +1081,14 @@ for(size_t f=0; f<urls.size();++f){
 	delete file;
 	} // End loop on files
 
+fprintf(csv_out, "End of the job\n."); // to be sure we finished all files
+
 fclose(csv_out);
 
-// if(saveSummaryTree)
-// 	{
-// 	TDirectory* cwd = gDirectory;
-// 	summaryFile->cd();
-// 	summaryTree->Write();
-// 	summaryFile->Close();
-// 	delete summaryFile;
-// 	cwd->cd();
-// 	}
 
-
-if(nMultiChannel>0) cout << "Warning! There were " << nMultiChannel << " multi-channel events out of " << totalEntries << " events!" << endl;
 printf ("\n");
-
-//##############################################
-//########     SAVING HISTO TO FILE     ########
-//##############################################
-//save control plots to file
 printf ("Results save in %s\n", outUrl.Data());
 
-//save all to the file
-// TFile *ofile = TFile::Open (outUrl + ".root", "recreate");
-
-
-// ofile->Close();
 
 if (outTxtFile) fclose (outTxtFile);
 
