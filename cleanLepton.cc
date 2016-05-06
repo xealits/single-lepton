@@ -655,6 +655,7 @@ for(size_t f=0; f<urls.size();++f){
 	double positive_event_pernvtx_weight[100];
 	double negative_event_pergoodpv_weight[100];
 	double positive_event_pergoodpv_weight[100];
+	double event_pergoodpv_weight[100];
 	double n_selected_leptons_weighted[100];
 	double n_selected_taus_weighted[100];
 	double n_selected_jets_weighted[100];
@@ -667,6 +668,7 @@ for(size_t f=0; f<urls.size();++f){
 		positive_event_pernvtx_weight[i] = 0;
 		negative_event_pergoodpv_weight[i] = 0;
 		positive_event_pergoodpv_weight[i] = 0;
+		event_pergoodpv_weight[i] = 0;
 		n_selected_leptons_weighted[i] = 0;
 		n_selected_taus_weighted[i] = 0;
 		n_selected_jets_weighted[i] = 0;
@@ -865,8 +867,11 @@ for(size_t f=0; f<urls.size();++f){
 		else
 			{
 			// get data pile-up into num_inters
-			// use number of good vertices for the data
-			num_inters = nGoodPV;
+			// for now use number of good vertices for the data
+			// should substitute it with something more appropriate
+			// num_inters = nGoodPV;
+			// let's try using the size of primary vertex collection (before selecting the good vertices)
+			num_inters = vtx.size();
 			}
 
 		// --------------- here the weighting/shaping of MC should be done
@@ -877,6 +882,7 @@ for(size_t f=0; f<urls.size();++f){
 		//num_inters = 1;
 		if (num_inters>99) num_inters = 99;
 		if (nGoodPV>100) nGoodPV = 99;
+		event_pergoodpv_weight[nGoodPV] += weight;
 		//if (num_inters<0)  num_inters = 0;
 		if (weightGen<0)
 			{
@@ -1896,6 +1902,12 @@ for(size_t f=0; f<urls.size();++f){
 		{ fprintf(csv_out, "%g,", positive_event_pernvtx_weight[i]); }
 	fprintf(csv_out, "\n");
 
+
+	// double event_pergoodpv_weight[100];
+	fprintf(csv_out, "event_pergoodpv_weight:");
+	for (int i=0; i<100; i++)
+		{ fprintf(csv_out, "%g,", event_pergoodpv_weight[i]); }
+	fprintf(csv_out, "\n");
 
 	// double negative_event_pergoodpv_weight[100];
 	fprintf(csv_out, "negative_event_pergoodpv_weight:");
