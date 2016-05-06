@@ -637,7 +637,7 @@ for(size_t f=0; f<urls.size();++f){
 	double weights_in_selections[256];
 	for (int i=0; i<256; i++)
 		{
-		weights_in_selections = 0;
+		weights_in_selections[i] = 0.0;
 		}
 
 	double crossel_sum_weights_raw = 0; // crossel
@@ -1380,9 +1380,11 @@ for(size_t f=0; f<urls.size();++f){
 		// Event selection booleans
 		bool iso_lep = isSingleMu || isSingleE; // 2^5
 		// bool passJetRawSelection(selSingleLepJets.size()>1); // 2 jets
-		bool passJetSelection(selSingleLepJets.size()>1); // 2 jets // 2^4
+		//bool passJetSelection(selSingleLepJets.size()>1); // 2 jets // 2^4
+		bool passJetSelection(selJets.size()>1); // 2 jets // 2^4
 		bool passMetSelection(met.pt()>40.); // MET > 40 // 2^3
-		bool passBtagsSelection(selSingleLepBJets.size()>0); // 1 b jet // 2^2
+		//bool passBtagsSelection(selSingleLepBJets.size()>0); // 1 b jet // 2^2
+		bool passBtagsSelection(selBJets.size()>0); // 1 b jet // 2^2
 		bool passTauSelection(selTaus.size()==1); // only 1 tau // 2^1
 		bool passOS(selTaus.size()>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0); // Oposite sign // 2^0
 
