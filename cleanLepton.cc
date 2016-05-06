@@ -649,17 +649,28 @@ for(size_t f=0; f<urls.size();++f){
 	double marasel_sum_weights_raw = 0; // marasel
 	double marasel_sum_weights = 0;
 
-
 	unsigned int negative_event_nvtx[100];
 	unsigned int positive_event_nvtx[100];
 	double negative_event_pernvtx_weight[100];
 	double positive_event_pernvtx_weight[100];
+	double negative_event_pergoodpv_weight[100];
+	double positive_event_pergoodpv_weight[100];
+	double n_selected_leptons_weighted[100];
+	double n_selected_taus_weighted[100];
+	double n_selected_jets_weighted[100];
+	double n_selected_bjets_weighted[100];
 	for (int i=0; i<100; i++)
 		{
 		negative_event_nvtx[i] = 0;
 		positive_event_nvtx[i] = 0;
 		negative_event_pernvtx_weight[i] = 0;
 		positive_event_pernvtx_weight[i] = 0;
+		negative_event_pergoodpv_weight[i] = 0;
+		positive_event_pergoodpv_weight[i] = 0;
+		n_selected_leptons_weighted[i] = 0;
+		n_selected_taus_weighted[i] = 0;
+		n_selected_jets_weighted[i] = 0;
+		n_selected_bjets_weighted[i] = 0;
 		}
 
 	int treeStep (ev.size()/50);
@@ -865,16 +876,19 @@ for(size_t f=0; f<urls.size();++f){
 
 		//num_inters = 1;
 		if (num_inters>99) num_inters = 99;
+		if (nGoodPV>100) nGoodPV = 99;
 		//if (num_inters<0)  num_inters = 0;
 		if (weightGen<0)
 			{
 			negative_event_nvtx[num_inters] += 1;
 			negative_event_pernvtx_weight[num_inters] += weight;
+			negative_event_pergoodpv_weight[nGoodPV] += weight;
 			}
 		else
 			{
 			positive_event_nvtx[num_inters] += 1;
 			positive_event_pernvtx_weight[num_inters] += weight;
+			positive_event_pergoodpv_weight[nGoodPV] += weight;
 			}
 
 		// TODO: make separate weight and number of events distrobutions
@@ -1319,6 +1333,17 @@ for(size_t f=0; f<urls.size();++f){
 		std::sort (selBJets.begin(), selBJets.end(), utils::sort_CandidatesByPt);
 
 
+		// -------------------------------------------------- all particles are selected
+
+		unsigned int n_leptons = selLeptons.size();
+		unsigned int n_tau = selTaus.size();
+		unsigned int n_jets = selJets.size();
+		unsigned int n_bjets = selBJets.size();
+
+		n_selected_leptons_weighted[n_leptons > 100 ? 99 : n_leptons] += weight;
+		n_selected_taus_weighted [n_tau > 100 ? 99 : n_tau] += weight;
+		n_selected_jets_weighted [n_jets > 100 ? 99 : n_jets] += weight;
+		n_selected_bjets_weighted[n_bjets > 100 ? 99 : n_bjets] += weight;
 
 		//
 		// -------------------------------------------------- ASSIGN CHANNEL
@@ -1848,27 +1873,66 @@ for(size_t f=0; f<urls.size();++f){
 	fprintf(csv_out, "%g,%g\n", marasel_sum_weights_raw, marasel_sum_weights);
 
 	fprintf(csv_out, "weights_in_selections:");
-        for (int i=0; i<256; i++)
-                { fprintf(csv_out, "%g,", weights_in_selections[i]); }
+	for (int i=0; i<256; i++)
+		{ fprintf(csv_out, "%g,", weights_in_selections[i]); }
 	fprintf(csv_out, "\n");
 
 	fprintf(csv_out, "negative_events_nvtx:");
-        for (int i=0; i<100; i++)
-                { fprintf(csv_out, "%d,", negative_event_nvtx[i]); }
+	for (int i=0; i<100; i++)
+		{ fprintf(csv_out, "%d,", negative_event_nvtx[i]); }
 	fprintf(csv_out, "\n");
 	fprintf(csv_out, "positive_events_nvtx:");
-        for (int i=0; i<100; i++)
-                { fprintf(csv_out, "%d,", positive_event_nvtx[i]); }
+	for (int i=0; i<100; i++)
+		{ fprintf(csv_out, "%d,", positive_event_nvtx[i]); }
 	fprintf(csv_out, "\n");
 
 	fprintf(csv_out, "negative_event_pernvtx_weight:");
-        for (int i=0; i<100; i++)
-                { fprintf(csv_out, "%g,", negative_event_pernvtx_weight[i]); }
+	for (int i=0; i<100; i++)
+		{ fprintf(csv_out, "%g,", negative_event_pernvtx_weight[i]); }
 	fprintf(csv_out, "\n");
+
 	fprintf(csv_out, "positive_event_pernvtx_weight:");
-        for (int i=0; i<100; i++)
-                { fprintf(csv_out, "%g,", positive_event_pernvtx_weight[i]); }
+	for (int i=0; i<100; i++)
+		{ fprintf(csv_out, "%g,", positive_event_pernvtx_weight[i]); }
 	fprintf(csv_out, "\n");
+
+
+	// double negative_event_pergoodpv_weight[100];
+	fprintf(csv_out, "negative_event_pergoodpv_weight:");
+	for (int i=0; i<100; i++)
+		{ fprintf(csv_out, "%g,", negative_event_pergoodpv_weight[i]); }
+	fprintf(csv_out, "\n");
+
+	// double positive_event_pergoodpv_weight[100];
+	fprintf(csv_out, "positive_event_pergoodpv_weight:");
+	for (int i=0; i<100; i++)
+		{ fprintf(csv_out, "%g,", positive_event_pergoodpv_weight[i]); }
+	fprintf(csv_out, "\n");
+
+	// double n_selected_leptons_weighted[100];
+	fprintf(csv_out, "n_selected_leptons_weighted:");
+	for (int i=0; i<100; i++)
+		{ fprintf(csv_out, "%g,", n_selected_leptons_weighted[i]); }
+	fprintf(csv_out, "\n");
+
+	// double n_selected_taus_weighted[100];
+	fprintf(csv_out, "n_selected_taus_weighted:");
+	for (int i=0; i<100; i++)
+		{ fprintf(csv_out, "%g,", n_selected_taus_weighted[i]); }
+	fprintf(csv_out, "\n");
+
+	// double n_selected_jets_weighted[100];
+	fprintf(csv_out, "n_selected_jets_weighted:");
+	for (int i=0; i<100; i++)
+		{ fprintf(csv_out, "%g,", n_selected_jets_weighted[i]); }
+	fprintf(csv_out, "\n");
+
+	// double n_selected_bjets_weighted[100];
+	fprintf(csv_out, "n_selected_bjets_weighted:");
+	for (int i=0; i<100; i++)
+		{ fprintf(csv_out, "%g,", n_selected_bjets_weighted[i]); }
+	fprintf(csv_out, "\n");
+
 	printf("\n");
 
 	delete file;
