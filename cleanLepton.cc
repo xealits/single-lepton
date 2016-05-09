@@ -574,9 +574,9 @@ if(!isMC)
 // Removed the SmartSelectionMonitor
 // SmartSelectionMonitor mon;
 
-/* These counter histograms are dissabled -- use int for that
-TH1D* singlelep_ttbar_initialevents  = (TH1D*) new TH1D("singlelep_ttbar_init",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
+// TH1D* singlelep_ttbar_initialevents  = (TH1D*) new TH1D("singlelep_ttbar_init",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
 TH1D* singlelep_ttbar_preselectedevents = (TH1D*) new TH1D("singlelep_ttbar_presele",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
+/* These counter histograms are dissabled -- use int for that
 TH1D* singlelep_ttbar_selected_mu_events = (TH1D*) new TH1D("singlelep_ttbar_sele_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
 TH1D* singlelep_ttbar_selected_el_events = (TH1D*) new TH1D("singlelep_ttbar_sele_el",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
 TH1D* singlelep_ttbar_selected2_mu_events = (TH1D*) new TH1D("singlelep_ttbar_sele2_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
@@ -680,7 +680,7 @@ for(size_t f=0; f<urls.size();++f){
 	//int nDuplicates(0);
 	for (ev.toBegin(); !ev.atEnd(); ++ev)
 		{
-		//singlelep_ttbar_initialevents->Fill(1);
+		singlelep_ttbar_initialevents->Fill(1);
 		iev++;
 		totalEntries++;
 		if (iev % treeStep == 0)
@@ -1441,7 +1441,7 @@ for(size_t f=0; f<urls.size();++f){
 		// ------------------------------------------ Single lepton full analysis
 		//if(tags[1] == "singlemu" || tags[1] == "singlee")
 		if(isSingleMu || isSingleE){
-			//singlelep_ttbar_preselectedevents->Fill(1);
+			singlelep_ttbar_preselectedevents->Fill(1);
 
 			// ---------------------------- Clean jet collection from selected taus
 			pat::JetCollection
@@ -1976,22 +1976,23 @@ printf ("\n");
 //save control plots to file
 printf ("Results save in %s\n", outUrl.Data());
 
-/* disabled the ROOT output
+// re-enabled the ROOT output
+// for resubmit option of the job script
 TFile *ofile = TFile::Open (outUrl + ".root", "recreate");
 // mon.Write();
 
 singlelep_ttbar_initialevents->Write();
 singlelep_ttbar_preselectedevents->Write();
-singlelep_ttbar_selected_mu_events->Write();
-singlelep_ttbar_selected_el_events->Write();
-singlelep_ttbar_selected2_mu_events->Write();
-singlelep_ttbar_selected2_el_events->Write();
+// singlelep_ttbar_selected_mu_events->Write();
+// singlelep_ttbar_selected_el_events->Write();
+// singlelep_ttbar_selected2_mu_events->Write();
+// singlelep_ttbar_selected2_el_events->Write();
 
-singlelep_ttbar_maraselected_mu_events->Write();
-singlelep_ttbar_maraselected_el_events->Write();
+// singlelep_ttbar_maraselected_mu_events->Write();
+// singlelep_ttbar_maraselected_el_events->Write();
 
 ofile->Close();
-*/
+
 
 if (outTxtFile) fclose (outTxtFile);
 
