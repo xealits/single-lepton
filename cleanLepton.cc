@@ -1427,12 +1427,14 @@ for(size_t f=0; f<urls.size();++f){
 		bool passTauSelection(selTaus.size()==1); // only 1 tau // 2^1
 		bool passOS(selTaus.size()>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0); // Oposite sign // 2^0
 
+		/*TODO: make propper indexes here
 		weights_in_selections[((iso_lep ? 1 : 0)*2)^5 +
 			((passJetSelection? 1 : 0)*2)^4 +
 			((passMetSelection? 1 : 0)*2)^3 +
 			((passBtagsSelection? 1 : 0)*2)^2 +
 			((passTauSelection? 1 : 0)*2)^1 +
 			(passOS? 1 : 0)*1] += weight;
+		*/
 
 
 
