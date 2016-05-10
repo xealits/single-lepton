@@ -91,12 +91,14 @@ namespace utils
 		}
 
 		//
-		std::vector<double> smearJES(double pt, double eta, JetCorrectionUncertainty *jecUnc)
+		//std::vector<double> smearJES(double pt, double eta, JetCorrectionUncertainty *jecUnc)
+		std::vector<float> smearJES(double pt, double eta, JetCorrectionUncertainty *jecUnc)
 		{
 			jecUnc->setJetEta(eta);
 			jecUnc->setJetPt(pt);
 			double relShift=fabs(jecUnc->getUncertainty(true));
-			std::vector<double> toRet;
+			//std::vector<double> toRet;
+			std::vector<float> toRet;
 			toRet.push_back((1.0+relShift)*pt);
 			toRet.push_back((1.0-relShift)*pt);
 			return toRet;
@@ -691,13 +693,6 @@ for(size_t f=0; f<urls.size();++f){
 
 		edm::EventBase const & myEvent = ev;
 
-		// -------------------------------------------------- Skip bad lumi
-		// people say the new datasets for CMSSW76 don't have it implemented yet
-		// testing if the procedure from 74 works with 76:
-		if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock())) continue; 
-		// Notice: it is the first continue in the event loop
-		n_events_pass_lumi += 1;
-
 		// ---------------------------------- MC shaping to data
 		// MC is weighted according to distributions of a bunch of data properties
 
@@ -913,6 +908,13 @@ for(size_t f=0; f<urls.size();++f){
 		// {
 		// if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
 		// }
+
+		// -------------------------------------------------- Skip bad lumi
+		// people say the new datasets for CMSSW76 don't have it implemented yet
+		// testing if the procedure from 74 works with 76:
+		if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock())) continue; 
+		// Notice: it is the first continue in the event loop
+		n_events_pass_lumi += 1;
 
 		// --------------------------------------------- apply trigger
 		// ---------------- and require compatibilitiy of the event with the PD
