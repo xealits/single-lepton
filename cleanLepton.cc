@@ -1208,12 +1208,18 @@ for(size_t f=0; f<urls.size();++f){
 			//std::vector<pat::Electron> dummyShit; dummyShit.push_back(leptons[ilep].el);
 
 			// ------------------------- lepton IDs
-			passId     = lid == 11 ? patUtils::passId(electronVidMainId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdTight);
-			passVetoId = lid == 11 ? patUtils::passId(electronVidVetoId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdLoose);
+			// passId     = lid == 11 ? patUtils::passId(electronVidMainId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdTight);
+			// passVetoId = lid == 11 ? patUtils::passId(electronVidVetoId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdLoose);
+			// apparently the previous version of the passID callse is actually incompatible with the definition of passID
+			// don't know how it compiled at all....
+			passId     = lid == 11 ? patUtils::passId(lepton.el, myEvent, electronVidMainId) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdTight);
+			passVetoId = lid == 11 ? patUtils::passId(lepton.el, myEvent, electronVidVetoId) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdLoose);
 
 			// ------------------------- lepton isolation
-			passIso     = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Tight); // Electron iso is included within the ID
-			passVetoIso = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Loose); // Electron iso is included within the ID
+			// passIso     = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Tight); // Electron iso is included within the ID
+			// passVetoIso = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Loose); // Electron iso is included within the ID
+			passIso     = lid == 11 ? patUtils::passIso(lepton.el, patUtils::llvvElecIso::Tight) : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Tight);
+			passVetoIso = lid == 11 ? patUtils::passIso(lepton.el, patUtils::llvvElecIso::Loose) : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Loose);
 
 			if     (passKin     && passId     && passIso)     selLeptons.push_back(lepton);
 			else if(passVetoKin && passVetoId && passVetoIso) lid==11 ? nVetoE++ : nVetoMu++;
