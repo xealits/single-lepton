@@ -576,7 +576,7 @@ if(!isMC)
 // Removed the SmartSelectionMonitor
 // SmartSelectionMonitor mon;
 
-// TH1D* singlelep_ttbar_initialevents  = (TH1D*) new TH1D("singlelep_ttbar_init",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
+TH1D* singlelep_ttbar_initialevents  = (TH1D*) new TH1D("singlelep_ttbar_init",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
 TH1D* singlelep_ttbar_preselectedevents = (TH1D*) new TH1D("singlelep_ttbar_presele",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
 /* These counter histograms are dissabled -- use int for that
 TH1D* singlelep_ttbar_selected_mu_events = (TH1D*) new TH1D("singlelep_ttbar_sele_mu",     ";Transverse momentum [GeV];Events",            100, 0.,  500.  ); 
@@ -1212,8 +1212,8 @@ for(size_t f=0; f<urls.size();++f){
 			// passVetoId = lid == 11 ? patUtils::passId(electronVidVetoId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdLoose);
 			// apparently the previous version of the passID callse is actually incompatible with the definition of passID
 			// don't know how it compiled at all....
-			passId     = lid == 11 ? patUtils::passId(lepton.el, myEvent, electronVidMainId) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdTight);
-			passVetoId = lid == 11 ? patUtils::passId(lepton.el, myEvent, electronVidVetoId) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdLoose);
+			passId     = lid == 11 ? patUtils::passId(lepton.el, goodPV, patUtils::llvvElecId::Tight) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdTight);
+			passVetoId = lid == 11 ? patUtils::passId(lepton.el, goodPV, patUtils::llvvElecId::Loose) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdLoose);
 
 			// ------------------------- lepton isolation
 			// passIso     = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Tight); // Electron iso is included within the ID
