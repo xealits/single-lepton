@@ -616,7 +616,7 @@ fprintf(csv_out, "Headers\n");
 fprintf(csv_out, "acceptances:filename, num_events, num_events_pass_lumi, sum_rawWeight, sum_weight, sum_weights_passtrig_raw,sum_weights_passtrig, cross_sum_rawWeight,cross_sum_weight, oursel_sum_rawWeight,oursel_sum_weight, oursel_sum_weight_el,oursel_sum_weight_mu, marasel_sum_rawWeight,marasel_sum_weight\n");
 
 fprintf(csv_out, "crossel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
-fprintf(csv_out, "oursel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, tau_px,tau_py,tau_pz,tau_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
+fprintf(csv_out, "oursel: iev, pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, tau_px,tau_py,tau_pz,tau_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
 fprintf(csv_out, "marasel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e,b2_px,b2_py,b2_pz,b2_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e,j3_px,j3_py,j3_pz,j3_e,j4_px,j4_py,j4_pz,j4_e\n");
 
 for(size_t f=0; f<urls.size();++f)
@@ -1358,12 +1358,12 @@ for(size_t f=0; f<urls.size();++f)
 		// -------------------------------------------------- all particles are selected
 
 		unsigned int n_leptons = selLeptons.size();
-		unsigned int n_tau = selTaus.size();
+		unsigned int n_taus = selTaus.size();
 		unsigned int n_jets = selJets.size();
 		unsigned int n_bjets = selBJets.size();
 
 		n_selected_leptons_weighted[n_leptons > 100 ? 99 : n_leptons] += weight;
-		n_selected_taus_weighted [n_tau > 100 ? 99 : n_tau] += weight;
+		n_selected_taus_weighted [n_taus > 100 ? 99 : n_taus] += weight;
 		n_selected_jets_weighted [n_jets > 100 ? 99 : n_jets] += weight;
 		n_selected_bjets_weighted[n_bjets > 100 ? 99 : n_bjets] += weight;
 
@@ -1428,12 +1428,14 @@ for(size_t f=0; f<urls.size();++f)
 		bool iso_lep = isSingleMu || isSingleE; // 2^5
 		// bool passJetRawSelection(selSingleLepJets.size()>1); // 2 jets
 		//bool passJetSelection(selSingleLepJets.size()>1); // 2 jets // 2^4
-		bool passJetSelection(selJets.size()>1); // 2 jets // 2^4
+		//bool passJetSelection(selJets.size()>1); // 2 jets // 2^4
+		bool passJetSelection(n_jets>1); // 2 jets // 2^4
 		bool passMetSelection(met.pt()>40.); // MET > 40 // 2^3
 		//bool passBtagsSelection(selSingleLepBJets.size()>0); // 1 b jet // 2^2
-		bool passBtagsSelection(selBJets.size()>0); // 1 b jet // 2^2
-		bool passTauSelection(selTaus.size()==1); // only 1 tau // 2^1
-		bool passOS( n_tau>0 && n_leptons>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0); // Oposite sign // 2^0
+		//bool passBtagsSelection(selBJets.size()>0); // 1 b jet // 2^2
+		bool passBtagsSelection(n_bjets>0); // 1 b jet // 2^2
+		bool passTauSelection(n_taus==1); // only 1 tau // 2^1
+		bool passOS( n_taus>0 && n_leptons>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0); // Oposite sign // 2^0
 
 		// multiselection
 		//TODO: make propper indexes here
@@ -1449,7 +1451,7 @@ for(size_t f=0; f<urls.size();++f)
 			printf("%d", multisel);
 			break;
 			}
-		//weights_in_selections[multisel] += weight;
+		weights_in_selections[multisel] += weight;
 		weights_in_selections_int[multisel] += 1;
 		//break;
 
@@ -1575,7 +1577,7 @@ for(size_t f=0; f<urls.size();++f)
 					//singlelep_ttbar_selected_el_events->Fill(1);
 					oursel_sum_weights_el += weight;
 					}
-				fprintf(csv_out, "oursel:%d,%d,%g,%g,%d,", num_inters, nGoodPV, rawWeight, weight, isSingleE);
+				fprintf(csv_out, "oursel:%d,%d,%d,%g,%g,%d,", iev, num_inters, nGoodPV, rawWeight, weight, isSingleE);
 				oursel_sum_weights_raw += rawWeight;
 				oursel_sum_weights += weight;
 
@@ -1678,8 +1680,8 @@ for(size_t f=0; f<urls.size();++f)
 	fprintf(csv_out, "weights_in_selections:");
 	for (int i=0; i<64; i++)
 		{
-		//fprintf(csv_out, "%g,", weights_in_selections[i]);
-		fprintf(csv_out, "%d,", weights_in_selections_int[i]);
+		fprintf(csv_out, "%g,", weights_in_selections[i]);
+		//fprintf(csv_out, "%d,", weights_in_selections_int[i]);
 		}
 	fprintf(csv_out, "\n");
 
