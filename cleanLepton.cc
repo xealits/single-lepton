@@ -651,6 +651,7 @@ for(size_t f=0; f<urls.size();++f)
 	// multiselection array -- 8 bits
 	// now 6 bits are used -- 0-63 is max
 	double weights_in_selections[100];
+	int weights_in_selections_int[100];
 	//for (int i=0; i<512; i++)
 		//{
 		//}
@@ -679,6 +680,7 @@ for(size_t f=0; f<urls.size();++f)
 		n_selected_jets_weighted[i] = 0;
 		n_selected_bjets_weighted[i] = 0;
 		weights_in_selections[i] = 0;
+		weights_in_selections_int[i] = 0;
 		}
 
 	int treeStep (ev.size()/50);
@@ -1431,7 +1433,7 @@ for(size_t f=0; f<urls.size();++f)
 		//bool passBtagsSelection(selSingleLepBJets.size()>0); // 1 b jet // 2^2
 		bool passBtagsSelection(selBJets.size()>0); // 1 b jet // 2^2
 		bool passTauSelection(selTaus.size()==1); // only 1 tau // 2^1
-		bool passOS(selTaus.size()>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0); // Oposite sign // 2^0
+		bool passOS( n_tau>0 && n_leptons>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0); // Oposite sign // 2^0
 
 		// multiselection
 		//TODO: make propper indexes here
@@ -1447,7 +1449,8 @@ for(size_t f=0; f<urls.size();++f)
 			printf("%d", multisel);
 			break;
 			}
-		weights_in_selections[multisel] += weight;
+		//weights_in_selections[multisel] += weight;
+		weights_in_selections_int[multisel] += 1;
 		//break;
 
 
@@ -1671,14 +1674,15 @@ for(size_t f=0; f<urls.size();++f)
 	fprintf(csv_out, "%g,%g,",  oursel_sum_weights_el, oursel_sum_weights_mu);
 	fprintf(csv_out, "%g,%g\n", marasel_sum_weights_raw, marasel_sum_weights);
 
-/*
+
 	fprintf(csv_out, "weights_in_selections:");
 	for (int i=0; i<64; i++)
 		{
-		fprintf(csv_out, "%f,", weights_in_selections[i]);
+		//fprintf(csv_out, "%g,", weights_in_selections[i]);
+		fprintf(csv_out, "%d,", weights_in_selections_int[i]);
 		}
 	fprintf(csv_out, "\n");
-*/
+
 
 	fprintf(csv_out, "negative_events_nvtx:");
 	for (int i=0; i<100; i++)
@@ -1743,11 +1747,15 @@ for(size_t f=0; f<urls.size();++f)
 	fprintf(csv_out, "\n");
 
 	printf("\n");
+	printf("Done processing the file\n");
+	printf("\n");
 
 	delete file;
 
-	fprintf(csv_out, "End of event loop in the file.\n");
+	fprintf(csv_out, "End of event loop in the file.\n\n");
 	} // End loop on files
+
+printf("Done processing the job of files\n");
 
 fprintf(csv_out, "End of file loop.\n");
 
