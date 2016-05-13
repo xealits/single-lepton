@@ -1462,12 +1462,20 @@ for(size_t f=0; f<urls.size();++f)
 		// multiselection
 		//TODO: make propper indexes here
 		unsigned int multisel = 0;
-		multisel += (iso_lep ? 32 : 0);
+		multisel += (iso_lep ? 1 : 0); //! should be 1
+		multisel += (passJetSelection ? 2 : 0);
+		multisel += (passMetSelection ? 4 : 0);
+		multisel += (passBtagsSelection ? 8 : 0);
+		multisel += (passTauSelection ? 16 : 0);
+		multisel += (passOS ? 32 : 0);
+		/* old multisel
+		multisel += (iso_lep ? 32 : 0); //! should be 1
 		multisel += (passJetSelection ? 16 : 0);
 		multisel += (passMetSelection ? 8 : 0);
 		multisel += (passBtagsSelection ? 4 : 0);
 		multisel += (passTauSelection ? 2 : 0);
 		multisel += (passOS ? 1 : 0);
+		*/
 		if (multisel > 63)
 			{
 			printf("%d", multisel);
