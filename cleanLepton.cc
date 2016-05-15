@@ -667,11 +667,13 @@ for(size_t f=0; f<urls.size();++f)
 
 	// multiselection array -- 8 bits
 	// now 6 bits are used -- 0-63 is max
-	double weights_in_selections[100];
-	int weights_in_selections_int[100];
-	//for (int i=0; i<512; i++)
-		//{
-		//}
+	double weights_in_selections[512];
+	//int weights_in_selections_int[100];
+	for (int i=0; i<512; i++)
+		{
+		weights_in_selections[i] = 0;
+		//weights_in_selections_int[i] = 0;
+		}
 	unsigned int negative_event_nvtx[100];
 	unsigned int positive_event_nvtx[100];
 	double negative_event_pernvtx_weight[100];
@@ -696,8 +698,6 @@ for(size_t f=0; f<urls.size();++f)
 		n_selected_taus_weighted[i] = 0;
 		n_selected_jets_weighted[i] = 0;
 		n_selected_bjets_weighted[i] = 0;
-		weights_in_selections[i] = 0;
-		weights_in_selections_int[i] = 0;
 		}
 
 	int treeStep (ev.size()/50);
@@ -1475,7 +1475,7 @@ for(size_t f=0; f<urls.size();++f)
 
 		isSingleMu = (abs(slepId)==13) && muTrigger && nVetoE==0 && nVetoMu==0;
 		isSingleE  = (abs(slepId)==11) && eTrigger  && nVetoE==0 && nVetoMu==0;
-		// and no double-lepton channel yet
+		// TODO: and no double-lepton channel yet
 
 		// --------------------------- store weights at different selections
 		// Event selection booleans
@@ -1492,14 +1492,17 @@ for(size_t f=0; f<urls.size();++f)
 		bool passOS( n_taus>0 && n_leptons>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0); // Oposite sign // 2^0
 
 		// multiselection
-		//TODO: make propper indexes here
+		// the array is 2^9=512 long
+		// -- 9 selections fit
+		// and 7 are used now
 		unsigned int multisel = 0;
-		multisel += (iso_lep ? 1 : 0); //! should be 1
-		multisel += (passJetSelection ? 2 : 0);
-		multisel += (passMetSelection ? 4 : 0);
-		multisel += (passBtagsSelection ? 8 : 0);
-		multisel += (passTauSelection ? 16 : 0);
-		multisel += (passOS ? 32 : 0);
+		multisel += (isSingleMu ? 1 : 0); //! should be 1
+		multisel += (isSingleE ? 2 : 0);
+		multisel += (passJetSelection ? 4 : 0);
+		multisel += (passMetSelection ? 8 : 0);
+		multisel += (passBtagsSelection ? 16 : 0);
+		multisel += (passTauSelection ? 32 : 0);
+		multisel += (passOS ? 64 : 0);
 		/* old multisel
 		multisel += (iso_lep ? 32 : 0); //! should be 1
 		multisel += (passJetSelection ? 16 : 0);
@@ -1508,13 +1511,13 @@ for(size_t f=0; f<urls.size();++f)
 		multisel += (passTauSelection ? 2 : 0);
 		multisel += (passOS ? 1 : 0);
 		*/
-		if (multisel > 63)
+		if (multisel > 128)
 			{
 			printf("%d", multisel);
 			break;
 			}
 		weights_in_selections[multisel] += weight;
-		weights_in_selections_int[multisel] += 1;
+		//weights_in_selections_int[multisel] += 1;
 		//break;
 
 
