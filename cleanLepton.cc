@@ -1377,12 +1377,44 @@ for(size_t f=0; f<urls.size();++f)
 		std::sort (selBJets.begin(), selBJets.end(), utils::sort_CandidatesByPt);
 
 
+		// ---------------------------- Clean jet collection from selected taus
+		pat::JetCollection
+		selSingleLepJets, selSingleLepBJets;
+		for (size_t ijet = 0; ijet < selJets.size(); ++ijet)
+			{
+			pat::Jet jet = selJets[ijet];
+
+			double minDRtj(9999.);
+			for(size_t itau=0; itau<selTaus.size(); ++itau)
+				{
+				minDRtj = TMath::Min(minDRtj, reco::deltaR(jet, selTaus[itau]));
+				}
+			if(minDRtj>0.4) selSingleLepJets.push_back(jet);
+
+			bool hasCSVtag = (jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
+			if (isMC)
+				{
+				int flavId = jets[ijet].partonFlavour();
+				if      (abs (flavId) == 5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
+				else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
+				else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
+				}
+
+			if(!hasCSVtag) continue;
+			if(minDRtj>0.4) selSingleLepBJets.push_back(jets[ijet]);
+			}
+
+		std::sort(selSingleLepJets.begin(),  selSingleLepJets.end(),  utils::sort_CandidatesByPt);
+		std::sort(selSingleLepBJets.begin(), selSingleLepBJets.end(), utils::sort_CandidatesByPt);
+
 		// -------------------------------------------------- all particles are selected
 
 		unsigned int n_leptons = selLeptons.size();
 		unsigned int n_taus = selTaus.size();
-		unsigned int n_jets = selJets.size();
-		unsigned int n_bjets = selBJets.size();
+		//unsigned int n_jets = selJets.size();
+		//unsigned int n_bjets = selBJets.size();
+		unsigned int n_jets = selSingleLepJets.size();
+		unsigned int n_bjets = selSingleLepBJets.size();
 
 		n_selected_leptons_weighted[n_leptons > 100 ? 99 : n_leptons] += weight;
 		n_selected_taus_weighted [n_taus > 100 ? 99 : n_taus] += weight;
@@ -1501,36 +1533,6 @@ for(size_t f=0; f<urls.size();++f)
 		//if(tags[1] == "singlemu" || tags[1] == "singlee")
 		if(isSingleMu || isSingleE){
 			singlelep_ttbar_preselectedevents->Fill(1);
-
-			// ---------------------------- Clean jet collection from selected taus
-			pat::JetCollection
-			selSingleLepJets, selSingleLepBJets;
-			for (size_t ijet = 0; ijet < selJets.size(); ++ijet)
-				{
-				pat::Jet jet = selJets[ijet];
-
-				double minDRtj(9999.);
-				for(size_t itau=0; itau<selTaus.size(); ++itau)
-					{
-					minDRtj = TMath::Min(minDRtj, reco::deltaR(jet, selTaus[itau]));
-					}
-				if(minDRtj>0.4) selSingleLepJets.push_back(jet);
-
-				bool hasCSVtag = (jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
-				if (isMC)
-					{
-					int flavId = jets[ijet].partonFlavour();
-					if      (abs (flavId) == 5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
-					else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
-					else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
-					}
-
-				if(!hasCSVtag) continue;
-				if(minDRtj>0.4) selSingleLepBJets.push_back(jets[ijet]);
-				}
-
-			std::sort(selSingleLepJets.begin(),  selSingleLepJets.end(),  utils::sort_CandidatesByPt);
-			std::sort(selSingleLepBJets.begin(), selSingleLepBJets.end(), utils::sort_CandidatesByPt);
 
 
 			// mon.fillHisto("nvtx_pileup", tags, nGoodPV, weight);
