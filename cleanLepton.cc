@@ -630,10 +630,10 @@ fprintf(csv_out, "Headers\n");
 
 fprintf(csv_out, "acceptances:filename, num_events, num_events_pass_lumi, sum_rawWeight, sum_weight, sum_weights_passtrig_raw,sum_weights_passtrig, cross_sum_rawWeight,cross_sum_weight, oursel_sum_rawWeight,oursel_sum_weight, oursel_sum_weight_el,oursel_sum_weight_mu, marasel_sum_rawWeight,marasel_sum_weight\n");
 
-fprintf(csv_out, "weights_in_selections:");
+fprintf(csv_out, "weights_in_selections,initial_events_weight");
 for (int i=0; i<512; i++)
 	{
-	fprintf(csv_out, "%d," i);
+	fprintf(csv_out, ",%d" i);
 	}
 
 fprintf(csv_out, "crossel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
@@ -946,6 +946,7 @@ for(size_t f=0; f<urls.size();++f)
 		if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock())) continue; 
 		// Notice: it is the first continue in the event loop
 		n_events_pass_lumi += 1;
+		// there is no sum_weights_pass_lumi -- lumi is for data only..
 
 		// --------------------------------------------- apply trigger
 		// ---------------- and require compatibilitiy of the event with the PD
@@ -1718,10 +1719,10 @@ for(size_t f=0; f<urls.size();++f)
 	fprintf(csv_out, "%g,%g\n", marasel_sum_weights_raw, marasel_sum_weights);
 
 
-	fprintf(csv_out, "weights_in_selections:");
+	fprintf(csv_out, "weights_in_selections,%g", sum_weights);
 	for (int i=0; i<512; i++)
 		{
-		fprintf(csv_out, "%g,", weights_in_selections[i]);
+		fprintf(csv_out, ",%g", weights_in_selections[i]);
 		//fprintf(csv_out, "%d,", weights_in_selections_int[i]);
 		}
 	fprintf(csv_out, "\n");
