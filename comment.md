@@ -165,6 +165,8 @@ The steps of Pietro's code with changes.
 * basic event selection
   + remove Run2015B[Orthogonalize Run2015B PromptReco+17Jul15 mix] **0**
   + Skip bad lumi -> **check for lumicert for new datasets 1**
+    using: `Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt`
+    latest: `Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_v2.txt`
   + apply trigger -> **new triggers**
     muons --- `HLT_IsoMu20` or `HLT_IsoTkMu20` for data and MC
     (to update to `HLT_IsoMu18)
@@ -183,19 +185,57 @@ The steps of Pietro's code with changes.
   - taus
 * merging electrons and muons
 * leptons selection
-  + apply muon corrections, muCor
+  + muon corrections are not applied --- should be updated with new uncertainty corrections
   + kinematics, good and veto, lepton IDs and isolation -> **new isolation**
     - muons:
-      good: P_T > 26, eta < 2.4, I_rel,PF < 0.15, Tight muon ID
-      veto: P_T > 10, eta < 2.5, I_rel,PF < 0.25 (and loose ID?)
+      good: P_T > 26, eta < 2.4, tight muon
+      isolation I_rel,PF < 0.15 -- tight cut
+      veto: P_T > 10, eta < 2.5, loose muon
+      isolation I_rel,PF < 0.25 -- loose cut.
+
+      IDs are according to
+      https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2
+      These IDs are assigned to muons in data for CMSSW_7_4_2 and above.
+      They are combinations of selectiors:
+        - loose muon:
+          recoMu.isPFMuon() & (recoMu.isGlobalMuon() || recoMu.isTrackerMuon())
+        - tight muon:
+          recoMu.isGlobalMuon() &
+          recoMu.isPFMuon() &
+          recoMu.globalTrack()->normalizedChi2() < 10. &
+          recoMu.globalTrack()->hitPattern().numberOfValidMuonHits() > 0 &
+          recoMu.numberOfMatchedStations() > 1 &
+          fabs(recoMu.muonBestTrack()->dxy(vertex->position())) < 0.2
+          Or dB() < 0.2 on pat::Muon [1]
+          fabs(recoMu.muonBestTrack()->dz(vertex->position())) < 0.5
+          recoMu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0
+          recoMu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5
+
+      Muons isolation is done according to
+      https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2#Muon_Isolation
+      by the scheme called
+      "PF-based combined relative isolation with deltaBeta correction."
+
     - electrons:
-      good: P_T > 30, eta < 2.4, I_rel,PF < 0.15, Electron MVATrigV0 > 0.9
-      veto: P_T > 15, eta < 2.5, I_rel,PF < 0.25, MVATrigV0 > 0
+      good: P_T > 30, eta < 2.4,
+      (tocheck I_rel,PF < 0.15, Electron MVATrigV0 > 0.9)
+      veto: P_T > 15, eta < 2.5,
+      (tocheck I_rel,PF < 0.25, MVATrigV0 > 0)
+      current IDs are according to //https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_25ns
+      the isolation is included into the ID cuts.
+
 * select the taus -> **0 leave as is**
-  + tau pt, eta
-  + overlap with selLeptons
-  + 4 tau ID discriminators (**check if up to date**)
-  + pixel hits cut (*"should be available out of the mox in new MINIAOD"* - ?)
+  + tau pt > 20, eta < 2.3
+  + overlap with selLeptons $\delta R > 0.4 $
+  + 4 tau ID discriminators (**check if up to date**) from https://twiki.cern.ch/twiki/bin/viewauth/CMS/TauIDRecommendation13TeV:
+    decayModeFindingNewDMs > 0.5
+    (could use decayModeFindingOldDMs)
+    byMediumCombinedIsolationDeltaBetaCorr3Hits > 0.5
+    againstMuonTight3 > 0.5
+    againstElectronMediumMVA5 > 0.5
+  + pixel hits cut (*"should be available out of the mox in new MINIAOD"* --- ?):
+    basically now we check if tau.signalChargedHadrCands
+    have at least 1 element with numberOfPixelHits > 0
 * JET/MET ANALYSIS -> **0 leave as is** -> update b-jets **what else to Mara?**
   + it only selects jets, some of them -- as b-tagged
   + only 1 parameter is obtained from MET
