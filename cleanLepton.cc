@@ -1713,7 +1713,7 @@ for(size_t f=0; f<urls.size();++f)
 
 
 	fprintf(csv_out, "weights_in_selections:");
-	for (int i=0; i<64; i++)
+	for (int i=0; i<512; i++)
 		{
 		fprintf(csv_out, "%g,", weights_in_selections[i]);
 		//fprintf(csv_out, "%d,", weights_in_selections_int[i]);
