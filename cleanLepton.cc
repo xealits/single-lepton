@@ -1480,15 +1480,15 @@ for(size_t f=0; f<urls.size();++f)
 		if(multiChannel>1) nMultiChannel++;
 		*/
 
-		isSingleMu = (abs(slepId)==13) && muTrigger && nVetoE==0 && nVetoMu==0;
-		isSingleE  = (abs(slepId)==11) && eTrigger  && nVetoE==0 && nVetoMu==0;
+		bool iso_lep = nVetoE==0 && nVetoMu==0 && selLeptons.size() == 1 && nGoodPV != 0; // 2^5
+		//if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
+		isSingleMu = (abs(slepId)==13) && muTrigger && iso_lep;
+		isSingleE  = (abs(slepId)==11) && eTrigger  && iso_lep;
 		// TODO: last discrepancy with multiselect!
-		if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
 		// TODO: and no double-lepton channel yet
 
 		// --------------------------- store weights at different selections
 		// Event selection booleans
-		bool iso_lep = isSingleMu || isSingleE; // 2^5
 		// bool passJetRawSelection(selSingleLepJets.size()>1); // 2 jets
 		//bool passJetSelection(selSingleLepJets.size()>1); // 2 jets // 2^4
 		//bool passJetSelection(selJets.size()>1); // 2 jets // 2^4
@@ -1544,6 +1544,8 @@ for(size_t f=0; f<urls.size();++f)
 		// ------------------------------------------ Single lepton full analysis
 		//if(tags[1] == "singlemu" || tags[1] == "singlee")
 		if(isSingleMu || isSingleE){
+			// if we pass one of channel selections -- save event
+			// TODO: reformat this, don't recheck the same booleans
 			singlelep_ttbar_preselectedevents->Fill(1);
 
 
