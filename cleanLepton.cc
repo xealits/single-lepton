@@ -1520,7 +1520,7 @@ for(size_t f=0; f<urls.size();++f)
 		multisel += (passTauSelection ? 2 : 0);
 		multisel += (passOS ? 1 : 0);
 		*/
-		if (multisel > 128)
+		if (multisel > 512)
 			{
 			printf("%d", multisel);
 			break;
@@ -1565,12 +1565,6 @@ for(size_t f=0; f<urls.size();++f)
 				}
 			*/
 
-
-			// Mara's selection booleans
-			//bool passMaraJetSelection(selSingleLepJets.size()>3); // 4 jets FIXME: why 4 jets?
-			//bool passMaraBtagsSelection(selSingleLepBJets.size()>1); // 2 b-tag
-			//bool passMaraLeptonSelection( selLeptons.size()>0 ); // 1 lepton -- should be included by default at this stage
-
 			// common-selection
 			if(passJetSelection && passBtagsSelection) // 2 jets, 1 b jet, 1 isolated lepton
 				{
@@ -1608,6 +1602,7 @@ for(size_t f=0; f<urls.size();++f)
 			// oursel: 2 jets, 1 b, 1 iso lepton, 1 tau
 			if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS )
 				{
+				// TODO: try saving the whole event
 				if(isSingleMu)
 					{
 					//singlelep_ttbar_selected_mu_events->Fill(1);
@@ -1622,51 +1617,12 @@ for(size_t f=0; f<urls.size();++f)
 				oursel_sum_weights_raw += rawWeight;
 				oursel_sum_weights += weight;
 
-				pb.SetPxPyPzE( selSingleLepBJets[0].px(), selSingleLepBJets[0].py(), selSingleLepBJets[0].pz(), selSingleLepBJets[0].pt()); // 
-				//pbb.SetPxPyPzE( selSingleLepJets[1].px(), selSingleLepJets[1].py(), selSingleLepJets[1].pz(), selSingleLepJets[1].pt()); // or take another B???
-				pl.SetPxPyPzE( selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
-				//plb.SetPxPyPzE( selLeptons[1].px(), selLeptons[1].py(), selLeptons[1].pz(), selLeptons[1].pt());
-				//prest = pb + pbb + pl + plb;
-				//fprintf(csv_out, "kino1:\n");
-				//fprintf(csv_out, "%g, %g, %g, %g,\n", pl.E(), plb.E(), pb.E(), pbb.E());
-				//fprintf(csv_out, "%g, %g, %g,\n", (prest.X()*prest.X() + prest.Y()*prest.Y() + prest.Z()*prest.Z()),
-						//(prest.X()*prest.X() + prest.Y()*prest.Y()), met.pt());
-				//fprintf(csv_out, "%g, %g, %g,\n", prest*(pl+pb), pl*pb, plb*pbb);
-				//fprintf(csv_out, "%g, %g, %g\n", (pl+pb).Angle(prest.Vect()), pl.Angle(pb.Vect()), plb.Angle(pbb.Vect()));
-				//fprintf(csv_out, "kino2:\n");
-				fprintf(csv_out, "%g,%g,%g,%g,",  pl.X(), pl.Y(), pl.Z(), pl.E());
+				fprintf(csv_out, "%g,%g,%g,%g,",  selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
 				fprintf(csv_out, "%g,%g,%g,%g,", selTaus[0].px(), selTaus[0].py(), selTaus[0].pz(), selTaus[0].pt() );
-				//fprintf(csv_out, "%g,%g,%g,%g,", plb.X(), plb.Y(), plb.Z(), plb.E());
-				fprintf(csv_out, "%g,%g,%g,%g,",  pb.X(), pb.Y(), pb.Z(), pb.E());
+				fprintf(csv_out, "%g,%g,%g,%g,",  selSingleLepBJets[0].px(), selSingleLepBJets[0].py(), selSingleLepBJets[0].pz(), selSingleLepBJets[0].pt());
 				fprintf(csv_out, "%g,%g,%g,%g,", selSingleLepJets[0].px(), selSingleLepJets[0].py(), selSingleLepJets[0].pz(), selSingleLepJets[0].pt() );
 				fprintf(csv_out, "%g,%g,%g,%g\n", selSingleLepJets[1].px(), selSingleLepJets[1].py(), selSingleLepJets[1].pz(), selSingleLepJets[1].pt() );
-				//fprintf(csv_out, "%g,%g,%g,%g\n", pbb.X(), pbb.Y(), pbb.Z(), pbb.E());
 				}
-
-			/*
-			pb.SetVect( selSingleLepBJets[0].momentum() ); // 
-			pb.E = selSingleLepBJets[0].correctedP4();
-			pbb.SetVect( selSingleLepJets[1].momentum() ); // or take another B???
-			pbb.E = selSingleLepJets[1].correctedP4();
-			pl = selLeptons[0];
-			plb = selLeptons[1];
-			prest = pb + pbb + pl + plb;
-			//kino->Fill( el, elb, eb, ebb, prest, prestt, met, thetascal, phiscal, phibscal, theta, phi, phib );
-			// pl - pb, plb - pbb
-			kino->Fill( pl.E(), plb.E(), pb.E(), pbb.E(), (prest.X()*prest.X() + prest.Y()*prest.Y() + prest.Z()*prest.Z()),
-								 (prest.X()*prest.X() + prest.Y()*prest.Y()), met.pt(),
-									prest*(pl+pb), pl*pb, plb*pbb,
-								 (pl+pb).Angle(prest.Vect()), pl.Angle(pb.Vect()), plb.Angle(pbb.Vect()) );
-
-					 // reverse: pl - pbb
-					 kino->Fill( plb.E(), pl.E(), pb.E(), pbb.E(), (prest.X()*prest.X() + prest.Y()*prest.Y() + prest.Z()*prest.Z()),
-											(prest.X()*prest.X() + prest.Y()*prest.Y()), met.pt(),
-											 prest*(plb+pb), plb*pb, pl*pbb,
-											(plb+pb).Angle(prest.Vect()), plb.Angle(pb.Vect()), pl.Angle(pbb.Vect()) );
-					 //kino->Fill( pl, el, plb, elb, pb, eb, pbb, ebb, prest, prestt, evmet, theta, phi, thetab, phib );
-					 //// and the other combination
-					 //kino->Fill( pl, el, plb, elb, pb, eb, pbb, ebb, prest, prestt, evmet, theta, phi, thetab, phib );
-			*/
 
 			// Mara's selection booleans
 			bool passMaraJetSelection(selSingleLepJets.size()>3); // 4 jets
