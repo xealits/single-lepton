@@ -1548,18 +1548,14 @@ for(size_t f=0; f<urls.size();++f)
 			// TODO: reformat this, don't recheck the same booleans
 			singlelep_ttbar_preselectedevents->Fill(1);
 
-
-			// mon.fillHisto("nvtx_pileup", tags, nGoodPV, weight);
-
-			//int id (abs (selLeptons[0].pdgId()));
-			//weight *= isMC ? lepEff.getLeptonEfficiency(selLeptons[0].pt(), selLeptons[0].eta(), id, id == 11 ? "loose" : "tight").first : 1.0;        
-
 			// Event selection booleans
+			/* Use the same selections as in multiselect
 			bool passJetSelection(selSingleLepJets.size()>1); // 2 jets
 			bool passMetSelection(met.pt()>40.); // MET > 40
 			bool passBtagsSelection(selSingleLepBJets.size()>0); // 1 b jet
 			bool passTauSelection(selTaus.size()==1); // only 1 tau
 			bool passOS(selTaus.size()>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0); // Oposite sign
+			*/
 
 			/* TODO: re-enable these steps and other control points
 			if (passJetSelection)
