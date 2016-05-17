@@ -1482,6 +1482,8 @@ for(size_t f=0; f<urls.size();++f)
 
 		isSingleMu = (abs(slepId)==13) && muTrigger && nVetoE==0 && nVetoMu==0;
 		isSingleE  = (abs(slepId)==11) && eTrigger  && nVetoE==0 && nVetoMu==0;
+		// TODO: last discrepancy with multiselect!
+		if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
 		// TODO: and no double-lepton channel yet
 
 		// --------------------------- store weights at different selections
@@ -1547,7 +1549,6 @@ for(size_t f=0; f<urls.size();++f)
 
 			// mon.fillHisto("nvtx_pileup", tags, nGoodPV, weight);
 
-			if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
 			//int id (abs (selLeptons[0].pdgId()));
 			//weight *= isMC ? lepEff.getLeptonEfficiency(selLeptons[0].pt(), selLeptons[0].eta(), id, id == 11 ? "loose" : "tight").first : 1.0;        
 
