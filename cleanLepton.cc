@@ -633,7 +633,7 @@ fprintf(csv_out, "acceptances:filename, num_events, num_events_pass_lumi, sum_ra
 fprintf(csv_out, "weights_in_selections,initial_events_weight");
 for (int i=0; i<512; i++)
 	{
-	fprintf(csv_out, ",%d" i);
+	fprintf(csv_out, ",%d", i);
 	}
 
 fprintf(csv_out, "crossel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
