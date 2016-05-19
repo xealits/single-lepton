@@ -1332,6 +1332,7 @@ for(size_t f=0; f<urls.size();++f)
 			double pt  = jet.pt();
 			// corrections:
 			// TODO: are they MC-only?
+			/* no smeared  jet pt values for now
 			std::vector<double> pt_values;
 			if (isMC)
 				pt_values = utils::cmssw::smearJES(pt, eta, totalJESUnc);
@@ -1340,9 +1341,12 @@ for(size_t f=0; f<urls.size();++f)
 				pt_values.push_back(pt);
 				pt_values.push_back(pt);
 				}
+			*/
 			// vary JesUp   is pt_values[0]
 			// vary JesDown is pt_values[1]
-			if (passPFloose && (pt > 30. || pt_values[0] > 30. || pt_values[1] > 30.) && fabs(eta) < 2.5)
+			// if (!passPFloose || jet.pt() <30. || fabs(jet.eta()) > 2.5) continue;
+			// if (passPFloose && (pt > 30. || pt_values[0] > 30. || pt_values[1] > 30.) && fabs(eta) < 2.5)
+			if (passPFloose && pt > 30. && fabs(eta) < 2.5)
 				{
 				selJets.push_back(jet);
 
