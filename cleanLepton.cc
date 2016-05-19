@@ -1651,7 +1651,7 @@ for(size_t f=0; f<urls.size();++f)
 
 				// METs with corrections
 				// LorentzVector met_values[7];
-				fprintf(csv_out, "%g,%g,%g,%g,%g,%g,%g,", met_values[0], met_values[1], met_values[2], met_values[3], met_values[4], met_values[5], met_values[6]);
+				fprintf(csv_out, "%g,%g,%g,%g,%g,%g,%g,", met_pt_values[0], met_pt_values[1], met_pt_values[2], met_pt_values[3], met_pt_values[4], met_pt_values[5], met_pt_values[6]);
 				fprintf(csv_out, "%g,", selLeptons[0].vz());
 				fprintf(csv_out, "%g,%g,%g,%g,",  selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
 				//fprintf(csv_out, "%g,", selTausNoLep[0].vz());
