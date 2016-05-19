@@ -229,10 +229,12 @@ The steps of Pietro's code with changes.
   + overlap with selLeptons $\delta R > 0.4 $
   + 4 tau ID discriminators (**check if up to date**) from https://twiki.cern.ch/twiki/bin/viewauth/CMS/TauIDRecommendation13TeV:
     decayModeFindingNewDMs > 0.5
+    (switching to decayModeFinding)
     (could use decayModeFindingOldDMs)
     byMediumCombinedIsolationDeltaBetaCorr3Hits > 0.5
     againstMuonTight3 > 0.5
     againstElectronMediumMVA5 > 0.5
+    (switching to againstElectronMediumMVA6)
   + pixel hits cut (*"should be available out of the mox in new MINIAOD"* --- ?):
     basically now we check if tau.signalChargedHadrCands
     have at least 1 element with numberOfPixelHits > 0
