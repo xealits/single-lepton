@@ -252,7 +252,8 @@ The steps of Pietro's code with changes.
         and do the tighter final kinematics, ID and cleanup selection,
         which is the same as Mara's except 0.89 b-tag working point and **tau** cleanup
         pt > 30, eta < 2.5, dR > 0.4 with leptons and taus,
-        jet ID is loose according to https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
+        jet ID is loose according to Particle Flow cuts from
+        https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
       - Mara's analysis:
         P_T > 30, eta < 2.4, lepton-jet dR > 0.4,
         b-tagging --- CSVv2 > 0.8 (medium WP) (pfCombinedInclusiveSecondaryVertexV2BJetTags --- ?),

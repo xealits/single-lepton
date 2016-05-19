@@ -1410,6 +1410,7 @@ for(size_t f=0; f<urls.size();++f)
 				else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
 				else                     btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
 
+				/* TODO: for later
 				if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag_BTagUp, sfb + sfbunc,   beff);
 				else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag_BTagUp, sfb/5 + 2*sfbunc, beff);
 				else                     btsfutil.modifyBTagsWithSF(hasCSVtag_BTagUp, sfl + sfbunc,   leff);
@@ -1417,6 +1418,7 @@ for(size_t f=0; f<urls.size();++f)
 				if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag_BTagDown, sfb - sfbunc,   beff);
 				else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag_BTagDown, sfb/5 - 2*sfbunc, beff);
 				else                     btsfutil.modifyBTagsWithSF(hasCSVtag_BTagDown, sfl - sfbunc,   leff);
+				*/
 				}
 
 			if(hasCSVtag || hasCSVtag_BTagUp || hasCSVtag_BTagDown)
@@ -1424,6 +1426,7 @@ for(size_t f=0; f<urls.size();++f)
 			}
 
 
+		/* Done before
 		// ---------------------------- Clean jet collection from selected taus
 		pat::JetCollection
 		selSingleLepJets, selSingleLepBJets;
@@ -1453,15 +1456,19 @@ for(size_t f=0; f<urls.size();++f)
 
 		std::sort(selSingleLepJets.begin(),  selSingleLepJets.end(),  utils::sort_CandidatesByPt);
 		std::sort(selSingleLepBJets.begin(), selSingleLepBJets.end(), utils::sort_CandidatesByPt);
+		*/
 
 		// -------------------------------------------------- all particles are selected
 
 		unsigned int n_leptons = selLeptons.size();
-		unsigned int n_taus = selTaus.size();
+		// unsigned int n_taus = selTaus.size();
+		unsigned int n_taus = selTausNoLep.size();
 		//unsigned int n_jets = selJets.size();
 		//unsigned int n_bjets = selBJets.size();
-		unsigned int n_jets = selSingleLepJets.size();
-		unsigned int n_bjets = selSingleLepBJets.size();
+		// unsigned int n_jets = selSingleLepJets.size();
+		unsigned int n_jets = selJetsNoLepNoTau.size();
+		// unsigned int n_bjets = selSingleLepBJets.size();
+		unsigned int n_bjets = selBJets.size();
 
 		n_selected_leptons_weighted[n_leptons > 100 ? 99 : n_leptons] += weight;
 		n_selected_taus_weighted [n_taus > 100 ? 99 : n_taus] += weight;
@@ -1517,7 +1524,7 @@ for(size_t f=0; f<urls.size();++f)
 		//bool passBtagsSelection(selBJets.size()>0); // 1 b jet // 2^2
 		bool passBtagsSelection(n_bjets>0); // 1 b jet // 2^2
 		bool passTauSelection(n_taus==1); // only 1 tau // 2^1
-		bool passOS( n_taus>0 && n_leptons>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0); // Oposite sign // 2^0
+		bool passOS( n_taus>0 && n_leptons>0 ? selLeptons[0].pdgId() * selTausNoLep[0].pdgId() < 0 : 0); // Oposite sign // 2^0
 
 		// multiselection
 		// the array is 2^9=512 long
@@ -1644,23 +1651,29 @@ for(size_t f=0; f<urls.size();++f)
 				fprintf(csv_out, "%g,", selLeptons[0].vz());
 				fprintf(csv_out, "%g,%g,%g,%g,",  selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
 				//fprintf(csv_out, "%g,", selTausNoLep[0].vz());
-				fprintf(csv_out, "%g,", selTaus[0].vz());
-				fprintf(csv_out, "%g,%g,%g,%g,", selTaus[0].px(), selTaus[0].py(), selTaus[0].pz(), selTaus[0].pt() );
-				fprintf(csv_out, "%g,", selSingleLepBJets[0].vz());
-				fprintf(csv_out, "%g,%g,%g,%g,",  selSingleLepBJets[0].px(), selSingleLepBJets[0].py(), selSingleLepBJets[0].pz(), selSingleLepBJets[0].pt());
+				// selTausNoLep
+				fprintf(csv_out, "%g,", selTausNoLep[0].vz());
+				fprintf(csv_out, "%g,%g,%g,%g,", selTausNoLep[0].px(), selTausNoLep[0].py(), selTausNoLep[0].pz(), selTausNoLep[0].pt() );
+
+				// selBJets
+				fprintf(csv_out, "%g,", selBJets[0].vz());
+				fprintf(csv_out, "%g,%g,%g,%g,",  selBJets[0].px(), selBJets[0].py(), selBJets[0].pz(), selBJets[0].pt());
+
+				// selJetsNoLepNoTau
 				//fprintf(csv_out, "%g,", selJetsNoLepNoTau[0].vz());
-				fprintf(csv_out, "%g,", selSingleLepJets[0].vz());
-				fprintf(csv_out, "%g,%g,%g,%g,", selSingleLepJets[0].px(), selSingleLepJets[0].py(), selSingleLepJets[0].pz(), selSingleLepJets[0].pt() );
+				fprintf(csv_out, "%g,", selJetsNoLepNoTau[0].vz());
+				fprintf(csv_out, "%g,%g,%g,%g,", selJetsNoLepNoTau[0].px(), selJetsNoLepNoTau[0].py(), selJetsNoLepNoTau[0].pz(), selJetsNoLepNoTau[0].pt() );
 				//fprintf(csv_out, "%g,", selJetsNoLepNoTau[1].vz());
-				fprintf(csv_out, "%g,", selSingleLepJets[1].vz());
-				fprintf(csv_out, "%g,%g,%g,%g\n", selSingleLepJets[1].px(), selSingleLepJets[1].py(), selSingleLepJets[1].pz(), selSingleLepJets[1].pt() );
+				fprintf(csv_out, "%g,", selJetsNoLepNoTau[1].vz());
+				fprintf(csv_out, "%g,%g,%g,%g\n", selJetsNoLepNoTau[1].px(), selJetsNoLepNoTau[1].py(), selJetsNoLepNoTau[1].pz(), selJetsNoLepNoTau[1].pt() );
 
 				}
 
 			// Mara's selection booleans
-			// TODO: use just NoLep for Mara's selection
-			bool passMaraJetSelection(selJetsNoLepNoTau.size()>3); // 4 jets
-			bool passMaraBtagsSelection(selBJets.size()>1); // 2 b-tag
+			// bool passMaraJetSelection(selJetsNoLepNoTau.size()>3); // 4 jets
+			bool passMaraJetSelection( selJetsNoLep.size()>3 ); // 4 jets
+			bool passMaraBtagsSelection( selBJets.size()>1 ); // 2 b-tag
+			// NOTICE: these selBJets are computed from tau-cleaned jets -- there should be no tau-cleaning in Mara's selection
 			bool passMaraLeptonSelection( selLeptons.size()>0 ); // 1 lepton
 
 			if(passMaraJetSelection && passMaraBtagsSelection && passMaraLeptonSelection)
@@ -1679,10 +1692,10 @@ for(size_t f=0; f<urls.size();++f)
 				fprintf(csv_out, "%g,%g,%g,%g,", pl.X(), pl.Y(), pl.Z(), pl.E());
 				fprintf(csv_out, "%g,%g,%g,%g,", pb.X(), pb.Y(), pb.Z(), pb.E());
 				fprintf(csv_out, "%g,%g,%g,%g,", pbb.X(), pbb.Y(), pbb.Z(), pbb.E());
-				fprintf(csv_out, "%g,%g,%g,%g,", selJetsNoLepNoTau[0].px(), selJetsNoLepNoTau[0].py(), selJetsNoLepNoTau[0].pz(), selJetsNoLepNoTau[0].pt() );
-				fprintf(csv_out, "%g,%g,%g,%g,", selJetsNoLepNoTau[1].px(), selJetsNoLepNoTau[1].py(), selJetsNoLepNoTau[1].pz(), selJetsNoLepNoTau[1].pt() );
-				fprintf(csv_out, "%g,%g,%g,%g,", selJetsNoLepNoTau[2].px(), selJetsNoLepNoTau[2].py(), selJetsNoLepNoTau[2].pz(), selJetsNoLepNoTau[2].pt() );
-				fprintf(csv_out, "%g,%g,%g,%g\n", selJetsNoLepNoTau[3].px(), selJetsNoLepNoTau[3].py(), selJetsNoLepNoTau[3].pz(), selJetsNoLepNoTau[3].pt() );
+				fprintf(csv_out, "%g,%g,%g,%g,", selJetsNoLep[0].px(), selJetsNoLep[0].py(), selJetsNoLep[0].pz(), selJetsNoLep[0].pt() );
+				fprintf(csv_out, "%g,%g,%g,%g,", selJetsNoLep[1].px(), selJetsNoLep[1].py(), selJetsNoLep[1].pz(), selJetsNoLep[1].pt() );
+				fprintf(csv_out, "%g,%g,%g,%g,", selJetsNoLep[2].px(), selJetsNoLep[2].py(), selJetsNoLep[2].pz(), selJetsNoLep[2].pt() );
+				fprintf(csv_out, "%g,%g,%g,%g\n", selJetsNoLep[3].px(), selJetsNoLep[3].py(), selJetsNoLep[3].pz(), selJetsNoLep[3].pt() );
 				}
 
 			} // End single lepton full analysis
