@@ -1401,14 +1401,14 @@ for(size_t f=0; f<urls.size();++f)
 			bool hasCSVtag = (jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
 			if (isMC)
 				{
-				int flavId = jets[ijet].partonFlavour();
+				int flavId = jet.partonFlavour();
 				if      (abs (flavId) == 5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
 				else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
 				else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
 				}
 
 			if(!hasCSVtag) continue;
-			if(minDRtj>0.4) selSingleLepBJets.push_back(jets[ijet]);
+			if(minDRtj>0.4) selSingleLepBJets.push_back(jet);
 			}
 
 		std::sort(selSingleLepJets.begin(),  selSingleLepJets.end(),  utils::sort_CandidatesByPt);

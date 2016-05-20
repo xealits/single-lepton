@@ -1412,6 +1412,7 @@ for(size_t f=0; f<urls.size();++f)
 			if (isMC)
 				{
 				int flavId = jet.partonFlavour();
+				// int flavId = jets[ijet].partonFlavour(); // FIXME: the bugged line from baseline (synonyizing)
 				if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
 				else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
 				else                     btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
@@ -1428,7 +1429,10 @@ for(size_t f=0; f<urls.size();++f)
 				}
 
 			if(hasCSVtag || hasCSVtag_BTagUp || hasCSVtag_BTagDown)
+				{
 				selBJets.push_back(jet);
+				// selBJets.push_back(jets[ijet]); // FIXME: the bugged line from baseline (synonyizing)
+				}
 			}
 
 
