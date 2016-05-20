@@ -1405,8 +1405,8 @@ for(size_t f=0; f<urls.size();++f)
 			{
 			pat::Jet& jet = selJetsNoLepNoTau[ijet];
 
-			// bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
-			bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.8); // new working point -- according to Mara's analysis
+			bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium); // old working point
+			// bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.8); // new working point -- according to Mara's analysis
 			bool hasCSVtag_BTagUp(false), hasCSVtag_BTagDown(false);
 
 			if (isMC)
