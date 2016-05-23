@@ -485,7 +485,10 @@ if(debug) cout << "DEBUG: xsec: " << xsec << endl;
 TString jecDir = runProcess.getParameter < std::string > ("jecDir");
 gSystem->ExpandPathName (jecDir);
 FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector (jecDir, isMC);
-JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK4PFchs.txt").Data ());
+//TString pf(isMC ? "MC" : "DATA");
+//JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/"+pf+"_Uncertainty_AK4PFchs.txt").Data ());
+JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/" + (isMC ? "MC" : "DATA") + "_Uncertainty_AK4PFchs.txt").Data ());
+// JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK4PFchs.txt").Data ());
 	
 // ------------------------------------- muon energy scale and uncertainties
 MuScleFitCorrector *muCor = NULL;
@@ -1409,13 +1412,17 @@ for(size_t f=0; f<urls.size();++f)
 			// bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.8); // new working point -- according to Mara's analysis
 			bool hasCSVtag_BTagUp(false), hasCSVtag_BTagDown(false);
 
+			//update according to the SF measured by BTV
 			if (isMC)
 				{
 				int flavId = jet.partonFlavour();
-				// int flavId = jets[ijet].partonFlavour(); // FIXME: the bugged line from baseline (synonyizing)
 				if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
 				else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
 				else                     btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
+
+				// TODO: also Pietro now has a more complex modifyBTagsWithSF:
+				//      btsfutil.modifyBTagsWithSF(hasCSVtagDown, btagCalDn .eval(BTagEntry::FLAV_B   , eta, jet.pt()), beff);
+				//  --- etc
 
 				/* TODO: for later
 				if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag_BTagUp, sfb + sfbunc,   beff);
@@ -1431,7 +1438,6 @@ for(size_t f=0; f<urls.size();++f)
 			if(hasCSVtag || hasCSVtag_BTagUp || hasCSVtag_BTagDown)
 				{
 				selBJets.push_back(jet);
-				// selBJets.push_back(jets[ijet]); // FIXME: the bugged line from baseline (synonyizing)
 				}
 			}
 
