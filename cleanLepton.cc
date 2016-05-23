@@ -69,6 +69,7 @@ namespace utils
 	{
 	namespace cmssw
 		{
+		/* Using stuf in src/MacroUtils.cc
 		std::vector<double> smearJER(double pt, double eta, double genPt)
 			{
 			std::vector<double> toReturn(3,pt);
@@ -103,7 +104,9 @@ namespace utils
 			toRet.push_back((1.0-relShift)*pt);
 			return toRet;
 			}
-		
+		*/
+
+		/* using the one in src/MacroUtils.cc
 		void updateJEC(pat::JetCollection &jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC)
 			{
 			for(size_t ijet=0; ijet<jets.size(); ijet++)
@@ -152,6 +155,7 @@ namespace utils
 				//jets[ijet].setVal("torawsf",1./(newJECSF*newJERSF));  
 				}
 			}
+		*/
 
 		enum METvariations { NOMINAL, JERUP, JERDOWN, JESUP, JESDOWN, UMETUP, UMETDOWN, LESUP, LESDOWN };    
 
