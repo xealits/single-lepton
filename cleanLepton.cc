@@ -314,7 +314,7 @@ bool hasTauAsMother(const reco::GenParticle  p)
 
 
 
-
+#define MULTISEL_SIZE 256
 
 
 
@@ -602,9 +602,43 @@ fprintf(csv_out, "Headers\n");
 
 fprintf(csv_out, "acceptances:filename, num_events, num_events_pass_lumi, sum_rawWeight, sum_weight, sum_weights_passtrig_raw,sum_weights_passtrig, cross_sum_rawWeight,cross_sum_weight, oursel_sum_rawWeight,oursel_sum_weight, oursel_sum_weight_el,oursel_sum_weight_mu, marasel_sum_rawWeight,marasel_sum_weight\n");
 
-//fprintf(csv_out, "weights_in_selections, %d, %d, %g, %g, %g", iev, n_events_pass_lumi, sum_weights, sum_weights_passtrig_raw, sum_weights_passtrig);
-fprintf(csv_out, "weights_in_selections, num_events, num_events_pass_lumi, initial_events_weight, sum_rawweights_pass_trig, sum_weights_passtrig");
-for (int i=0; i<512; i++)
+fprintf(csv_out, "weights_in_no_channel, num_events, num_events_pass_lumi, initial_events_weight, sum_rawweights_pass_trig, sum_weights_passtrig, weight_before_channel_select");
+for (int i=0; i<MULTISEL_SIZE; i++)
+	{
+	fprintf(csv_out, ",%d", i);
+	}
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "weights_in_el_channel, num_events, num_events_pass_lumi, initial_events_weight, sum_rawweights_pass_trig, sum_weights_passtrig, weight_before_channel_select");
+for (int i=0; i<MULTISEL_SIZE; i++)
+	{
+	fprintf(csv_out, ",%d", i);
+	}
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "weights_in_mu_channel, num_events, num_events_pass_lumi, initial_events_weight, sum_rawweights_pass_trig, sum_weights_passtrig, weight_before_channel_select");
+for (int i=0; i<MULTISEL_SIZE; i++)
+	{
+	fprintf(csv_out, ",%d", i);
+	}
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "weights_in_elmu_channel, num_events, num_events_pass_lumi, initial_events_weight, sum_rawweights_pass_trig, sum_weights_passtrig, weight_before_channel_select");
+for (int i=0; i<MULTISEL_SIZE; i++)
+	{
+	fprintf(csv_out, ",%d", i);
+	}
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "weights_in_elel_channel, num_events, num_events_pass_lumi, initial_events_weight, sum_rawweights_pass_trig, sum_weights_passtrig, weight_before_channel_select");
+for (int i=0; i<MULTISEL_SIZE; i++)
+	{
+	fprintf(csv_out, ",%d", i);
+	}
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "weights_in_mumu_channel, num_events, num_events_pass_lumi, initial_events_weight, sum_rawweights_pass_trig, sum_weights_passtrig, weight_before_channel_select");
+for (int i=0; i<MULTISEL_SIZE; i++)
 	{
 	fprintf(csv_out, ",%d", i);
 	}
@@ -643,6 +677,9 @@ for(size_t f=0; f<urls.size();++f)
 	double sum_weights_passtrig_raw = 0;
 	double sum_weights_passtrig = 0;
 
+	// before channel multiselect
+	double weight_before_channel_select = 0;
+
 	double crossel_sum_weights_raw = 0; // crossel
 	double crossel_sum_weights = 0;
 	double oursel_sum_weights_raw = 0; // oursel
@@ -656,11 +693,18 @@ for(size_t f=0; f<urls.size();++f)
 
 	// multiselection array -- 8 bits
 	// now 6 bits are used -- 0-63 is max
-	double weights_in_selections[512];
+	double weights_in_no_channel[MULTISEL_SIZE], weights_in_el_channel[MULTISEL_SIZE], weights_in_mu_channel[MULTISEL_SIZE],
+		weights_in_elmu_channel[MULTISEL_SIZE], weights_in_elel_channel[MULTISEL_SIZE], weights_in_mumu_channel[MULTISEL_SIZE];
 	//int weights_in_selections_int[100];
-	for (int i=0; i<512; i++)
+	for (int i=0; i<MULTISEL_SIZE; i++)
 		{
-		weights_in_selections[i] = 0;
+		//weights_in_selections[i] = 0;
+		weights_in_no_channel[i] = 0;
+		weights_in_el_channel[i] = 0;
+		weights_in_mu_channel[i] = 0;
+		weights_in_elmu_channel[i] = 0;
+		weights_in_elel_channel[i] = 0;
+		weights_in_mumu_channel[i] = 0;
 		//weights_in_selections_int[i] = 0;
 		}
 	unsigned int negative_event_nvtx[100];
@@ -1491,6 +1535,9 @@ for(size_t f=0; f<urls.size();++f)
 		n_selected_jets_weighted [n_jets > 100 ? 99 : n_jets] += weight;
 		n_selected_bjets_weighted[n_bjets > 100 ? 99 : n_bjets] += weight;
 
+		// and the sum of weight before splitting into channels:
+		weight_before_channel_select += weight;
+
 		//
 		// -------------------------------------------------- ASSIGN CHANNEL
 		//
@@ -1530,7 +1577,8 @@ for(size_t f=0; f<urls.size();++f)
 		// TODO: and no double-lepton channel yet
 
 		// --------------------------- store weights at different selections
-		// Event selection booleans
+		// Event selection booleans for el-tau and mu-tau channels
+
 		// bool passJetRawSelection(selSingleLepJets.size()>1); // 2 jets
 		//bool passJetSelection(selSingleLepJets.size()>1); // 2 jets // 2^4
 		//bool passJetSelection(selJets.size()>1); // 2 jets // 2^4
@@ -1543,36 +1591,43 @@ for(size_t f=0; f<urls.size();++f)
 		bool passOS( n_taus>0 && n_leptons>0 ? selLeptons[0].pdgId() * selTausNoLep[0].pdgId() < 0 : 0); // Oposite sign // 2^0
 
 		// multiselection
-		// the array is 2^9=512 long
-		// -- 9 selections fit
-		// and 7 are used now
+		// TODO: multisel should be done per-channel, now it is one (el/mu) for all 
 		unsigned int multisel = 0;
-		multisel += (isSingleMu ? 1 : 0); //! should be 1
-		multisel += (isSingleE ? 2 : 0);
-		multisel += (passJetSelection ? 4 : 0);
-		multisel += (passMetSelection ? 8 : 0);
-		multisel += (passBtagsSelection ? 16 : 0);
-		multisel += (passTauSelection ? 32 : 0);
-		multisel += (passOS ? 64 : 0);
-		/* old multisel
-		multisel += (iso_lep ? 32 : 0); //! should be 1
-		multisel += (passJetSelection ? 16 : 0);
-		multisel += (passMetSelection ? 8 : 0);
+		// multisel += (isSingleMu ? 1 : 0); //! should be 1
+		// multisel += (isSingleE ? 2 : 0);
+		multisel += (passJetSelection ? 1 : 0);
+		multisel += (passMetSelection ? 2 : 0);
 		multisel += (passBtagsSelection ? 4 : 0);
-		multisel += (passTauSelection ? 2 : 0);
-		multisel += (passOS ? 1 : 0);
-		*/
-		if (multisel > 512)
+		multisel += (passTauSelection ? 8 : 0);
+		multisel += (passOS ? 16 : 0);
+
+		/* debugging
+		if (multisel > MULTISEL_SIZE)
 			{
-			printf("%d", multisel);
+			printf("in event %d too large multisel: %d", iev, multisel);
 			break;
 			}
-		weights_in_selections[multisel] += weight;
+		*/
+
+		// weights_in_selections[multisel] += weight;
+		// TODO: should these be orthigonal?
+		if (isSingleE)
+			weights_in_el_channel[multisel] += weight;
+		if (isSingleMu)
+			weights_in_mu_channel[multisel] += weight;
+		if (isEMu)
+			weights_in_elmu_channel[multisel] += weight;
+		if (isDoubleE)
+			weights_in_elel_channel[multisel] += weight;
+		if (isDoubleMu)
+			weights_in_mumu_channel[multisel] += weight;
+		if ( !(isSingleMu || isSingleE || isDoubleMu || isDoubleE || isEMu))
+			weights_in_no_channel[multisel] += weight ;
 		//weights_in_selections_int[multisel] += 1;
 		//break;
 
 
-
+		// TODO: properly count multichannel?
 		if (isSingleE && isSingleMu) nMultiChannel++;
 
 		if(debug){
@@ -1733,14 +1788,54 @@ for(size_t f=0; f<urls.size();++f)
 	fprintf(csv_out, "%g,%g,",  oursel_sum_weights_el, oursel_sum_weights_mu);
 	fprintf(csv_out, "%g,%g\n", marasel_sum_weights_raw, marasel_sum_weights);
 
-
-	fprintf(csv_out, "weights_in_selections, %d, %d, %g, %g, %g", iev, n_events_pass_lumi, sum_weights, sum_weights_passtrig_raw, sum_weights_passtrig);
-	for (int i=0; i<512; i++)
+	fprintf(csv_out, "weights_in_no_channel, %d, %d, %g, %g, %g, %g", iev, n_events_pass_lumi, sum_weights, sum_weights_passtrig_raw, sum_weights_passtrig, weight_before_channel_select);
+	for (int i=0; i<MULTISEL_SIZE; i++)
 		{
-		fprintf(csv_out, ",%g", weights_in_selections[i]);
+		fprintf(csv_out, ",%g", weights_in_no_channel[i]);
 		//fprintf(csv_out, "%d,", weights_in_selections_int[i]);
 		}
 	fprintf(csv_out, "\n");
+
+	fprintf(csv_out, "weights_in_el_channel, %d, %d, %g, %g, %g, %g", iev, n_events_pass_lumi, sum_weights, sum_weights_passtrig_raw, sum_weights_passtrig, weight_before_channel_select);
+	for (int i=0; i<MULTISEL_SIZE; i++)
+		{
+		fprintf(csv_out, ",%g", weights_in_el_channel[i]);
+		//fprintf(csv_out, "%d,", weights_in_selections_int[i]);
+		}
+	fprintf(csv_out, "\n");
+
+	fprintf(csv_out, "weights_in_mu_channel, %d, %d, %g, %g, %g, %g", iev, n_events_pass_lumi, sum_weights, sum_weights_passtrig_raw, sum_weights_passtrig, weight_before_channel_select);
+	for (int i=0; i<MULTISEL_SIZE; i++)
+		{
+		fprintf(csv_out, ",%g", weights_in_mu_channel[i]);
+		//fprintf(csv_out, "%d,", weights_in_selections_int[i]);
+		}
+	fprintf(csv_out, "\n");
+
+	fprintf(csv_out, "weights_in_elmu_channel, %d, %d, %g, %g, %g, %g", iev, n_events_pass_lumi, sum_weights, sum_weights_passtrig_raw, sum_weights_passtrig, weight_before_channel_select);
+	for (int i=0; i<MULTISEL_SIZE; i++)
+		{
+		fprintf(csv_out, ",%g", weights_in_elmu_channel[i]);
+		//fprintf(csv_out, "%d,", weights_in_selections_int[i]);
+		}
+	fprintf(csv_out, "\n");
+
+	fprintf(csv_out, "weights_in_elel_channel, %d, %d, %g, %g, %g, %g", iev, n_events_pass_lumi, sum_weights, sum_weights_passtrig_raw, sum_weights_passtrig, weight_before_channel_select);
+	for (int i=0; i<MULTISEL_SIZE; i++)
+		{
+		fprintf(csv_out, ",%g", weights_in_elel_channel[i]);
+		//fprintf(csv_out, "%d,", weights_in_selections_int[i]);
+		}
+	fprintf(csv_out, "\n");
+
+	fprintf(csv_out, "weights_in_mumu_channel, %d, %d, %g, %g, %g, %g", iev, n_events_pass_lumi, sum_weights, sum_weights_passtrig_raw, sum_weights_passtrig, weight_before_channel_select);
+	for (int i=0; i<MULTISEL_SIZE; i++)
+		{
+		fprintf(csv_out, ",%g", weights_in_mumu_channel[i]);
+		//fprintf(csv_out, "%d,", weights_in_selections_int[i]);
+		}
+	fprintf(csv_out, "\n");
+
 
 
 	fprintf(csv_out, "negative_events_nvtx:");
