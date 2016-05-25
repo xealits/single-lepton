@@ -69,7 +69,50 @@ namespace utils
 	{
 	namespace cmssw
 		{
-		/* Using stuf in src/MacroUtils.cc
+		std::vector<double> smearJER(double pt, double eta, double genPt)
+			{
+			std::vector<double> toReturn(3,pt);
+			if(genPt<=0) return toReturn;
+
+			// These are from MacroUtils
+			// FIXME: These are the 8 TeV values.
+			//
+			// eta=fabs(eta);
+			// double ptSF(1.0), ptSF_err(0.06);
+			// if(eta<0.8)                  { ptSF=1.061; ptSF_err=sqrt(pow(0.012,2)+pow(0.023,2)); }
+			// else if(eta>=0.8 && eta<1.3) { ptSF=1.088; ptSF_err=sqrt(pow(0.012,2)+pow(0.029,2)); }
+			// else if(eta>=1.3 && eta<1.9) { ptSF=1.106; ptSF_err=sqrt(pow(0.017,2)+pow(0.030,2)); }
+			// else if(eta>=1.9 && eta<2.5) { ptSF=1.126; ptSF_err=sqrt(pow(0.035,2)+pow(0.094,2)); }
+			// else if(eta>=2.5 && eta<3.0) { ptSF=1.343; ptSF_err=sqrt(pow(0.127,2)+pow(0.123,2)); }
+			// else if(eta>=3.0 && eta<3.2) { ptSF=1.303; ptSF_err=sqrt(pow(0.127,2)+pow(1.303,2)); }
+			// else if(eta>=3.2 && eta<5.0) { ptSF=1.320; ptSF_err=sqrt(pow(0.127,2)+pow(1.320,2)); }
+
+			// TODO: 13TeV table for CMSSW_76X
+			// https://twiki.cern.ch/twiki/bin/view/CMS/JetResolution#Smearing_procedures
+			// following https://github.com/pfs/TopLJets2015/blob/master/TopAnalysis/src/CommonTools.cc
+			eta=fabs(eta);
+			double ptSF(1.0), ptSF_err(0.06);
+			if      (eta<0.5) { ptSF=1.095; ptSF_err=0.018; }
+			else if (eta<0.8) { ptSF=1.120; ptSF_err=0.028; }
+			else if (eta<1.1) { ptSF=1.097; ptSF_err=0.017; }
+			else if (eta<1.3) { ptSF=1.103; ptSF_err=0.033; }
+			else if (eta<1.7) { ptSF=1.118; ptSF_err=0.014; }
+			else if (eta<1.9) { ptSF=1.100; ptSF_err=0.033; }
+			else if (eta<2.1) { ptSF=1.162; ptSF_err=0.044; }
+			else if (eta<2.3) { ptSF=1.160; ptSF_err=0.048; }
+			else if (eta<2.5) { ptSF=1.161; ptSF_err=0.060; }
+			else if (eta<2.8) { ptSF=1.209; ptSF_err=0.059; }
+			else if (eta<3.0) { ptSF=1.564; ptSF_err=0.321; }
+			else if (eta<3.2) { ptSF=1.384; ptSF_err=0.033; }
+			else if (eta<5.0) { ptSF=1.216; ptSF_err=0.050; }
+
+			toReturn[0]=TMath::Max(0., genPt+ptSF*(pt-genPt));
+			toReturn[1]=TMath::Max(0., genPt+(ptSF+ptSF_err)*(pt-genPt));
+			toReturn[2]=TMath::Max(0., genPt+(ptSF-ptSF_err)*(pt-genPt));
+			return toReturn;
+			}
+
+		/* Using new stuff above
 		std::vector<double> smearJER(double pt, double eta, double genPt)
 			{
 			std::vector<double> toReturn(3,pt);
