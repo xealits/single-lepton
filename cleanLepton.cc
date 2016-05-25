@@ -106,9 +106,9 @@ namespace utils
 			else if (eta<3.2) { ptSF=1.384; ptSF_err=0.033; }
 			else if (eta<5.0) { ptSF=1.216; ptSF_err=0.050; }
 
-			toReturn[0]=TMath::Max(0., genPt+ptSF*(pt-genPt));
-			toReturn[1]=TMath::Max(0., genPt+(ptSF+ptSF_err)*(pt-genPt));
-			toReturn[2]=TMath::Max(0., genPt+(ptSF-ptSF_err)*(pt-genPt));
+			toReturn[0]=TMath::Max(0., (genPt+ptSF*(pt-genPt))/pt );
+			toReturn[1]=TMath::Max(0., (genPt+(ptSF+ptSF_err)*(pt-genPt))/pt );
+			toReturn[2]=TMath::Max(0., (genPt+(ptSF-ptSF_err)*(pt-genPt))/pt );
 			return toReturn;
 			}
 
