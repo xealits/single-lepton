@@ -1,7 +1,7 @@
 //
-// Pietro Vischia, <pietro.vischia@gmail.com>
+// Oleksii Toldaiev, <oleksii.toldaiev@gmail.com>
 //
-// ttbar and charged Higgs analyses
+// ttbar to leptons event selection
 //
 
 #include <iostream>
@@ -136,6 +136,7 @@ namespace utils
 			toReturn[2]=TMath::Max(0., (genPt+(ptSF-ptSF_err)*(pt-genPt))/pt );
 			return toReturn;
 			}
+
 
 		/* Using new stuff above
 		std::vector<double> smearJER(double pt, double eta, double genPt)
@@ -387,6 +388,7 @@ bool hasTauAsMother(const reco::GenParticle  p)
 
 
 #define MULTISEL_SIZE 256
+#define NPARTICLES_SIZE 50
 
 
 
@@ -717,6 +719,112 @@ for (int i=0; i<MULTISEL_SIZE; i++)
 	}
 fprintf(csv_out, "\n");
 
+// Control distributions of selected particles
+
+// TODO: check if the number of METs is always the same and remove it
+unsigned int n_mets_raw[NPARTICLES_SIZE];
+fprintf(csv_out, "n_mets_raw, ");
+for (int i=0; i<NPARTICLES_SIZE; i++)
+	{
+	fprintf(csv_out, ",%d", i);
+	}
+fprintf(csv_out, "\n");
+
+// the last type of particles recorded
+// (individual for leptons, leptoncleaned for taus, taucleaned for jets)
+// is the final for these particles
+
+// Leptons
+fprintf(csv_out, "n_leptons_raw,");
+for (int i=0; i<NPARTICLES_SIZE; i++)
+	{
+	fprintf(csv_out, ",%d", i);
+	}
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "n_leptons_individual,");
+for (int i=0; i<NPARTICLES_SIZE; i++)
+	{
+	fprintf(csv_out, ",%d", i);
+	}
+fprintf(csv_out, "\n");
+
+// Taus
+fprintf(csv_out, "n_taus_raw,");
+for (int i=0; i<NPARTICLES_SIZE; i++)
+	{
+	fprintf(csv_out, ",%d", i);
+	}
+fprintf(csv_out, "\n");
+fprintf(csv_out, "n_taus_individual,");
+for (int i=0; i<NPARTICLES_SIZE; i++)
+	{
+	fprintf(csv_out, ",%d", i);
+	}
+fprintf(csv_out, "\n");
+fprintf(csv_out, "n_taus_leptoncleaned,");
+for (int i=0; i<NPARTICLES_SIZE; i++)
+	{
+	fprintf(csv_out, ",%d", i);
+	}
+fprintf(csv_out, "\n");
+
+// Jets
+fprintf(csv_out, "n_jets_raw,");
+for (int i=0; i<NPARTICLES_SIZE; i++)
+	{
+	fprintf(csv_out, ",%d", i);
+	}
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "n_jets_correctedF,");
+for (int i=0; i<NPARTICLES_SIZE; i++)
+	{
+	fprintf(csv_out, ",%d", i);
+	}
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "n_jets_individual,");
+for (int i=0; i<NPARTICLES_SIZE; i++)
+	{
+	fprintf(csv_out, ",%d", i);
+	}
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "n_jets_leptoncleaned,");
+for (int i=0; i<NPARTICLES_SIZE; i++)
+	{
+	fprintf(csv_out, ",%d", i);
+	}
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "n_jets_taucleaned,");
+for (int i=0; i<NPARTICLES_SIZE; i++)
+	{
+	fprintf(csv_out, ",%d", i);
+	}
+fprintf(csv_out, "\n");
+
+// for MC jets are corrected with a couple procedures, thus the numbered mid-steps
+// correctedF is the final for jets, it should coincide with corrected1 for real data
+// TODO: add b-tags?
+
+unsigned int n_leptons_raw        [NPARTICLES_SIZE];
+unsigned int n_leptons_individual [NPARTICLES_SIZE];
+
+unsigned int n_taus_raw           [NPARTICLES_SIZE];
+unsigned int n_taus_individual    [NPARTICLES_SIZE];
+unsigned int n_taus_leptoncleaned [NPARTICLES_SIZE];
+
+unsigned int n_jets_raw           [NPARTICLES_SIZE];
+unsigned int n_jets_correctedF    [NPARTICLES_SIZE];
+unsigned int n_jets_individual    [NPARTICLES_SIZE];
+unsigned int n_jets_leptoncleaned [NPARTICLES_SIZE];
+unsigned int n_jets_taucleaned    [NPARTICLES_SIZE];
+
+
+fprintf(csv_out, "\n");
+
 fprintf(csv_out, "crossel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
 fprintf(csv_out, "oursel: iev, pu_num_inters,nGoodPV, rawWeight, weight, isElectron,");
 fprintf(csv_out, "met_0, met_1, met_2, met_3, met_4, met_5, met_6,");
@@ -780,6 +888,24 @@ for(size_t f=0; f<urls.size();++f)
 		weights_in_mumu_channel[i] = 0;
 		//weights_in_selections_int[i] = 0;
 		}
+
+
+	for (int i=0; i<NPARTICLES_SIZE; i++)
+		{
+		n_mets_raw[i] = 0; // TODO: the mets should be removed
+		n_leptons_raw[i] = 0;
+		n_leptons_individual[i] = 0;
+		n_taus_raw[i] = 0;
+		n_taus_individual[i] = 0;
+		n_taus_leptoncleaned[i] = 0;
+		n_jets_raw[i] = 0;
+		n_jets_correctedF[i] = 0;
+		n_jets_individual[i] = 0;
+		n_jets_leptoncleaned[i] = 0;
+		n_jets_taucleaned[i] = 0;
+		}
+
+
 	unsigned int negative_event_nvtx[100];
 	unsigned int positive_event_nvtx[100];
 	double negative_event_pernvtx_weight[100];
@@ -1243,6 +1369,21 @@ for(size_t f=0; f<urls.size();++f)
 		if(tausHandle.isValid() ) taus = *tausHandle;
 
 
+		// ------------------------------------ merging electrons and muons
+		std::vector<patUtils::GenericLepton> leptons;
+		for(size_t l=0; l<electrons.size(); ++l) leptons.push_back(patUtils::GenericLepton (electrons[l] ));
+		for(size_t l=0; l<muons.size(); ++l)     leptons.push_back(patUtils::GenericLepton (muons[l]     ));
+		std::sort(leptons.begin(), leptons.end(), utils::sort_CandidatesByPt);
+
+
+		// Control values for raw particles:
+		n_mets_raw    [mets.size()] += 1;
+		n_leptons_raw [leptons.size()] += 1;
+		n_taus_raw    [taus.size()] += 1;
+		n_jets_raw    [jets.size()] += 1;
+
+
+
 		//
 		//
 		// BELOW FOLLOWS THE ANALYSIS OF THE MAIN SELECTION WITH N-1 PLOTS. Whatever that means
@@ -1259,12 +1400,6 @@ for(size_t f=0; f<urls.size();++f)
 		// LEPTON ANALYSIS
 		//
 		
-		// ------------------------------------ merging electrons and muons
-		std::vector<patUtils::GenericLepton> leptons;
-		for(size_t l=0; l<electrons.size(); ++l) leptons.push_back(patUtils::GenericLepton (electrons[l] ));
-		for(size_t l=0; l<muons.size(); ++l)     leptons.push_back(patUtils::GenericLepton (muons[l]     ));
-		std::sort(leptons.begin(), leptons.end(), utils::sort_CandidatesByPt);
-
 
 		// ---------------------------------- leptons selection
 		LorentzVector muDiff(0., 0., 0., 0.);
@@ -1339,6 +1474,9 @@ for(size_t f=0; f<urls.size();++f)
 		std::sort(selLeptons.begin(),   selLeptons.end(),   utils::sort_CandidatesByPt);
 		LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
 
+		// Control values for processed individual leptons:
+		n_leptons_individual[selLeptons.size()] += 1;
+
 
 		// ------------------------------------------ select the individual taus
 		pat::TauCollection selTaus;
@@ -1381,6 +1519,9 @@ for(size_t f=0; f<urls.size();++f)
 			}
 		std::sort (selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
 
+		// Control values for processed individual taus:
+		n_taus_individual[selTaus.size()] += 1;
+
 		// ------------------------------------------ select the taus cleaned from leptons
 
 		pat::TauCollection selTausNoLep;
@@ -1400,12 +1541,90 @@ for(size_t f=0; f<urls.size();++f)
 			selTausNoLep.push_back(tau);
 			}
 
+		// Control values for processed taus cleaned of leptons:
+		n_taus_leptoncleaned[selTausNoLep.size()] += 1;
+
+
 		//
 		// ----------------------------------------------- JET/MET ANALYSIS
 		//
 		if(debug) cout << "Now update Jet Energy Corrections" << endl;
 		//add scale/resolution uncertainties and propagate to the MET
-		utils::cmssw::updateJEC(jets, jesCor, totalJESUnc, rho, nGoodPV, isMC);
+		//utils::cmssw::updateJEC(jets, jesCor, totalJESUnc, rho, nGoodPV, isMC);
+
+		// up to here jets were not processed in any way
+		// now goes the procedure of corrections to jets and then METs
+
+		// The updateJEC procedure from src/MacroUtils:
+		//void updateJEC(pat::JetCollection& jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC){
+		for(size_t ijet=0; ijet<jets.size(); ijet++)
+			{
+			// TODO: so does this mean "in place"?
+			pat::Jet& jet = jets[ijet];
+
+			//correct JES
+			LorentzVector rawJet = jet.correctedP4("Uncorrected");
+			// here is the correct1 jet correction point
+
+			//double toRawSF=jet.correctedJet("Uncorrected").pt()/jet.pt();
+			//LorentzVector rawJet(jet*toRawSF);
+			jesCor->setJetEta(rawJet.eta());
+			jesCor->setJetPt(rawJet.pt());
+			jesCor->setJetA(jet.jetArea());
+			jesCor->setRho(rho);
+			jesCor->setNPV(nGoodPV);
+			jet.setP4(rawJet*jesCor->getCorrection());
+
+			// here is the correct2 jet correction point
+
+			//smear JER
+			//double newJERSF(1.0);
+			if(isMC)
+				{
+				const reco::GenJet* genJet=jet.genJet();
+				if(genJet)
+					{
+					double genjetpt( genJet ? genJet->pt(): 0.);                    
+					std::vector<double> smearJER=utils::cmssw::smearJER(jet.pt(),jet.eta(),genjetpt);
+					jet.setP4(jet.p4()*smearJER[0]);
+					
+					//printf("jet pt=%f gen pt = %f smearing %f %f %f\n", jet.pt(), genjetpt, smearJER[0], smearJER[1], smearJER[2]);
+					// //set the JER up/down alternatives
+					jet.addUserFloat("jerup", smearJER[1]);  //kept for backward compatibility
+					jet.addUserFloat("jerdown", smearJER[2] ); //kept for backward compatibility
+					jet.addUserFloat("_res_jup", smearJER[1]);
+					jet.addUserFloat("_res_jdown", smearJER[2] );
+					}
+				else{
+					jet.addUserFloat("jerup", 1.0); //kept for backward compatibility
+					jet.addUserFloat("jerdown", 1.0);  //kept for backward compatibility
+					jet.addUserFloat("_res_jup", 1.0);
+					jet.addUserFloat("_res_jdown", 1.0 );
+					}
+				}
+
+			// here is the correct3 jet correction point
+
+			if(isMC)
+				{
+				////set the JES up/down pT alternatives
+				std::vector<float> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
+				jet.addUserFloat("jesup",    ptUnc[0] );  //kept for backward compatibility
+				jet.addUserFloat("jesdown",  ptUnc[1] );  //kept for backward compatibility
+				jet.addUserFloat("_scale_jup",    ptUnc[0] );
+				jet.addUserFloat("_scale_jdown",  ptUnc[1] );
+				}
+
+			// FIXME: this is not to be re-set. Check that this is a desired non-feature.
+			// i.e. check that the uncorrectedJet remains the same even when the corrected momentum is changed by this routine.
+			//to get the raw jet again
+			//jets[ijet].setVal("torawsf",1./(newJECSF*newJERSF));
+			}
+
+		// here is the correctF jet correction point
+		// Control values for corrected jets:
+		n_jets_correctedF[jets.size()] += 1;
+
 
 		// FIXME: So are these MET corrections?
 		if(debug) cout << "Update also MET" << endl;
@@ -1413,6 +1632,7 @@ for(size_t f=0; f<urls.size();++f)
 		// FIXME: Must choose a lepton collection. Perhaps loose leptons?
 		met = newMet[utils::cmssw::METvariations::NOMINAL];
 		if(debug) cout << "Jet Energy Corrections updated" << endl;
+
 
 		// TODO: should MET corrections be done here?
 		// METs with corrections
@@ -1482,6 +1702,11 @@ for(size_t f=0; f<urls.size();++f)
 
 		std::sort (selJets.begin(),  selJets.end(),  utils::sort_CandidatesByPt);
 
+		// Control values for processed individual jets:
+		n_jets_individual[selJets.size()] += 1;
+
+
+
 		// ---------------------------- Clean jet collections from selected leptons
 		// TODO: add gamma-cleaning as well?
 
@@ -1501,6 +1726,10 @@ for(size_t f=0; f<urls.size();++f)
 			}
 
 
+		// Control values for processed jets cleaned of leptons:
+		n_jets_leptoncleaned[selJetsNoLep.size()] += 1;
+
+
 
 		// ---------------------------- Clean jet collection from selected taus
 		pat::JetCollection selJetsNoLepNoTau;
@@ -1518,6 +1747,10 @@ for(size_t f=0; f<urls.size();++f)
 
 			selJetsNoLepNoTau.push_back(jet);
 			}
+
+		// Control values for processed jets cleaned of leptons and taus:
+		n_jets_taucleaned[selJetsNoLepNoTau.size()] += 1;
+
 
 
 		// --------------------------- B-tagged jets
@@ -1908,6 +2141,93 @@ for(size_t f=0; f<urls.size();++f)
 		{
 		fprintf(csv_out, ",%g", weights_in_mumu_channel[i]);
 		//fprintf(csv_out, "%d,", weights_in_selections_int[i]);
+		}
+	fprintf(csv_out, "\n");
+
+
+	// Controls distributions of processed particles
+
+	// TODO: the mets should be removed
+	fprintf(csv_out, "n_mets_raw");
+	for (int i=0; i<NPARTICLES_SIZE; i++)
+		{
+		fprintf(csv_out, ",%u", n_mets_raw[i]);
+		}
+	fprintf(csv_out, "\n");
+
+	// Leptons
+
+	fprintf(csv_out, "n_leptons_raw");
+	for (int i=0; i<NPARTICLES_SIZE; i++)
+		{
+		fprintf(csv_out, ",%u", n_leptons_raw[i]);
+		}
+	fprintf(csv_out, "\n");
+
+	fprintf(csv_out, "n_leptons_individual");
+	for (int i=0; i<NPARTICLES_SIZE; i++)
+		{
+		fprintf(csv_out, ",%u", n_leptons_individual[i]);
+		}
+	fprintf(csv_out, "\n");
+
+	// Taus
+
+	fprintf(csv_out, "n_taus_raw");
+	for (int i=0; i<NPARTICLES_SIZE; i++)
+		{
+		fprintf(csv_out, ",%u", n_taus_raw[i]);
+		}
+	fprintf(csv_out, "\n");
+
+	fprintf(csv_out, "n_taus_individual");
+	for (int i=0; i<NPARTICLES_SIZE; i++)
+		{
+		fprintf(csv_out, ",%u", n_taus_individual[i]);
+		}
+	fprintf(csv_out, "\n");
+
+	fprintf(csv_out, "n_taus_leptoncleaned");
+	for (int i=0; i<NPARTICLES_SIZE; i++)
+		{
+		fprintf(csv_out, ",%u", n_taus_leptoncleaned[i]);
+		}
+	fprintf(csv_out, "\n");
+
+	// Jets
+
+	fprintf(csv_out, "n_jets_raw");
+	for (int i=0; i<NPARTICLES_SIZE; i++)
+		{
+		fprintf(csv_out, ",%u", n_jets_raw[i]);
+		}
+	fprintf(csv_out, "\n");
+
+	fprintf(csv_out, "n_jets_correctedF");
+	for (int i=0; i<NPARTICLES_SIZE; i++)
+		{
+		fprintf(csv_out, ",%u", n_jets_correctedF[i]);
+		}
+	fprintf(csv_out, "\n");
+
+	fprintf(csv_out, "n_jets_individual");
+	for (int i=0; i<NPARTICLES_SIZE; i++)
+		{
+		fprintf(csv_out, ",%u", n_jets_individual[i]);
+		}
+	fprintf(csv_out, "\n");
+
+	fprintf(csv_out, "n_jets_leptoncleaned");
+	for (int i=0; i<NPARTICLES_SIZE; i++)
+		{
+		fprintf(csv_out, ",%u", n_jets_leptoncleaned[i]);
+		}
+	fprintf(csv_out, "\n");
+
+	fprintf(csv_out, "n_jets_taucleaned");
+	for (int i=0; i<NPARTICLES_SIZE; i++)
+		{
+		fprintf(csv_out, ",%u", n_jets_taucleaned[i]);
 		}
 	fprintf(csv_out, "\n");
 
