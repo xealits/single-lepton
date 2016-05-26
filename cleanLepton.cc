@@ -63,6 +63,9 @@
 #include "TNtuple.h"
 #include <Math/VectorUtil.h>
 
+#include <map>
+#include <string>
+
 using namespace std;
 
 namespace utils
@@ -389,10 +392,21 @@ bool hasTauAsMother(const reco::GenParticle  p)
 
 #define MULTISEL_SIZE 256
 #define NPARTICLES_SIZE 50
+#define NORMKINO_DISTR_SIZE 400
 
+// // creating histograms instead of using TH1F....
 
+// // and instead of macro making 2 types of histograms for different length....
 
-
+// struct NormKino
+// {
+// 	// the fill is done with: NormKino.pt[ given_pt +  ]
+// 	double pt[NORMKINO_DISTR_SIZE + 2];
+// 	double pt_offset = 0.;
+// 	double pt_scale = 1.;
+// 	double e[NORMKINO_DISTR_SIZE + 2];
+// 	double eta[NORMKINO_DISTR_SIZE + 2];
+// };
 
 
 
@@ -721,6 +735,7 @@ fprintf(csv_out, "\n");
 
 // Control distributions of selected particles
 
+
 // TODO: check if the number of METs is always the same and remove it
 unsigned int n_mets_raw[NPARTICLES_SIZE];
 fprintf(csv_out, "n_mets_raw, ");
@@ -734,96 +749,88 @@ fprintf(csv_out, "\n");
 // (individual for leptons, leptoncleaned for taus, taucleaned for jets)
 // is the final for these particles
 
-// Leptons
-fprintf(csv_out, "n_leptons_raw,");
-for (int i=0; i<NPARTICLES_SIZE; i++)
-	{
-	fprintf(csv_out, ",%d", i);
-	}
-fprintf(csv_out, "\n");
 
-fprintf(csv_out, "n_leptons_individual,");
-for (int i=0; i<NPARTICLES_SIZE; i++)
-	{
-	fprintf(csv_out, ",%d", i);
-	}
-fprintf(csv_out, "\n");
+// for (int i=0; i<NPARTICLES_SIZE; i++)
+// 	{
+// 	n_mets_raw[i] = 0; // TODO: the mets should be removed
+// 	n_leptons_raw[i] = 0;
+// 	n_leptons_individual[i] = 0;
+// 	n_taus_raw[i] = 0;
+// 	n_taus_individual[i] = 0;
+// 	n_taus_leptoncleaned[i] = 0;
+// 	n_jets_raw[i] = 0;
+// 	n_jets_correctedF[i] = 0;
+// 	n_jets_individual[i] = 0;
+// 	n_jets_leptoncleaned[i] = 0;
+// 	n_jets_taucleaned[i] = 0;
+// 	}
 
-// Taus
-fprintf(csv_out, "n_taus_raw,");
-for (int i=0; i<NPARTICLES_SIZE; i++)
-	{
-	fprintf(csv_out, ",%d", i);
-	}
-fprintf(csv_out, "\n");
-fprintf(csv_out, "n_taus_individual,");
-for (int i=0; i<NPARTICLES_SIZE; i++)
-	{
-	fprintf(csv_out, ",%d", i);
-	}
-fprintf(csv_out, "\n");
-fprintf(csv_out, "n_taus_leptoncleaned,");
-for (int i=0; i<NPARTICLES_SIZE; i++)
-	{
-	fprintf(csv_out, ",%d", i);
-	}
-fprintf(csv_out, "\n");
-
-// Jets
-fprintf(csv_out, "n_jets_raw,");
-for (int i=0; i<NPARTICLES_SIZE; i++)
-	{
-	fprintf(csv_out, ",%d", i);
-	}
-fprintf(csv_out, "\n");
-
-fprintf(csv_out, "n_jets_correctedF,");
-for (int i=0; i<NPARTICLES_SIZE; i++)
-	{
-	fprintf(csv_out, ",%d", i);
-	}
-fprintf(csv_out, "\n");
-
-fprintf(csv_out, "n_jets_individual,");
-for (int i=0; i<NPARTICLES_SIZE; i++)
-	{
-	fprintf(csv_out, ",%d", i);
-	}
-fprintf(csv_out, "\n");
-
-fprintf(csv_out, "n_jets_leptoncleaned,");
-for (int i=0; i<NPARTICLES_SIZE; i++)
-	{
-	fprintf(csv_out, ",%d", i);
-	}
-fprintf(csv_out, "\n");
-
-fprintf(csv_out, "n_jets_taucleaned,");
-for (int i=0; i<NPARTICLES_SIZE; i++)
-	{
-	fprintf(csv_out, ",%d", i);
-	}
-fprintf(csv_out, "\n");
 
 // for MC jets are corrected with a couple procedures, thus the numbered mid-steps
 // correctedF is the final for jets, it should coincide with corrected1 for real data
 // TODO: add b-tags?
 
-unsigned int n_leptons_raw        [NPARTICLES_SIZE];
-unsigned int n_leptons_individual [NPARTICLES_SIZE];
+// TODO: better controls?
 
-unsigned int n_taus_raw           [NPARTICLES_SIZE];
-unsigned int n_taus_individual    [NPARTICLES_SIZE];
-unsigned int n_taus_leptoncleaned [NPARTICLES_SIZE];
+struct ControlPointInfo
+{
+	// char control_point[64];
+	TH1F* n;
+	TH1F* pt;
+	TH1F* e;
+	TH1F* eta;
+};
 
-unsigned int n_jets_raw           [NPARTICLES_SIZE];
-unsigned int n_jets_correctedF    [NPARTICLES_SIZE];
-unsigned int n_jets_individual    [NPARTICLES_SIZE];
-unsigned int n_jets_leptoncleaned [NPARTICLES_SIZE];
-unsigned int n_jets_taucleaned    [NPARTICLES_SIZE];
+// struct
+// {
+// 	char particle_name[64];
+// 	struct ControlPointInfo raw;
+// } leptons_control = {
+// 	"leptons",
+// 		{ "raw",
+// 		(TH1F*) new TH1F("n_leptons_raw", ";;N_leptons", 50, 0., 50.),
+// 		(TH1F*) new TH1F("leptons_pt_raw", ";;Pt(GeV)", 400, 0., 200.),
+// 		(TH1F*) new TH1F("leptons_e_raw", ";;E(GeV)", 400, 0., 200.),
+// 		(TH1F*) new TH1F("leptons_eta_raw", ";;Eta", 200, -4., 4.),
+// 		}
+// 	};
 
+// std::map<std::string, ControlPointInfo> leptons_control_info;
 
-fprintf(csv_out, "\n");
+// leptons_control_info["raw"] = {
+// 	(TH1F*) new TH1F("n_leptons_raw", ";;N_leptons", 50, 0., 50.),
+// 	(TH1F*) new TH1F("leptons_pt_raw", ";;Pt(GeV)", 400, 0., 200.),
+// 	(TH1F*) new TH1F("leptons_e_raw", ";;E(GeV)", 400, 0., 200.),
+// 	(TH1F*) new TH1F("leptons_eta_raw", ";;Eta", 200, -4., 4.),
+// 	};
+// // really wonder if it'll work or compile at all
+// leptons_control_info["final"] = {
+// 	(TH1F*) new TH1F("n_leptons_final", ";;N_leptons", 50, 0., 50.),
+// 	(TH1F*) new TH1F("leptons_pt_final", ";;Pt(GeV)", 400, 0., 200.),
+// 	(TH1F*) new TH1F("leptons_e_final", ";;E(GeV)", 400, 0., 200.),
+// 	(TH1F*) new TH1F("leptons_eta_final", ";;Eta", 200, -4., 4.),
+// 	};
+
+// for the sake of catching it at compile time and not deal with segfault in run
+
+struct {
+	ControlPointInfo raw;
+	ControlPointInfo individual;
+} leptons_control_info;
+
+leptons_control_info.raw.n   = (TH1F*) new TH1F("n_leptons_raw", ";;N_leptons", 50, 0., 50.);
+leptons_control_info.raw.pt  = (TH1F*) new TH1F("leptons_pt_raw", ";;Pt(GeV)", 400, 0., 200.);
+leptons_control_info.raw.e   = (TH1F*) new TH1F("leptons_e_raw", ";;E(GeV)", 400, 0., 200.);
+leptons_control_info.raw.eta = (TH1F*) new TH1F("leptons_eta_raw", ";;Eta", 200, -4., 4.);
+
+leptons_control_info.individual.n   = (TH1F*) new TH1F("n_leptons_individual", ";;N_leptons", 50, 0., 50.);
+leptons_control_info.individual.pt  = (TH1F*) new TH1F("leptons_pt_individual", ";;Pt(GeV)", 400, 0., 200.);
+leptons_control_info.individual.e   = (TH1F*) new TH1F("leptons_e_individual", ";;E(GeV)", 400, 0., 200.);
+leptons_control_info.individual.eta = (TH1F*) new TH1F("leptons_eta_individual", ";;Eta", 200, -4., 4.);
+
+// struct ControlPointInfo particle_control_point[];
+// TH1D* normhist = (TH1D*) mon.addHistogram(new TH1D("initNorm", ";;Events", 5, 0., 5.));
+
 
 fprintf(csv_out, "crossel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
 fprintf(csv_out, "oursel: iev, pu_num_inters,nGoodPV, rawWeight, weight, isElectron,");
@@ -887,22 +894,6 @@ for(size_t f=0; f<urls.size();++f)
 		weights_in_elel_channel[i] = 0;
 		weights_in_mumu_channel[i] = 0;
 		//weights_in_selections_int[i] = 0;
-		}
-
-
-	for (int i=0; i<NPARTICLES_SIZE; i++)
-		{
-		n_mets_raw[i] = 0; // TODO: the mets should be removed
-		n_leptons_raw[i] = 0;
-		n_leptons_individual[i] = 0;
-		n_taus_raw[i] = 0;
-		n_taus_individual[i] = 0;
-		n_taus_leptoncleaned[i] = 0;
-		n_jets_raw[i] = 0;
-		n_jets_correctedF[i] = 0;
-		n_jets_individual[i] = 0;
-		n_jets_leptoncleaned[i] = 0;
-		n_jets_taucleaned[i] = 0;
 		}
 
 
@@ -1378,10 +1369,9 @@ for(size_t f=0; f<urls.size();++f)
 
 		// Control values for raw particles:
 		n_mets_raw    [mets.size()] += 1;
-		n_leptons_raw [leptons.size()] += 1;
-		n_taus_raw    [taus.size()] += 1;
-		n_jets_raw    [jets.size()] += 1;
 
+		// leptons_control_info["raw"].n->Fill(leptons.size(), weight); // hopefully
+		leptons_control_info.raw.n->Fill(leptons.size(), weight); // hopefully
 
 
 		//
@@ -1475,7 +1465,9 @@ for(size_t f=0; f<urls.size();++f)
 		LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
 
 		// Control values for processed individual leptons:
-		n_leptons_individual[selLeptons.size()] += 1;
+		// n_leptons_individual[selLeptons.size()] += 1;
+		// leptons_control_info["final"].n->Fill(leptons.size(), weight); // hopefully
+		leptons_control_info.final.n->Fill(leptons.size(), weight); // hopefully
 
 
 		// ------------------------------------------ select the individual taus
@@ -1520,7 +1512,7 @@ for(size_t f=0; f<urls.size();++f)
 		std::sort (selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
 
 		// Control values for processed individual taus:
-		n_taus_individual[selTaus.size()] += 1;
+
 
 		// ------------------------------------------ select the taus cleaned from leptons
 
@@ -1542,7 +1534,7 @@ for(size_t f=0; f<urls.size();++f)
 			}
 
 		// Control values for processed taus cleaned of leptons:
-		n_taus_leptoncleaned[selTausNoLep.size()] += 1;
+
 
 
 		//
@@ -1623,7 +1615,7 @@ for(size_t f=0; f<urls.size();++f)
 
 		// here is the correctF jet correction point
 		// Control values for corrected jets:
-		n_jets_correctedF[jets.size()] += 1;
+
 
 
 		// FIXME: So are these MET corrections?
@@ -1703,7 +1695,7 @@ for(size_t f=0; f<urls.size();++f)
 		std::sort (selJets.begin(),  selJets.end(),  utils::sort_CandidatesByPt);
 
 		// Control values for processed individual jets:
-		n_jets_individual[selJets.size()] += 1;
+
 
 
 
@@ -1727,7 +1719,7 @@ for(size_t f=0; f<urls.size();++f)
 
 
 		// Control values for processed jets cleaned of leptons:
-		n_jets_leptoncleaned[selJetsNoLep.size()] += 1;
+
 
 
 
@@ -1749,7 +1741,7 @@ for(size_t f=0; f<urls.size();++f)
 			}
 
 		// Control values for processed jets cleaned of leptons and taus:
-		n_jets_taucleaned[selJetsNoLepNoTau.size()] += 1;
+
 
 
 
@@ -2157,79 +2149,32 @@ for(size_t f=0; f<urls.size();++f)
 
 	// Leptons
 
+	// leptons_control_info.raw.n   = (TH1F*) new TH1F("n_leptons_raw", ";;N_leptons", 50, 0., 50.);
+	// leptons_control_info.raw.pt  = (TH1F*) new TH1F("leptons_pt_raw", ";;Pt(GeV)", 400, 0., 200.);
+	// leptons_control_info.raw.e   = (TH1F*) new TH1F("leptons_e_raw", ";;E(GeV)", 400, 0., 200.);
+	// leptons_control_info.raw.eta = (TH1F*) new TH1F("leptons_eta_raw", ";;Eta", 200, -4., 4.);
+	// 
+	// leptons_control_info.individual.n   = (TH1F*) new TH1F("n_leptons_final", ";;N_leptons", 50, 0., 50.);
+	// leptons_control_info.individual.pt  = (TH1F*) new TH1F("leptons_pt_final", ";;Pt(GeV)", 400, 0., 200.);
+	// leptons_control_info.individual.e   = (TH1F*) new TH1F("leptons_e_final", ";;E(GeV)", 400, 0., 200.);
+	// leptons_control_info.individual.eta = (TH1F*) new TH1F("leptons_eta_final", ";;Eta", 200, -4., 4.);
+
+	// h1->GetSize()
 	fprintf(csv_out, "n_leptons_raw");
-	for (int i=0; i<NPARTICLES_SIZE; i++)
-		{
-		fprintf(csv_out, ",%u", n_leptons_raw[i]);
-		}
+	for (int i=0; i<leptons_control_info.raw.n->GetSize(); i++)
+	{
+		fprintf(csv_out, ",%g", leptons_control_info.raw.n->GetBinContent(i));
+	}
 	fprintf(csv_out, "\n");
+
 
 	fprintf(csv_out, "n_leptons_individual");
-	for (int i=0; i<NPARTICLES_SIZE; i++)
-		{
-		fprintf(csv_out, ",%u", n_leptons_individual[i]);
-		}
+	for (int i=0; i<leptons_control_info.individual.n->GetSize(); i++)
+	{
+		fprintf(csv_out, ",%g", leptons_control_info.individual.n->GetBinContent(i));
+	}
 	fprintf(csv_out, "\n");
 
-	// Taus
-
-	fprintf(csv_out, "n_taus_raw");
-	for (int i=0; i<NPARTICLES_SIZE; i++)
-		{
-		fprintf(csv_out, ",%u", n_taus_raw[i]);
-		}
-	fprintf(csv_out, "\n");
-
-	fprintf(csv_out, "n_taus_individual");
-	for (int i=0; i<NPARTICLES_SIZE; i++)
-		{
-		fprintf(csv_out, ",%u", n_taus_individual[i]);
-		}
-	fprintf(csv_out, "\n");
-
-	fprintf(csv_out, "n_taus_leptoncleaned");
-	for (int i=0; i<NPARTICLES_SIZE; i++)
-		{
-		fprintf(csv_out, ",%u", n_taus_leptoncleaned[i]);
-		}
-	fprintf(csv_out, "\n");
-
-	// Jets
-
-	fprintf(csv_out, "n_jets_raw");
-	for (int i=0; i<NPARTICLES_SIZE; i++)
-		{
-		fprintf(csv_out, ",%u", n_jets_raw[i]);
-		}
-	fprintf(csv_out, "\n");
-
-	fprintf(csv_out, "n_jets_correctedF");
-	for (int i=0; i<NPARTICLES_SIZE; i++)
-		{
-		fprintf(csv_out, ",%u", n_jets_correctedF[i]);
-		}
-	fprintf(csv_out, "\n");
-
-	fprintf(csv_out, "n_jets_individual");
-	for (int i=0; i<NPARTICLES_SIZE; i++)
-		{
-		fprintf(csv_out, ",%u", n_jets_individual[i]);
-		}
-	fprintf(csv_out, "\n");
-
-	fprintf(csv_out, "n_jets_leptoncleaned");
-	for (int i=0; i<NPARTICLES_SIZE; i++)
-		{
-		fprintf(csv_out, ",%u", n_jets_leptoncleaned[i]);
-		}
-	fprintf(csv_out, "\n");
-
-	fprintf(csv_out, "n_jets_taucleaned");
-	for (int i=0; i<NPARTICLES_SIZE; i++)
-		{
-		fprintf(csv_out, ",%u", n_jets_taucleaned[i]);
-		}
-	fprintf(csv_out, "\n");
 
 
 
