@@ -1852,9 +1852,9 @@ for(size_t f=0; f<urls.size();++f)
 
 		// The updateJEC procedure from src/MacroUtils:
 		//void updateJEC(pat::JetCollection& jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC){
-		jets_control_info.correct1.n->Fill(jets.size(), weight);
-		jets_control_info.correct2.n->Fill(jets.size(), weight);
-		jets_control_info.correctF.n->Fill(jets.size(), weight);
+		jets_control_info.corrected1.n->Fill(jets.size(), weight);
+		jets_control_info.corrected2.n->Fill(jets.size(), weight);
+		jets_control_info.correctedF.n->Fill(jets.size(), weight);
 		for(size_t ijet=0; ijet<jets.size(); ijet++)
 			{
 			// TODO: so does this mean "in place"?
@@ -1864,9 +1864,9 @@ for(size_t f=0; f<urls.size();++f)
 			LorentzVector rawJet = jet.correctedP4("Uncorrected");
 
 			// here is the correct1 jet correction point
-			jets_control_info.correct1.pt->Fill(rawJet.pt(), weight);
-			jets_control_info.correct1.e->Fill(rawJet.e(), weight);
-			jets_control_info.correct1.eta->Fill(rawJet.eta(), weight);
+			jets_control_info.corrected1.pt->Fill(rawJet.pt(), weight);
+			jets_control_info.corrected1.e->Fill(rawJet.e(), weight);
+			jets_control_info.corrected1.eta->Fill(rawJet.eta(), weight);
 
 
 			//double toRawSF=jet.correctedJet("Uncorrected").pt()/jet.pt();
@@ -1879,9 +1879,9 @@ for(size_t f=0; f<urls.size();++f)
 			jet.setP4(rawJet*jesCor->getCorrection());
 
 			// here is the correct2 jet correction point
-			jets_control_info.correct2.pt->Fill(jet.pt(), weight);
-			jets_control_info.correct2.e->Fill(jet.e(), weight);
-			jets_control_info.correct2.eta->Fill(jet.eta(), weight);
+			jets_control_info.corrected2.pt->Fill(jet.pt(), weight);
+			jets_control_info.corrected2.e->Fill(jet.e(), weight);
+			jets_control_info.corrected2.eta->Fill(jet.eta(), weight);
 
 			//smear JER
 			//double newJERSF(1.0);
