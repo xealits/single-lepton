@@ -1633,7 +1633,7 @@ for(size_t f=0; f<urls.size();++f)
 			leptons_control_info.raw.pt->Fill(leptons[l].pt(), weight);
 			leptons_control_info.raw.e->Fill(leptons[l].energy(), weight);
 			int lid(leptons[l].pdgId());
-			double leta(fabs(lid==11 ? leptons[l].el.superCluster()->eta() : leptons[l].eta()));
+			double leta(lid==11 ? leptons[l].el.superCluster()->eta() : leptons[l].eta());
 			leptons_control_info.raw.eta->Fill(leta, weight);
 			}
 
@@ -1754,7 +1754,7 @@ for(size_t f=0; f<urls.size();++f)
 			leptons_control_info.individual.pt->Fill(selLeptons[l].pt(), weight);
 			leptons_control_info.individual.e->Fill(selLeptons[l].energy(), weight);
 			int lid(selLeptons[l].pdgId());
-			double leta(fabs(lid==11 ? selLeptons[l].el.superCluster()->eta() : selLeptons[l].eta()));
+			double leta(lid==11 ? selLeptons[l].el.superCluster()->eta() : selLeptons[l].eta());
 			leptons_control_info.individual.eta->Fill(leta, weight);
 			}
 
