@@ -1086,62 +1086,63 @@ for(size_t f=0; f<urls.size();++f)
 		}
 
 	// CONTROLINFO
+	// NO RESET now -- everything is per-job
 	// leptons_control_info.raw.n->Reset();
 	// leptons_control_info.raw.pt  = (TH1F*) new TH1F("leptons_pt_raw", ";;Pt(GeV)", 400, 0., 200.);
 	// leptons_control_info.raw.e   = (TH1F*) new TH1F("leptons_e_raw", ";;E(GeV)", 400, 0., 200.);
 	// leptons_control_info.raw.eta = (TH1F*) new TH1F("leptons_eta_raw", ";;Eta", 200, -4., 4.);
 	//
 	// leptons_control_info.individual.n->Reset();
-	leptons_control_info.raw.n->Reset();
-	leptons_control_info.raw.pt->Reset();
-	leptons_control_info.raw.e->Reset();
-	leptons_control_info.raw.eta->Reset();
-	leptons_control_info.individual.n->Reset();
-	leptons_control_info.individual.pt->Reset();
-	leptons_control_info.individual.e->Reset();
-	leptons_control_info.individual.eta->Reset();
+	//leptons_control_info.raw.n->Reset();
+	//leptons_control_info.raw.pt->Reset();
+	//leptons_control_info.raw.e->Reset();
+	//leptons_control_info.raw.eta->Reset();
+	//leptons_control_info.individual.n->Reset();
+	//leptons_control_info.individual.pt->Reset();
+	//leptons_control_info.individual.e->Reset();
+	//leptons_control_info.individual.eta->Reset();
 
-	taus_control_info.raw.n->Reset();
-	taus_control_info.raw.pt->Reset();
-	taus_control_info.raw.e->Reset();
-	taus_control_info.raw.eta->Reset();
-	taus_control_info.individual.n->Reset();
-	taus_control_info.individual.pt->Reset();
-	taus_control_info.individual.e->Reset();
-	taus_control_info.individual.eta->Reset();
-	taus_control_info.leptoncleaned.n->Reset();
-	taus_control_info.leptoncleaned.pt->Reset();
-	taus_control_info.leptoncleaned.e->Reset();
-	taus_control_info.leptoncleaned.eta->Reset();
+	//taus_control_info.raw.n->Reset();
+	//taus_control_info.raw.pt->Reset();
+	//taus_control_info.raw.e->Reset();
+	//taus_control_info.raw.eta->Reset();
+	//taus_control_info.individual.n->Reset();
+	//taus_control_info.individual.pt->Reset();
+	//taus_control_info.individual.e->Reset();
+	//taus_control_info.individual.eta->Reset();
+	//taus_control_info.leptoncleaned.n->Reset();
+	//taus_control_info.leptoncleaned.pt->Reset();
+	//taus_control_info.leptoncleaned.e->Reset();
+	//taus_control_info.leptoncleaned.eta->Reset();
 
-	jets_control_info.raw.n->Reset();
-	jets_control_info.raw.pt->Reset();
-	jets_control_info.raw.e->Reset();
-	jets_control_info.raw.eta->Reset();
-	jets_control_info.corrected1.n->Reset();
-	jets_control_info.corrected1.pt->Reset();
-	jets_control_info.corrected1.e->Reset();
-	jets_control_info.corrected1.eta->Reset();
-	jets_control_info.corrected2.n->Reset();
-	jets_control_info.corrected2.pt->Reset();
-	jets_control_info.corrected2.e->Reset();
-	jets_control_info.corrected2.eta->Reset();
-	jets_control_info.correctedF.n->Reset();
-	jets_control_info.correctedF.pt->Reset();
-	jets_control_info.correctedF.e->Reset();
-	jets_control_info.correctedF.eta->Reset();
-	jets_control_info.individual.n->Reset();
-	jets_control_info.individual.pt->Reset();
-	jets_control_info.individual.e->Reset();
-	jets_control_info.individual.eta->Reset();
-	jets_control_info.leptoncleaned.n->Reset();
-	jets_control_info.leptoncleaned.pt->Reset();
-	jets_control_info.leptoncleaned.e->Reset();
-	jets_control_info.leptoncleaned.eta->Reset();
-	jets_control_info.taucleaned.n->Reset();
-	jets_control_info.taucleaned.pt->Reset();
-	jets_control_info.taucleaned.e->Reset();
-	jets_control_info.taucleaned.eta->Reset();
+	//jets_control_info.raw.n->Reset();
+	//jets_control_info.raw.pt->Reset();
+	//jets_control_info.raw.e->Reset();
+	//jets_control_info.raw.eta->Reset();
+	//jets_control_info.corrected1.n->Reset();
+	//jets_control_info.corrected1.pt->Reset();
+	//jets_control_info.corrected1.e->Reset();
+	//jets_control_info.corrected1.eta->Reset();
+	//jets_control_info.corrected2.n->Reset();
+	//jets_control_info.corrected2.pt->Reset();
+	//jets_control_info.corrected2.e->Reset();
+	//jets_control_info.corrected2.eta->Reset();
+	//jets_control_info.correctedF.n->Reset();
+	//jets_control_info.correctedF.pt->Reset();
+	//jets_control_info.correctedF.e->Reset();
+	//jets_control_info.correctedF.eta->Reset();
+	//jets_control_info.individual.n->Reset();
+	//jets_control_info.individual.pt->Reset();
+	//jets_control_info.individual.e->Reset();
+	//jets_control_info.individual.eta->Reset();
+	//jets_control_info.leptoncleaned.n->Reset();
+	//jets_control_info.leptoncleaned.pt->Reset();
+	//jets_control_info.leptoncleaned.e->Reset();
+	//jets_control_info.leptoncleaned.eta->Reset();
+	//jets_control_info.taucleaned.n->Reset();
+	//jets_control_info.taucleaned.pt->Reset();
+	//jets_control_info.taucleaned.e->Reset();
+	//jets_control_info.taucleaned.eta->Reset();
 
 	for (int i=0; i<200; i++)
 		{
@@ -2476,197 +2477,6 @@ for(size_t f=0; f<urls.size();++f)
 	fprintf(csv_out, "\n");
 
 
-	// Controls distributions of processed particles
-
-	// TODO: the mets should be removed
-	fprintf(csv_out, "n_mets_raw");
-	for (int i=0; i<NPARTICLES_SIZE; i++)
-		{
-		fprintf(csv_out, ",%u", n_mets_raw[i]);
-		}
-	fprintf(csv_out, "\n");
-
-	// CONTROLINFO
-
-	// Leptons
-
-	//double n_leptons_raw[200];
-	//double n_leptons_individual[200];
-	fprintf(csv_out, "N_leptons_raw");
-	for (int i=0; i<200; i++)
-	{
-		fprintf(csv_out, ",%g", n_leptons_raw[i]);
-	}
-	fprintf(csv_out, "\n");
-
-	fprintf(csv_out, "N_leptons_individual");
-	for (int i=0; i<200; i++)
-	{
-		fprintf(csv_out, ",%g", n_leptons_individual[i]);
-	}
-	fprintf(csv_out, "\n");
-
-	// h1->GetSize()
-	fprintf(csv_out, "n_leptons_raw");
-	for (int i=0; i<leptons_control_info.raw.n->GetSize(); i++) fprintf(csv_out, ",%g", leptons_control_info.raw.n->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "pt_leptons_raw");
-	for (int i=0; i<leptons_control_info.raw.pt->GetSize(); i++) fprintf(csv_out, ",%g", leptons_control_info.raw.pt->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "e_leptons_raw");
-	for (int i=0; i<leptons_control_info.raw.e->GetSize(); i++) fprintf(csv_out, ",%g", leptons_control_info.raw.e->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "eta_leptons_raw");
-	for (int i=0; i<leptons_control_info.raw.eta->GetSize(); i++) fprintf(csv_out, ",%g", leptons_control_info.raw.eta->GetBinContent(i));
-	fprintf(csv_out, "\n");
-
-	fprintf(csv_out, "n_leptons_individual");
-	for (int i=0; i<leptons_control_info.individual.n->GetSize(); i++) fprintf(csv_out, ",%g", leptons_control_info.individual.n->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "pt_leptons_individual");
-	for (int i=0; i<leptons_control_info.individual.pt->GetSize(); i++) fprintf(csv_out, ",%g", leptons_control_info.individual.pt->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "e_leptons_individual");
-	for (int i=0; i<leptons_control_info.individual.e->GetSize(); i++) fprintf(csv_out, ",%g", leptons_control_info.individual.e->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "eta_leptons_individual");
-	for (int i=0; i<leptons_control_info.individual.eta->GetSize(); i++) fprintf(csv_out, ",%g", leptons_control_info.individual.eta->GetBinContent(i));
-	fprintf(csv_out, "\n");
-
-	// Taus
-	fprintf(csv_out, "n_taus_raw");
-	for (int i=0; i<taus_control_info.raw.n->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.raw.n->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "pt_taus_raw");
-	for (int i=0; i<taus_control_info.raw.pt->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.raw.pt->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "e_taus_raw");
-	for (int i=0; i<taus_control_info.raw.e->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.raw.e->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "eta_taus_raw");
-	for (int i=0; i<taus_control_info.raw.eta->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.raw.eta->GetBinContent(i));
-	fprintf(csv_out, "\n");
-
-	fprintf(csv_out, "n_taus_individual");
-	for (int i=0; i<taus_control_info.individual.n->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.individual.n->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "pt_taus_individual");
-	for (int i=0; i<taus_control_info.individual.pt->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.individual.pt->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "e_taus_individual");
-	for (int i=0; i<taus_control_info.individual.e->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.individual.e->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "eta_taus_individual");
-	for (int i=0; i<taus_control_info.individual.eta->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.individual.eta->GetBinContent(i));
-	fprintf(csv_out, "\n");
-
-	fprintf(csv_out, "n_taus_leptoncleaned");
-	for (int i=0; i<taus_control_info.leptoncleaned.n->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.leptoncleaned.n->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "pt_taus_leptoncleaned");
-	for (int i=0; i<taus_control_info.leptoncleaned.pt->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.leptoncleaned.pt->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "e_taus_leptoncleaned");
-	for (int i=0; i<taus_control_info.leptoncleaned.e->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.leptoncleaned.e->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "eta_taus_leptoncleaned");
-	for (int i=0; i<taus_control_info.leptoncleaned.eta->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.leptoncleaned.eta->GetBinContent(i));
-	fprintf(csv_out, "\n");
-
-	// Jets
-
-	fprintf(csv_out, "n_jets_raw");
-	for (int i=0; i<jets_control_info.raw.n->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.raw.n->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "pt_jets_raw");
-	for (int i=0; i<jets_control_info.raw.pt->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.raw.pt->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "e_jets_raw");
-	for (int i=0; i<jets_control_info.raw.e->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.raw.e->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "eta_jets_raw");
-	for (int i=0; i<jets_control_info.raw.eta->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.raw.eta->GetBinContent(i));
-	fprintf(csv_out, "\n");
-
-	fprintf(csv_out, "n_jets_corrected1");
-	for (int i=0; i<jets_control_info.corrected1.n->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.corrected1.n->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "pt_jets_corrected1");
-	for (int i=0; i<jets_control_info.corrected1.pt->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.corrected1.pt->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "e_jets_corrected1");
-	for (int i=0; i<jets_control_info.corrected1.e->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.corrected1.e->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "eta_jets_corrected1");
-	for (int i=0; i<jets_control_info.corrected1.eta->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.corrected1.eta->GetBinContent(i));
-	fprintf(csv_out, "\n");
-
-	fprintf(csv_out, "n_jets_corrected2");
-	for (int i=0; i<jets_control_info.corrected2.n->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.corrected2.n->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "pt_jets_corrected2");
-	for (int i=0; i<jets_control_info.corrected2.pt->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.corrected2.pt->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "e_jets_corrected2");
-	for (int i=0; i<jets_control_info.corrected2.e->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.corrected2.e->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "eta_jets_corrected2");
-	for (int i=0; i<jets_control_info.corrected2.eta->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.corrected2.eta->GetBinContent(i));
-	fprintf(csv_out, "\n");
-
-	fprintf(csv_out, "n_jets_correctedF");
-	for (int i=0; i<jets_control_info.correctedF.n->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.correctedF.n->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "pt_jets_correctedF");
-	for (int i=0; i<jets_control_info.correctedF.pt->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.correctedF.pt->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "e_jets_correctedF");
-	for (int i=0; i<jets_control_info.correctedF.e->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.correctedF.e->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "eta_jets_correctedF");
-	for (int i=0; i<jets_control_info.correctedF.eta->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.correctedF.eta->GetBinContent(i));
-	fprintf(csv_out, "\n");
-
-	fprintf(csv_out, "n_jets_individual");
-	for (int i=0; i<jets_control_info.individual.n->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.individual.n->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "pt_jets_individual");
-	for (int i=0; i<jets_control_info.individual.pt->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.individual.pt->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "e_jets_individual");
-	for (int i=0; i<jets_control_info.individual.e->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.individual.e->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "eta_jets_individual");
-	for (int i=0; i<jets_control_info.individual.eta->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.individual.eta->GetBinContent(i));
-	fprintf(csv_out, "\n");
-
-	fprintf(csv_out, "n_jets_leptoncleaned");
-	for (int i=0; i<jets_control_info.leptoncleaned.n->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.leptoncleaned.n->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "pt_jets_leptoncleaned");
-	for (int i=0; i<jets_control_info.leptoncleaned.pt->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.leptoncleaned.pt->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "e_jets_leptoncleaned");
-	for (int i=0; i<jets_control_info.leptoncleaned.e->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.leptoncleaned.e->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "eta_jets_leptoncleaned");
-	for (int i=0; i<jets_control_info.leptoncleaned.eta->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.leptoncleaned.eta->GetBinContent(i));
-	fprintf(csv_out, "\n");
-
-	fprintf(csv_out, "n_jets_taucleaned");
-	for (int i=0; i<jets_control_info.taucleaned.n->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.taucleaned.n->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "pt_jets_taucleaned");
-	for (int i=0; i<jets_control_info.taucleaned.pt->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.taucleaned.pt->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "e_jets_taucleaned");
-	for (int i=0; i<jets_control_info.taucleaned.e->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.taucleaned.e->GetBinContent(i));
-	fprintf(csv_out, "\n");
-	fprintf(csv_out, "eta_jets_taucleaned");
-	for (int i=0; i<jets_control_info.taucleaned.eta->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.taucleaned.eta->GetBinContent(i));
-	fprintf(csv_out, "\n");
-
-
 
 
 	fprintf(csv_out, "negative_events_nvtx:");
@@ -2743,6 +2553,199 @@ for(size_t f=0; f<urls.size();++f)
 printf("Done processing the job of files\n");
 
 fprintf(csv_out, "End of file loop.\n");
+
+// Controls distributions of processed particles
+
+// TODO: the mets should be removed
+fprintf(csv_out, "n_mets_raw");
+for (int i=0; i<NPARTICLES_SIZE; i++)
+	{
+	fprintf(csv_out, ",%u", n_mets_raw[i]);
+	}
+fprintf(csv_out, "\n");
+
+// CONTROLINFO
+
+// Leptons
+
+//double n_leptons_raw[200];
+//double n_leptons_individual[200];
+fprintf(csv_out, "N_leptons_raw");
+for (int i=0; i<200; i++)
+{
+	fprintf(csv_out, ",%g", n_leptons_raw[i]);
+}
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "N_leptons_individual");
+for (int i=0; i<200; i++)
+{
+	fprintf(csv_out, ",%g", n_leptons_individual[i]);
+}
+fprintf(csv_out, "\n");
+
+// h1->GetSize()
+fprintf(csv_out, "n_leptons_raw");
+for (int i=0; i<leptons_control_info.raw.n->GetSize(); i++) fprintf(csv_out, ",%g", leptons_control_info.raw.n->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "pt_leptons_raw");
+for (int i=0; i<leptons_control_info.raw.pt->GetSize(); i++) fprintf(csv_out, ",%g", leptons_control_info.raw.pt->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "e_leptons_raw");
+for (int i=0; i<leptons_control_info.raw.e->GetSize(); i++) fprintf(csv_out, ",%g", leptons_control_info.raw.e->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "eta_leptons_raw");
+for (int i=0; i<leptons_control_info.raw.eta->GetSize(); i++) fprintf(csv_out, ",%g", leptons_control_info.raw.eta->GetBinContent(i));
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "n_leptons_individual");
+for (int i=0; i<leptons_control_info.individual.n->GetSize(); i++) fprintf(csv_out, ",%g", leptons_control_info.individual.n->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "pt_leptons_individual");
+for (int i=0; i<leptons_control_info.individual.pt->GetSize(); i++) fprintf(csv_out, ",%g", leptons_control_info.individual.pt->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "e_leptons_individual");
+for (int i=0; i<leptons_control_info.individual.e->GetSize(); i++) fprintf(csv_out, ",%g", leptons_control_info.individual.e->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "eta_leptons_individual");
+for (int i=0; i<leptons_control_info.individual.eta->GetSize(); i++) fprintf(csv_out, ",%g", leptons_control_info.individual.eta->GetBinContent(i));
+fprintf(csv_out, "\n");
+
+// Taus
+fprintf(csv_out, "n_taus_raw");
+for (int i=0; i<taus_control_info.raw.n->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.raw.n->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "pt_taus_raw");
+for (int i=0; i<taus_control_info.raw.pt->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.raw.pt->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "e_taus_raw");
+for (int i=0; i<taus_control_info.raw.e->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.raw.e->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "eta_taus_raw");
+for (int i=0; i<taus_control_info.raw.eta->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.raw.eta->GetBinContent(i));
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "n_taus_individual");
+for (int i=0; i<taus_control_info.individual.n->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.individual.n->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "pt_taus_individual");
+for (int i=0; i<taus_control_info.individual.pt->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.individual.pt->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "e_taus_individual");
+for (int i=0; i<taus_control_info.individual.e->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.individual.e->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "eta_taus_individual");
+for (int i=0; i<taus_control_info.individual.eta->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.individual.eta->GetBinContent(i));
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "n_taus_leptoncleaned");
+for (int i=0; i<taus_control_info.leptoncleaned.n->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.leptoncleaned.n->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "pt_taus_leptoncleaned");
+for (int i=0; i<taus_control_info.leptoncleaned.pt->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.leptoncleaned.pt->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "e_taus_leptoncleaned");
+for (int i=0; i<taus_control_info.leptoncleaned.e->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.leptoncleaned.e->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "eta_taus_leptoncleaned");
+for (int i=0; i<taus_control_info.leptoncleaned.eta->GetSize(); i++) fprintf(csv_out, ",%g", taus_control_info.leptoncleaned.eta->GetBinContent(i));
+fprintf(csv_out, "\n");
+
+// Jets
+
+fprintf(csv_out, "n_jets_raw");
+for (int i=0; i<jets_control_info.raw.n->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.raw.n->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "pt_jets_raw");
+for (int i=0; i<jets_control_info.raw.pt->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.raw.pt->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "e_jets_raw");
+for (int i=0; i<jets_control_info.raw.e->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.raw.e->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "eta_jets_raw");
+for (int i=0; i<jets_control_info.raw.eta->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.raw.eta->GetBinContent(i));
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "n_jets_corrected1");
+for (int i=0; i<jets_control_info.corrected1.n->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.corrected1.n->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "pt_jets_corrected1");
+for (int i=0; i<jets_control_info.corrected1.pt->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.corrected1.pt->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "e_jets_corrected1");
+for (int i=0; i<jets_control_info.corrected1.e->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.corrected1.e->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "eta_jets_corrected1");
+for (int i=0; i<jets_control_info.corrected1.eta->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.corrected1.eta->GetBinContent(i));
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "n_jets_corrected2");
+for (int i=0; i<jets_control_info.corrected2.n->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.corrected2.n->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "pt_jets_corrected2");
+for (int i=0; i<jets_control_info.corrected2.pt->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.corrected2.pt->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "e_jets_corrected2");
+for (int i=0; i<jets_control_info.corrected2.e->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.corrected2.e->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "eta_jets_corrected2");
+for (int i=0; i<jets_control_info.corrected2.eta->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.corrected2.eta->GetBinContent(i));
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "n_jets_correctedF");
+for (int i=0; i<jets_control_info.correctedF.n->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.correctedF.n->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "pt_jets_correctedF");
+for (int i=0; i<jets_control_info.correctedF.pt->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.correctedF.pt->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "e_jets_correctedF");
+for (int i=0; i<jets_control_info.correctedF.e->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.correctedF.e->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "eta_jets_correctedF");
+for (int i=0; i<jets_control_info.correctedF.eta->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.correctedF.eta->GetBinContent(i));
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "n_jets_individual");
+for (int i=0; i<jets_control_info.individual.n->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.individual.n->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "pt_jets_individual");
+for (int i=0; i<jets_control_info.individual.pt->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.individual.pt->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "e_jets_individual");
+for (int i=0; i<jets_control_info.individual.e->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.individual.e->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "eta_jets_individual");
+for (int i=0; i<jets_control_info.individual.eta->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.individual.eta->GetBinContent(i));
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "n_jets_leptoncleaned");
+for (int i=0; i<jets_control_info.leptoncleaned.n->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.leptoncleaned.n->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "pt_jets_leptoncleaned");
+for (int i=0; i<jets_control_info.leptoncleaned.pt->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.leptoncleaned.pt->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "e_jets_leptoncleaned");
+for (int i=0; i<jets_control_info.leptoncleaned.e->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.leptoncleaned.e->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "eta_jets_leptoncleaned");
+for (int i=0; i<jets_control_info.leptoncleaned.eta->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.leptoncleaned.eta->GetBinContent(i));
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "n_jets_taucleaned");
+for (int i=0; i<jets_control_info.taucleaned.n->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.taucleaned.n->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "pt_jets_taucleaned");
+for (int i=0; i<jets_control_info.taucleaned.pt->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.taucleaned.pt->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "e_jets_taucleaned");
+for (int i=0; i<jets_control_info.taucleaned.e->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.taucleaned.e->GetBinContent(i));
+fprintf(csv_out, "\n");
+fprintf(csv_out, "eta_jets_taucleaned");
+for (int i=0; i<jets_control_info.taucleaned.eta->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.taucleaned.eta->GetBinContent(i));
+fprintf(csv_out, "\n");
+
+fprintf(csv_out, "End of job output.\n\n");
+
 
 fclose(csv_out);
 
