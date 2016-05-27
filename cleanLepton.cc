@@ -1630,7 +1630,7 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t l=0; l<leptons.size(); ++l)
 			{
 			leptons_control_info.raw.pt->Fill(leptons[l].pt(), weight);
-			leptons_control_info.raw.e->Fill(leptons[l].e(), weight);
+			leptons_control_info.raw.e->Fill(leptons[l].energy(), weight);
 			int lid(leptons[l].pdgId());
 			double leta(fabs(lid==11 ? leptons[l].el.superCluster()->eta() : leptons[l].eta()));
 			leptons_control_info.raw.eta->Fill(leta, weight);
@@ -1640,7 +1640,7 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<taus.size(); ++n)
 			{
 			taus_control_info.raw.pt->Fill(taus[n].pt(), weight);
-			taus_control_info.raw.e->Fill(taus[n].e(), weight);
+			taus_control_info.raw.e->Fill(taus[n].energy(), weight);
 			taus_control_info.raw.eta->Fill(taus[n].eta(), weight);
 			}
 
@@ -1648,7 +1648,7 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<jets.size(); ++n)
 			{
 			jets_control_info.raw.pt->Fill(jets[n].pt(), weight);
-			jets_control_info.raw.e->Fill(jets[n].e(), weight);
+			jets_control_info.raw.e->Fill(jets[n].energy(), weight);
 			jets_control_info.raw.eta->Fill(jets[n].eta(), weight);
 			}
 
@@ -1751,7 +1751,7 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t l=0; l<selLeptons.size(); ++l)
 			{
 			leptons_control_info.individual.pt->Fill(selLeptons[l].pt(), weight);
-			leptons_control_info.individual.e->Fill(selLeptons[l].e(), weight);
+			leptons_control_info.individual.e->Fill(selLeptons[l].energy(), weight);
 			int lid(selLeptons[l].pdgId());
 			double leta(fabs(lid==11 ? selLeptons[l].el.superCluster()->eta() : selLeptons[l].eta()));
 			leptons_control_info.individual.eta->Fill(leta, weight);
@@ -1804,7 +1804,7 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<selTaus.size(); ++n)
 			{
 			taus_control_info.individual.pt->Fill(selTaus[n].pt(), weight);
-			taus_control_info.individual.e->Fill(selTaus[n].e(), weight);
+			taus_control_info.individual.e->Fill(selTaus[n].energy(), weight);
 			taus_control_info.individual.eta->Fill(selTaus[n].eta(), weight);
 			}
 
@@ -1834,7 +1834,7 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<selTausNoLep.size(); ++n)
 			{
 			taus_control_info.leptoncleaned.pt->Fill(selTausNoLep[n].pt(), weight);
-			taus_control_info.leptoncleaned.e->Fill(selTausNoLep[n].e(), weight);
+			taus_control_info.leptoncleaned.e->Fill(selTausNoLep[n].energy(), weight);
 			taus_control_info.leptoncleaned.eta->Fill(selTausNoLep[n].eta(), weight);
 			}
 
@@ -1865,7 +1865,7 @@ for(size_t f=0; f<urls.size();++f)
 
 			// here is the correct1 jet correction point
 			jets_control_info.corrected1.pt->Fill(rawJet.pt(), weight);
-			jets_control_info.corrected1.e->Fill(rawJet.e(), weight);
+			jets_control_info.corrected1.e->Fill(rawJet.energy(), weight);
 			jets_control_info.corrected1.eta->Fill(rawJet.eta(), weight);
 
 
@@ -1880,7 +1880,7 @@ for(size_t f=0; f<urls.size();++f)
 
 			// here is the correct2 jet correction point
 			jets_control_info.corrected2.pt->Fill(jet.pt(), weight);
-			jets_control_info.corrected2.e->Fill(jet.e(), weight);
+			jets_control_info.corrected2.e->Fill(jet.energy(), weight);
 			jets_control_info.corrected2.eta->Fill(jet.eta(), weight);
 
 			//smear JER
@@ -1932,7 +1932,7 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<jets.size(); ++n)
 			{
 			jets_control_info.correctedF.pt->Fill(jets[n].pt(), weight);
-			jets_control_info.correctedF.e->Fill(jets[n].e(), weight);
+			jets_control_info.correctedF.e->Fill(jets[n].energy(), weight);
 			jets_control_info.correctedF.eta->Fill(jets[n].eta(), weight);
 			}
 
@@ -2019,7 +2019,7 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<selJets.size(); ++n)
 			{
 			jets_control_info.individual.pt->Fill(selJets[n].pt(), weight);
-			jets_control_info.individual.e->Fill(selJets[n].e(), weight);
+			jets_control_info.individual.e->Fill(selJets[n].energy(), weight);
 			jets_control_info.individual.eta->Fill(selJets[n].eta(), weight);
 			}
 
@@ -2050,7 +2050,7 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<selJetsNoLep.size(); ++n)
 			{
 			jets_control_info.leptoncleaned.pt->Fill(selJetsNoLep[n].pt(), weight);
-			jets_control_info.leptoncleaned.e->Fill(selJetsNoLep[n].e(), weight);
+			jets_control_info.leptoncleaned.e->Fill(selJetsNoLep[n].energy(), weight);
 			jets_control_info.leptoncleaned.eta->Fill(selJetsNoLep[n].eta(), weight);
 			}
 
@@ -2078,7 +2078,7 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
 			{
 			jets_control_info.taucleaned.pt->Fill(selJetsNoLepNoTau[n].pt(), weight);
-			jets_control_info.taucleaned.e->Fill(selJetsNoLepNoTau[n].e(), weight);
+			jets_control_info.taucleaned.e->Fill(selJetsNoLepNoTau[n].energy(), weight);
 			jets_control_info.taucleaned.eta->Fill(selJetsNoLepNoTau[n].eta(), weight);
 			}
 
