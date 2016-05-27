@@ -813,6 +813,8 @@ struct ControlPointInfo
 
 // for the sake of catching it at compile time and not deal with segfault in run
 
+// CONTROLINFO
+
 struct {
 	ControlPointInfo raw;
 	ControlPointInfo individual;
@@ -827,6 +829,9 @@ leptons_control_info.individual.n   = (TH1F*) new TH1F("n_leptons_individual", "
 leptons_control_info.individual.pt  = (TH1F*) new TH1F("leptons_pt_individual", ";;Pt(GeV)", 400, 0., 200.);
 leptons_control_info.individual.e   = (TH1F*) new TH1F("leptons_e_individual", ";;E(GeV)", 400, 0., 200.);
 leptons_control_info.individual.eta = (TH1F*) new TH1F("leptons_eta_individual", ";;Eta", 200, -4., 4.);
+
+double n_leptons_raw[200];
+double n_leptons_individual[200];
 
 // struct ControlPointInfo particle_control_point[];
 // TH1D* normhist = (TH1D*) mon.addHistogram(new TH1D("initNorm", ";;Events", 5, 0., 5.));
@@ -896,6 +901,19 @@ for(size_t f=0; f<urls.size();++f)
 		//weights_in_selections_int[i] = 0;
 		}
 
+	// CONTROLINFO
+	leptons_control_info.raw.n->Reset();
+	// leptons_control_info.raw.pt  = (TH1F*) new TH1F("leptons_pt_raw", ";;Pt(GeV)", 400, 0., 200.);
+	// leptons_control_info.raw.e   = (TH1F*) new TH1F("leptons_e_raw", ";;E(GeV)", 400, 0., 200.);
+	// leptons_control_info.raw.eta = (TH1F*) new TH1F("leptons_eta_raw", ";;Eta", 200, -4., 4.);
+	//
+	leptons_control_info.individual.n->Reset();
+
+	for (int i=0; i<200; i++)
+		{
+		n_leptons_raw[i] = 0;
+		n_leptons_individual[i] = 0;
+		}
 
 	unsigned int negative_event_nvtx[100];
 	unsigned int positive_event_nvtx[100];
@@ -1367,9 +1385,12 @@ for(size_t f=0; f<urls.size();++f)
 		std::sort(leptons.begin(), leptons.end(), utils::sort_CandidatesByPt);
 
 
+		// CONTROLINFO
 		// Control values for raw particles:
 		n_mets_raw    [mets.size()] += 1;
 
+		//int N = leptons.size();
+		n_leptons_raw    [leptons.size()] += weight;
 		// leptons_control_info["raw"].n->Fill(leptons.size(), weight); // hopefully
 		leptons_control_info.raw.n->Fill(leptons.size(), weight); // hopefully
 
@@ -1464,10 +1485,11 @@ for(size_t f=0; f<urls.size();++f)
 		std::sort(selLeptons.begin(),   selLeptons.end(),   utils::sort_CandidatesByPt);
 		LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
 
+		// CONTROLINFO
 		// Control values for processed individual leptons:
-		// n_leptons_individual[selLeptons.size()] += 1;
+		n_leptons_individual[selLeptons.size()] += weight;
 		// leptons_control_info["final"].n->Fill(leptons.size(), weight); // hopefully
-		leptons_control_info.final.n->Fill(leptons.size(), weight); // hopefully
+		leptons_control_info.individual.n->Fill(selLeptons.size(), weight); // hopefully
 
 
 		// ------------------------------------------ select the individual taus
@@ -2147,6 +2169,8 @@ for(size_t f=0; f<urls.size();++f)
 		}
 	fprintf(csv_out, "\n");
 
+	// CONTROLINFO
+
 	// Leptons
 
 	// leptons_control_info.raw.n   = (TH1F*) new TH1F("n_leptons_raw", ";;N_leptons", 50, 0., 50.);
@@ -2175,6 +2199,22 @@ for(size_t f=0; f<urls.size();++f)
 	}
 	fprintf(csv_out, "\n");
 
+
+	//double n_leptons_raw[200];
+	//double n_leptons_individual[200];
+	fprintf(csv_out, "N_leptons_raw");
+	for (int i=0; i<200; i++)
+	{
+		fprintf(csv_out, ",%g", n_leptons_raw[i]);
+	}
+	fprintf(csv_out, "\n");
+
+	fprintf(csv_out, "N_leptons_individual");
+	for (int i=0; i<200; i++)
+	{
+		fprintf(csv_out, ",%g", n_leptons_individual[i]);
+	}
+	fprintf(csv_out, "\n");
 
 
 
