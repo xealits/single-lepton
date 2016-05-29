@@ -409,6 +409,195 @@ bool hasTauAsMother(const reco::GenParticle  p)
 // };
 
 
+/* old control:
+struct ControlPointInfo
+{
+	// char control_point[64];
+	TH1F* n;
+	TH1F* pt;
+	TH1F* e;
+	TH1F* eta;
+};
+
+// for the sake of catching it at compile time and not deal with segfault in run
+
+// CONTROLINFO
+
+// Leptons
+
+struct {
+	ControlPointInfo raw;
+	ControlPointInfo individual;
+} leptons_control_info;
+
+leptons_control_info.raw.n   = (TH1F*) new TH1F("n_leptons_raw", ";;N_leptons", 50, 0., 50.);
+leptons_control_info.raw.pt  = (TH1F*) new TH1F("leptons_pt_raw", ";;Pt(GeV)", 400, 0., 200.);
+leptons_control_info.raw.e   = (TH1F*) new TH1F("leptons_e_raw", ";;E(GeV)", 400, 0., 200.);
+leptons_control_info.raw.eta = (TH1F*) new TH1F("leptons_eta_raw", ";;Eta", 200, -4., 4.);
+
+leptons_control_info.individual.n   = (TH1F*) new TH1F("n_leptons_individual", ";;N_leptons", 50, 0., 50.);
+leptons_control_info.individual.pt  = (TH1F*) new TH1F("leptons_pt_individual", ";;Pt(GeV)", 400, 0., 200.);
+leptons_control_info.individual.e   = (TH1F*) new TH1F("leptons_e_individual", ";;E(GeV)", 400, 0., 200.);
+leptons_control_info.individual.eta = (TH1F*) new TH1F("leptons_eta_individual", ";;Eta", 200, -4., 4.);
+
+double n_leptons_raw[200];
+double n_leptons_individual[200];
+
+
+// Taus
+
+struct {
+	ControlPointInfo raw;
+	ControlPointInfo individual;
+	ControlPointInfo leptoncleaned;
+} taus_control_info;
+
+taus_control_info.raw.n   = (TH1F*) new TH1F("n_taus_raw", ";;N_taus", 50, 0., 50.);
+taus_control_info.raw.pt  = (TH1F*) new TH1F("taus_pt_raw", ";;Pt(GeV)", 400, 0., 200.);
+taus_control_info.raw.e   = (TH1F*) new TH1F("taus_e_raw", ";;E(GeV)", 400, 0., 200.);
+taus_control_info.raw.eta = (TH1F*) new TH1F("taus_eta_raw", ";;Eta", 200, -4., 4.);
+*/
+
+
+// inline CONTROL:
+
+// map for TH1F and map for double (weight counters)
+
+// inline control functions:
+//   fill_pt_e( "control_point_name", value )
+//   fill_eta( "control_point_name", value )   <-- different TH1F range and binning
+//   increment( "control_point_name", weight )
+// TODO: and the multiselect weight-flow?
+
+typedef std::map<string, *TH1D>::iterator DistrFlow;
+DistrFlow kino_distr_control;
+
+typedef std::map<string, double>::iterator WeightFlow;
+WeightFlow weight_flow_control;
+
+int fill_pt_e(string control_point_name, double value)
+	{
+	// check if control point has been initialized
+	if (kino_distr_control.find(control_point_name) == kino_distr_control.end() )
+		{
+		// the control point distr has not been created/initialized
+		// create it:
+		kino_distr_control[control_point_name] = (TH1F*) new TH1F(control_point_name, ";;Pt/E(GeV)", 400, 0., 200.);
+		}
+
+	// fill the distribution:
+	kino_distr_control[control_point_name]->Fill(value);
+
+	// return success:
+	return 0;
+	}
+
+
+int fill_eta(string control_point_name, double value)
+	{
+	// check if control point has been initialized
+	if (kino_distr_control.find(control_point_name) == kino_distr_control.end() )
+		{
+		// the control point distr has not been created/initialized
+		// create it:
+		kino_distr_control[control_point_name] = (TH1F*) new TH1F(control_point_name, ";;Eta", 200, -4., 4.);
+		}
+
+	// fill the distribution:
+	kino_distr_control[control_point_name]->Fill(value);
+
+	// return success:
+	return 0;
+	}
+
+
+int increment(string control_point_name, double weight)
+	{
+	// check if control point has been initialized
+	if (weight_flow_control.find(control_point_name) == weight_flow_control.end() )
+		{
+		// the control point distr has not been created/initialized
+		// create it:
+		weight_flow_control[control_point_name] = 0.;
+		}
+
+	// fill the distribution:
+	weight_flow_control[control_point_name] += weight;
+
+	// return success:
+	return 0;
+	}
+
+
+// Plain text output printing:
+
+int printout_distrs(FILE * out)
+	{
+	// TODO: printout headers, then content
+	//kino_distr_control
+
+	for(DistrFlow iterator = kino_distr_control.begin(); iterator != kino_distr_control.end(); ++iterator)
+		{
+		// iterator->first = key
+		// iterator->second = value
+		// Repeat if you also want to iterate through the second map.
+
+		// Header:
+		string name = iterator->first;
+		fprintf(out, "%s:header", name.c_str());
+		for (int i=0; i<distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinCenter(i));
+		fprintf(out, "\n");
+
+		// Content:
+		TH1F * distr = iterator->second;
+		fprintf(out, "%s:content", name.c_str());
+		for (int i=0; i<distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinContent(i));
+		fprintf(out, "\n");
+		}
+	return 0;
+	}
+
+
+int printout_counters(FILE * out)
+	{
+	// weight flow control
+	// Header:
+	fprintf(out, "weight_flow:header");
+	for(DistrFlow iterator = kino_distr_control.begin(); iterator != kino_distr_control.end(); ++iterator)
+		{
+		// iterator->first = key
+		// iterator->second = value
+		// Repeat if you also want to iterate through the second map.
+		string name = iterator->first;
+		// double weight_sum = iterator->second;
+		fprintf(out, ",%s", name.c_str());
+		}
+	fprintf(out, "\n");
+
+	// Content:
+	fprintf(out, "weight_flow:content");
+	for(DistrFlow iterator = kino_distr_control.begin(); iterator != kino_distr_control.end(); ++iterator)
+		{
+		// iterator->first = key
+		// iterator->second = value
+		// Repeat if you also want to iterate through the second map.
+		// string name = iterator->first;
+		double weight_sum = iterator->second;
+		fprintf(out, ",%g", weight_sum);
+		}
+	fprintf(out, "\n");
+	return 0;
+	}
+
+
+// FILE *csv_out;
+// string FileName = ((outUrl.ReplaceAll(".root",""))+".csv").Data();
+// csv_out = fopen(FileName.c_str(), "w");
+// 
+// fprintf(csv_out, "eta_jets_taucleaned");
+// fprintf(csv_out, "\n");
+
+
 
 
 
