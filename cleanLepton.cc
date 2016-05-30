@@ -408,7 +408,8 @@ bool hasTauAsMother(const reco::GenParticle  p)
 
 // TODO: and the multiselect weight-flow?
 
-std::map<string, TH1D*> kino_distr_control;
+//std::map<string, TH1D*> kino_distr_control;
+std::map<string, TH1D> kino_distr_control;
 std::map<string, double> weight_flow_control;
 
 
@@ -419,11 +420,18 @@ int fill_pt_e(string control_point_name, double value, double weight)
 		{
 		// the control point distr has not been created/initialized
 		// create it:
-		kino_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
+		//kino_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
+		kino_distr_control[control_point_name] = TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
+		//cout << "creating " << control_point_name << endl;
 		}
 
 	// fill the distribution:
-	kino_distr_control[control_point_name]->Fill(value, weight);
+	//kino_distr_control[control_point_name]->Fill(value, weight);
+	//cout << "filled " << control_point_name << endl;
+	//cout << kino_distr_control[control_point_name]->Integral() << endl;
+	kino_distr_control[control_point_name].Fill(value, weight);
+	//cout << "filled " << control_point_name << endl;
+	//cout << kino_distr_control[control_point_name].Integral() << endl;
 
 	// return success:
 	return 0;
@@ -437,14 +445,17 @@ int fill_eta(string control_point_name, double value, double weight)
 		{
 		// the control point distr has not been created/initialized
 		// create it:
-		kino_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.);
+		//kino_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.);
+		kino_distr_control[control_point_name] = TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.);
 		}
 
 	// fill the distribution:
-	kino_distr_control[control_point_name]->Fill(value, weight);
+	//kino_distr_control[control_point_name]->Fill(value, weight);
+	kino_distr_control[control_point_name].Fill(value, weight);
 
 	// return success:
 	return 0;
+	// TODO: return the return value of Fill call?
 	}
 
 
@@ -476,22 +487,26 @@ int printout_distrs(FILE * out)
 	{
 	//kino_distr_control
 
-	for(std::map<string, TH1D*>::iterator it = kino_distr_control.begin(); it != kino_distr_control.end(); ++it)
+	//for(std::map<string, TH1D*>::iterator it = kino_distr_control.begin(); it != kino_distr_control.end(); ++it)
+	for(std::map<string, TH1D>::iterator it = kino_distr_control.begin(); it != kino_distr_control.end(); ++it)
 		{
 		// iterator->first = key
 		// iterator->second = value
 		// Repeat if you also want to iterate through the second map.
 		string name = it->first;
-		TH1D * distr = it->second;
+		//TH1D * distr = (TH1D*) it->second;
+		TH1D * distr = & it->second;
 
 		// Header:
 		fprintf(out, "%s:header", name.c_str());
-		for (int i=0; i<distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinCenter(i));
+		//fprintf(out, "|555|");
+		for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinCenter(i));
 		fprintf(out, "\n");
 
 		// Content:
 		fprintf(out, "%s:content", name.c_str());
-		for (int i=0; i<distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinContent(i));
+		//fprintf(out, "|555|");
+		for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinContent(i));
 		fprintf(out, "\n");
 		}
 	return 0;
@@ -514,6 +529,8 @@ int printout_counters(FILE * out)
 		fprintf(out, ",%s", name.c_str());
 		}
 	fprintf(out, "\n");
+
+	//TODO: check if the order is the same in two loops!
 
 	// Content:
 	fprintf(out, "weight_flow:content");
@@ -810,6 +827,9 @@ int nMultiChannel(0);
 FILE *csv_out;
 string FileName = ((outUrl.ReplaceAll(".root",""))+".csv").Data();
 csv_out = fopen(FileName.c_str(), "w");
+
+// FIXME: it's initialization of a rare control point, make it automatic somehow? initialize all?
+increment( string("weight_passed_oursel"), 0. );
 
 fprintf(csv_out, "Headers\n");
 
@@ -1310,7 +1330,7 @@ for(size_t f=0; f<urls.size();++f)
 		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
 		//   increment( "control_point_name", weight )
 
-		increment( "n_miniaod_events", 1.0 );
+		increment( string("n_miniaod_events"), 1.0 );
 
 		singlelep_ttbar_initialevents->Fill(1);
 		iev++;
@@ -1503,8 +1523,8 @@ for(size_t f=0; f<urls.size();++f)
 		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
 		//   increment( "control_point_name", weight )
 
-		increment( "weighted_raw_miniaod_events", rawWeight );
-		increment( "weighted_miniaod_events", weight );
+		increment( string("weighted_raw_miniaod_events"), rawWeight );
+		increment( string("weighted_miniaod_events"), weight );
 
 
 		//num_inters = 1;
@@ -1549,7 +1569,7 @@ for(size_t f=0; f<urls.size();++f)
 		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
 		//   increment( "control_point_name", weight )
 
-		increment( "weight_passed_lumi", weight ); // should not matter
+		increment( string("weight_passed_lumi"), weight ); // should not matter
 
 
 		// --------------------------------------------- apply trigger
@@ -1590,7 +1610,7 @@ for(size_t f=0; f<urls.size();++f)
 		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
 		//   increment( "control_point_name", weight )
 
-		increment( "weight_passed_trig", weight ); // should not matter
+		increment( string("weight_passed_trig"), weight ); // should not matter
 
 		if(debug)
 			{
@@ -2024,10 +2044,10 @@ for(size_t f=0; f<urls.size();++f)
 
 		for(size_t ijet=0; ijet<jets.size(); ijet++)
 		{
-			fill_pt_e( "all_jets_pt_slimmed", jets[ijet].pt(), weight);
+			fill_pt_e( string("all_jets_pt_slimmed"), jets[ijet].pt(), weight);
 			if (ijet < 2)
 				{
-				fill_pt_e( "top2pt_jets_pt_slimmed", jets[ijet].pt(), weight);
+				fill_pt_e( string("top2pt_jets_pt_slimmed"), jets[ijet].pt(), weight);
 				}
 		}
 
@@ -2049,10 +2069,10 @@ for(size_t f=0; f<urls.size();++f)
 			jets_control_info.corrected1.e->Fill(rawJet.energy(), weight);
 			jets_control_info.corrected1.eta->Fill(rawJet.eta(), weight);
 
-			fill_pt_e( "all_jets_pt_corrected1", jets[ijet].pt(), weight);
+			fill_pt_e( string("all_jets_pt_raw"), rawJet.pt(), weight);
 			if (ijet < 2)
 				{
-				fill_pt_e( "top2pt_jets_pt_corrected1", jets[ijet].pt(), weight);
+				fill_pt_e( string("top2pt_jets_pt_raw"), rawJet.pt(), weight);
 				}
 
 			//double toRawSF=jet.correctedJet("Uncorrected").pt()/jet.pt();
@@ -2069,10 +2089,10 @@ for(size_t f=0; f<urls.size();++f)
 			jets_control_info.corrected2.e->Fill(jet.energy(), weight);
 			jets_control_info.corrected2.eta->Fill(jet.eta(), weight);
 
-			fill_pt_e( "all_jets_pt_corrected2", jets[ijet].pt(), weight);
+			fill_pt_e( string("all_jets_pt_corrected2"), jet.pt(), weight);
 			if (ijet < 2)
 				{
-				fill_pt_e( "top2pt_jets_pt_corrected2", jets[ijet].pt(), weight);
+				fill_pt_e( string("top2pt_jets_pt_corrected2"), jet.pt(), weight);
 				}
 
 
@@ -2139,10 +2159,10 @@ for(size_t f=0; f<urls.size();++f)
 			jets_control_info.correctedF.e->Fill(jets[n].energy(), weight);
 			jets_control_info.correctedF.eta->Fill(jets[n].eta(), weight);
 			if(debug) cout << jets[n].eta() << " " << jets[n].pt() << " " << jets[n].energy() << endl;
-			fill_pt_e( "all_jets_pt_correctedF", jets[ijet].pt(), weight);
-			if (ijet < 2)
+			fill_pt_e( string("all_jets_pt_correctedF"), jets[n].pt(), weight);
+			if (n < 2)
 				{
-				fill_pt_e( "top2pt_jets_pt_correctedF", jets[ijet].pt(), weight);
+				fill_pt_e( string("top2pt_jets_pt_correctedF"), jets[n].pt(), weight);
 				}
 			}
 
@@ -2232,10 +2252,10 @@ for(size_t f=0; f<urls.size();++f)
 			jets_control_info.individual.e->Fill(selJets[n].energy(), weight);
 			jets_control_info.individual.eta->Fill(selJets[n].eta(), weight);
 
-			fill_pt_e( "all_jets_pt_individual", selJets[n].pt(), weight);
-			if (ijet < 2)
+			fill_pt_e( string("all_jets_pt_individual"), selJets[n].pt(), weight);
+			if (n < 2)
 				{
-				fill_pt_e( "top2pt_jets_pt_individual", selJets[n].pt(), weight);
+				fill_pt_e( string("top2pt_jets_pt_individual"), selJets[n].pt(), weight);
 				}
 			}
 
@@ -2269,10 +2289,10 @@ for(size_t f=0; f<urls.size();++f)
 			jets_control_info.leptoncleaned.e->Fill(selJetsNoLep[n].energy(), weight);
 			jets_control_info.leptoncleaned.eta->Fill(selJetsNoLep[n].eta(), weight);
 
-			fill_pt_e( "all_jets_pt_leptoncleaned", selJetsNoLep[n].pt(), weight);
-			if (ijet < 2)
+			fill_pt_e( string("all_jets_pt_leptoncleaned"), selJetsNoLep[n].pt(), weight);
+			if (n < 2)
 				{
-				fill_pt_e( "top2pt_jets_pt_leptoncleaned", selJetsNoLep[n].pt(), weight);
+				fill_pt_e( string("top2pt_jets_pt_leptoncleaned"), selJetsNoLep[n].pt(), weight);
 				}
 			}
 
@@ -2303,10 +2323,10 @@ for(size_t f=0; f<urls.size();++f)
 			jets_control_info.taucleaned.e->Fill(selJetsNoLepNoTau[n].energy(), weight);
 			jets_control_info.taucleaned.eta->Fill(selJetsNoLepNoTau[n].eta(), weight);
 
-			fill_pt_e( "all_jets_pt_taucleaned", selJetsNoLepNoTau[n].pt(), weight);
-			if (ijet < 2)
+			fill_pt_e( string("all_jets_pt_taucleaned"), selJetsNoLepNoTau[n].pt(), weight);
+			if (n < 2)
 				{
-				fill_pt_e( "top2pt_jets_pt_taucleaned", selJetsNoLepNoTau[n].pt(), weight);
+				fill_pt_e( string("top2pt_jets_pt_taucleaned"), selJetsNoLepNoTau[n].pt(), weight);
 				}
 			}
 
@@ -2464,7 +2484,7 @@ for(size_t f=0; f<urls.size();++f)
 		//   increment( "control_point_name", weight )
 
 		if ((isSingleMu || isSingleE) && passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
-			increment( "weight_passed_oursel", weight );
+			increment( string("weight_passed_oursel"), weight );
 
 		// multiselection
 		// TODO: multisel should be done per-channel, now it is one (el/mu) for all 
@@ -2990,8 +3010,31 @@ fprintf(csv_out, "New output (sums per whole job!):\n");
 //   increment( "control_point_name", weight )
 //   printout_distrs(FILE * out)
 //   printout_counters(FILE * out)
-printout_distrs(csv_out);
+
+//std::map<string, TH1D*> kino_distr_control;
+//top2pt_jets_pt_taucleaned
+
+cout << "some control distrs:" << endl;
+cout << kino_distr_control["top2pt_jets_pt_taucleaned"].Integral() << endl;
+cout << kino_distr_control["top2pt_jets_pt_taucleaned"].GetSize() << endl;
+
+cout << kino_distr_control["all_jets_pt_taucleaned"].Integral() << endl;
+cout << kino_distr_control["all_jets_pt_taucleaned"].GetSize() << endl;
+
+cout << kino_distr_control["all_jets_pt_correctedF"].Integral() << endl;
+cout << kino_distr_control["all_jets_pt_correctedF"].GetSize() << endl;
+
+cout << kino_distr_control["all_jets_pt_corrected2"].Integral() << endl;
+cout << kino_distr_control["all_jets_pt_corrected2"].GetSize() << endl;
+
+cout << kino_distr_control["all_jets_pt_slimmed"].Integral() << endl;
+cout << kino_distr_control["all_jets_pt_slimmed"].GetSize() << endl;
+
+cout << kino_distr_control["all_jets_pt_corrected1"].Integral() << endl;
+cout << kino_distr_control["all_jets_pt_corrected1"].GetSize() << endl;
+
 printout_counters(csv_out);
+printout_distrs(csv_out);
 
 
 fprintf(csv_out, "End of job output.\n\n");
