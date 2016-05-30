@@ -394,94 +394,25 @@ bool hasTauAsMother(const reco::GenParticle  p)
 #define NPARTICLES_SIZE 50
 #define NORMKINO_DISTR_SIZE 400
 
-// // creating histograms instead of using TH1F....
-
-// // and instead of macro making 2 types of histograms for different length....
-
-// struct NormKino
-// {
-// 	// the fill is done with: NormKino.pt[ given_pt +  ]
-// 	double pt[NORMKINO_DISTR_SIZE + 2];
-// 	double pt_offset = 0.;
-// 	double pt_scale = 1.;
-// 	double e[NORMKINO_DISTR_SIZE + 2];
-// 	double eta[NORMKINO_DISTR_SIZE + 2];
-// };
-
-
-/* old control:
-struct ControlPointInfo
-{
-	// char control_point[64];
-	TH1F* n;
-	TH1F* pt;
-	TH1F* e;
-	TH1F* eta;
-};
-
-// for the sake of catching it at compile time and not deal with segfault in run
-
-// CONTROLINFO
-
-// Leptons
-
-struct {
-	ControlPointInfo raw;
-	ControlPointInfo individual;
-} leptons_control_info;
-
-leptons_control_info.raw.n   = (TH1F*) new TH1F("n_leptons_raw", ";;N_leptons", 50, 0., 50.);
-leptons_control_info.raw.pt  = (TH1F*) new TH1F("leptons_pt_raw", ";;Pt(GeV)", 400, 0., 200.);
-leptons_control_info.raw.e   = (TH1F*) new TH1F("leptons_e_raw", ";;E(GeV)", 400, 0., 200.);
-leptons_control_info.raw.eta = (TH1F*) new TH1F("leptons_eta_raw", ";;Eta", 200, -4., 4.);
-
-leptons_control_info.individual.n   = (TH1F*) new TH1F("n_leptons_individual", ";;N_leptons", 50, 0., 50.);
-leptons_control_info.individual.pt  = (TH1F*) new TH1F("leptons_pt_individual", ";;Pt(GeV)", 400, 0., 200.);
-leptons_control_info.individual.e   = (TH1F*) new TH1F("leptons_e_individual", ";;E(GeV)", 400, 0., 200.);
-leptons_control_info.individual.eta = (TH1F*) new TH1F("leptons_eta_individual", ";;Eta", 200, -4., 4.);
-
-double n_leptons_raw[200];
-double n_leptons_individual[200];
-
-
-// Taus
-
-struct {
-	ControlPointInfo raw;
-	ControlPointInfo individual;
-	ControlPointInfo leptoncleaned;
-} taus_control_info;
-
-taus_control_info.raw.n   = (TH1F*) new TH1F("n_taus_raw", ";;N_taus", 50, 0., 50.);
-taus_control_info.raw.pt  = (TH1F*) new TH1F("taus_pt_raw", ";;Pt(GeV)", 400, 0., 200.);
-taus_control_info.raw.e   = (TH1F*) new TH1F("taus_e_raw", ";;E(GeV)", 400, 0., 200.);
-taus_control_info.raw.eta = (TH1F*) new TH1F("taus_eta_raw", ";;Eta", 200, -4., 4.);
-*/
-
 
 // inline CONTROL:
 
-// map for TH1F and map for double (weight counters)
+// map for TH1D and map for double (weight counters)
 
-// inline control functions:
-//   fill_pt_e( "control_point_name", value )
-//   fill_eta( "control_point_name", value )   <-- different TH1F range and binning
+// inline control functions usage:
+//   fill_pt_e( "control_point_name", value, weight)
+//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
 //   increment( "control_point_name", weight )
+//   printout_distrs(FILE * out)
+//   printout_counters(FILE * out)
+
 // TODO: and the multiselect weight-flow?
-
-//typedef std::map<string, *TH1D>::iterator DistrFlow;
-//typedef std::map<string, *TH1D> DistrFlow;
-//DistrFlow kino_distr_control;
-
-//typedef std::map<string, double>::iterator WeightFlow;
-//typedef std::map<string, double> WeightFlow;
-//WeightFlow weight_flow_control;
 
 std::map<string, TH1D*> kino_distr_control;
 std::map<string, double> weight_flow_control;
 
 
-int fill_pt_e(string control_point_name, double value)
+int fill_pt_e(string control_point_name, double value, double weight)
 	{
 	// check if control point has been initialized
 	if (kino_distr_control.find(control_point_name) == kino_distr_control.end() )
@@ -492,14 +423,14 @@ int fill_pt_e(string control_point_name, double value)
 		}
 
 	// fill the distribution:
-	kino_distr_control[control_point_name]->Fill(value);
+	kino_distr_control[control_point_name]->Fill(value, weight);
 
 	// return success:
 	return 0;
 	}
 
 
-int fill_eta(string control_point_name, double value)
+int fill_eta(string control_point_name, double value, double weight)
 	{
 	// check if control point has been initialized
 	if (kino_distr_control.find(control_point_name) == kino_distr_control.end() )
@@ -510,7 +441,7 @@ int fill_eta(string control_point_name, double value)
 		}
 
 	// fill the distribution:
-	kino_distr_control[control_point_name]->Fill(value);
+	kino_distr_control[control_point_name]->Fill(value, weight);
 
 	// return success:
 	return 0;
@@ -543,7 +474,6 @@ int increment(string control_point_name, double weight)
 
 int printout_distrs(FILE * out)
 	{
-	// TODO: printout headers, then content
 	//kino_distr_control
 
 	for(std::map<string, TH1D*>::iterator it = kino_distr_control.begin(); it != kino_distr_control.end(); ++it)
@@ -601,13 +531,6 @@ int printout_counters(FILE * out)
 	}
 
 
-
-// FILE *csv_out;
-// string FileName = ((outUrl.ReplaceAll(".root",""))+".csv").Data();
-// csv_out = fopen(FileName.c_str(), "w");
-// 
-// fprintf(csv_out, "eta_jets_taucleaned");
-// fprintf(csv_out, "\n");
 
 
 
@@ -1381,6 +1304,14 @@ for(size_t f=0; f<urls.size();++f)
 
 	for (ev.toBegin(); !ev.atEnd(); ++ev)
 		{
+
+		// inline control functions usage:
+		//   fill_pt_e( "control_point_name", value, weight)
+		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
+		//   increment( "control_point_name", weight )
+
+		increment( "n_miniaod_events", 1.0 );
+
 		singlelep_ttbar_initialevents->Fill(1);
 		iev++;
 		totalEntries++;
@@ -1567,6 +1498,15 @@ for(size_t f=0; f<urls.size();++f)
 		sum_weights += weight;
 		sum_weights_raw += rawWeight;
 
+		// inline control functions usage:
+		//   fill_pt_e( "control_point_name", value, weight)
+		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
+		//   increment( "control_point_name", weight )
+
+		increment( "weighted_raw_miniaod_events", rawWeight );
+		increment( "weighted_miniaod_events", weight );
+
+
 		//num_inters = 1;
 		if (num_inters>99) num_inters = 99;
 		if (nGoodPV>100) nGoodPV = 99;
@@ -1604,6 +1544,14 @@ for(size_t f=0; f<urls.size();++f)
 		n_events_pass_lumi += 1;
 		// there is no sum_weights_pass_lumi -- lumi is for data only..
 
+		// inline control functions usage:
+		//   fill_pt_e( "control_point_name", value, weight)
+		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
+		//   increment( "control_point_name", weight )
+
+		increment( "weight_passed_lumi", weight ); // should not matter
+
+
 		// --------------------------------------------- apply trigger
 		// ---------------- and require compatibilitiy of the event with the PD
 		edm::TriggerResultsByName tr = ev.triggerResultsByName ("HLT");
@@ -1633,6 +1581,17 @@ for(size_t f=0; f<urls.size();++f)
 		
 		if (!(eTrigger || muTrigger)) continue;   //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
 
+		sum_weights_passtrig_raw += rawWeight;
+		sum_weights_passtrig += weight;
+
+
+		// inline control functions usage:
+		//   fill_pt_e( "control_point_name", value, weight)
+		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
+		//   increment( "control_point_name", weight )
+
+		increment( "weight_passed_trig", weight ); // should not matter
+
 		if(debug)
 			{
 			cout << "Set triggers" << endl;
@@ -1648,8 +1607,6 @@ for(size_t f=0; f<urls.size();++f)
 			}
 
 
-		sum_weights_passtrig_raw += rawWeight;
-		sum_weights_passtrig += weight;
 		// ------------------------- event physics and the corresponding selection
 
 		//------------------------- load all the objects we will need to access
@@ -2058,6 +2015,22 @@ for(size_t f=0; f<urls.size();++f)
 		jets_control_info.corrected2.n->Fill(jets.size(), weight);
 		jets_control_info.correctedF.n->Fill(jets.size(), weight);
 
+		// inline control functions usage:
+		//   fill_pt_e( "control_point_name", value, weight)
+		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
+		//   increment( "control_point_name", weight )
+
+		std::sort (jets.begin(),  jets.end(),  utils::sort_CandidatesByPt);
+
+		for(size_t ijet=0; ijet<jets.size(); ijet++)
+		{
+			fill_pt_e( "all_jets_pt_slimmed", jets[ijet].pt(), weight);
+			if (ijet < 2)
+				{
+				fill_pt_e( "top2pt_jets_pt_slimmed", jets[ijet].pt(), weight);
+				}
+		}
+
 		if(debug) cout << "jet eta pt e, e x y z" << endl;
 
 		for(size_t ijet=0; ijet<jets.size(); ijet++)
@@ -2076,6 +2049,11 @@ for(size_t f=0; f<urls.size();++f)
 			jets_control_info.corrected1.e->Fill(rawJet.energy(), weight);
 			jets_control_info.corrected1.eta->Fill(rawJet.eta(), weight);
 
+			fill_pt_e( "all_jets_pt_corrected1", jets[ijet].pt(), weight);
+			if (ijet < 2)
+				{
+				fill_pt_e( "top2pt_jets_pt_corrected1", jets[ijet].pt(), weight);
+				}
 
 			//double toRawSF=jet.correctedJet("Uncorrected").pt()/jet.pt();
 			//LorentzVector rawJet(jet*toRawSF);
@@ -2090,6 +2068,13 @@ for(size_t f=0; f<urls.size();++f)
 			jets_control_info.corrected2.pt->Fill(jet.pt(), weight);
 			jets_control_info.corrected2.e->Fill(jet.energy(), weight);
 			jets_control_info.corrected2.eta->Fill(jet.eta(), weight);
+
+			fill_pt_e( "all_jets_pt_corrected2", jets[ijet].pt(), weight);
+			if (ijet < 2)
+				{
+				fill_pt_e( "top2pt_jets_pt_corrected2", jets[ijet].pt(), weight);
+				}
+
 
 			if(debug) cout << jet.eta() << " " << jet.pt() << " " << jet.energy() << endl;
 
@@ -2145,12 +2130,20 @@ for(size_t f=0; f<urls.size();++f)
 
 		// here is the correctF jet correction point
 		// Control values for corrected jets:
+
+		std::sort (jets.begin(),  jets.end(),  utils::sort_CandidatesByPt);
+
 		for(size_t n=0; n<jets.size(); ++n)
 			{
 			jets_control_info.correctedF.pt->Fill(jets[n].pt(), weight);
 			jets_control_info.correctedF.e->Fill(jets[n].energy(), weight);
 			jets_control_info.correctedF.eta->Fill(jets[n].eta(), weight);
 			if(debug) cout << jets[n].eta() << " " << jets[n].pt() << " " << jets[n].energy() << endl;
+			fill_pt_e( "all_jets_pt_correctedF", jets[ijet].pt(), weight);
+			if (ijet < 2)
+				{
+				fill_pt_e( "top2pt_jets_pt_correctedF", jets[ijet].pt(), weight);
+				}
 			}
 
 
@@ -2238,6 +2231,12 @@ for(size_t f=0; f<urls.size();++f)
 			jets_control_info.individual.pt->Fill(selJets[n].pt(), weight);
 			jets_control_info.individual.e->Fill(selJets[n].energy(), weight);
 			jets_control_info.individual.eta->Fill(selJets[n].eta(), weight);
+
+			fill_pt_e( "all_jets_pt_individual", selJets[n].pt(), weight);
+			if (ijet < 2)
+				{
+				fill_pt_e( "top2pt_jets_pt_individual", selJets[n].pt(), weight);
+				}
 			}
 
 
@@ -2269,6 +2268,12 @@ for(size_t f=0; f<urls.size();++f)
 			jets_control_info.leptoncleaned.pt->Fill(selJetsNoLep[n].pt(), weight);
 			jets_control_info.leptoncleaned.e->Fill(selJetsNoLep[n].energy(), weight);
 			jets_control_info.leptoncleaned.eta->Fill(selJetsNoLep[n].eta(), weight);
+
+			fill_pt_e( "all_jets_pt_leptoncleaned", selJetsNoLep[n].pt(), weight);
+			if (ijet < 2)
+				{
+				fill_pt_e( "top2pt_jets_pt_leptoncleaned", selJetsNoLep[n].pt(), weight);
+				}
 			}
 
 
@@ -2297,6 +2302,12 @@ for(size_t f=0; f<urls.size();++f)
 			jets_control_info.taucleaned.pt->Fill(selJetsNoLepNoTau[n].pt(), weight);
 			jets_control_info.taucleaned.e->Fill(selJetsNoLepNoTau[n].energy(), weight);
 			jets_control_info.taucleaned.eta->Fill(selJetsNoLepNoTau[n].eta(), weight);
+
+			fill_pt_e( "all_jets_pt_taucleaned", selJetsNoLepNoTau[n].pt(), weight);
+			if (ijet < 2)
+				{
+				fill_pt_e( "top2pt_jets_pt_taucleaned", selJetsNoLepNoTau[n].pt(), weight);
+				}
 			}
 
 
@@ -2445,6 +2456,15 @@ for(size_t f=0; f<urls.size();++f)
 		bool passBtagsSelection(n_bjets>0); // 1 b jet // 2^2
 		bool passTauSelection(n_taus==1); // only 1 tau // 2^1
 		bool passOS( n_taus>0 && n_leptons>0 ? selLeptons[0].pdgId() * selTausNoLep[0].pdgId() < 0 : 0); // Oposite sign // 2^0
+
+
+		// inline control functions usage:
+		//   fill_pt_e( "control_point_name", value, weight)
+		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
+		//   increment( "control_point_name", weight )
+
+		if ((isSingleMu || isSingleE) && passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
+			increment( "weight_passed_oursel", weight );
 
 		// multiselection
 		// TODO: multisel should be done per-channel, now it is one (el/mu) for all 
@@ -2959,6 +2979,20 @@ fprintf(csv_out, "\n");
 fprintf(csv_out, "eta_jets_taucleaned");
 for (int i=0; i<jets_control_info.taucleaned.eta->GetSize(); i++) fprintf(csv_out, ",%g", jets_control_info.taucleaned.eta->GetBinContent(i));
 fprintf(csv_out, "\n");
+
+
+
+fprintf(csv_out, "New output (sums per whole job!):\n");
+
+// inline control functions usage:
+//   fill_pt_e( "control_point_name", value, weight)
+//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
+//   increment( "control_point_name", weight )
+//   printout_distrs(FILE * out)
+//   printout_counters(FILE * out)
+printout_distrs(csv_out);
+printout_counters(csv_out);
+
 
 fprintf(csv_out, "End of job output.\n\n");
 
