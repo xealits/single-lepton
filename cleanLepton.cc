@@ -2092,6 +2092,7 @@ for(size_t f=0; f<urls.size();++f)
 		if ((isSingleMu || isSingleE) && passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
 			increment( string("weight_passed_oursel"), weight );
 
+		// MULTISELECT
 		// multiselection
 		// TODO: multisel should be done per-channel, now it is one (el/mu) for all 
 		unsigned int multisel = 0;
@@ -2111,20 +2112,38 @@ for(size_t f=0; f<urls.size();++f)
 			}
 		*/
 
-		// weights_in_selections[multisel] += weight;
+		// with NEWMULTISELECT
 		// TODO: should these be orthigonal?
 		if (isSingleE)
+			{
 			weights_in_el_channel[multisel] += weight;
+			increment(string("e_") + to_str(multisel), weight);
+			}
 		if (isSingleMu)
+			{
 			weights_in_mu_channel[multisel] += weight;
+			increment(string("mu_") + to_str(multisel), weight);
+			}
 		if (isEMu)
+			{
 			weights_in_elmu_channel[multisel] += weight;
+			increment(string("emu_") + to_str(multisel), weight);
+			}
 		if (isDoubleE)
+			{
 			weights_in_elel_channel[multisel] += weight;
+			increment(string("ee_") + to_str(multisel), weight);
+			}
 		if (isDoubleMu)
+			{
 			weights_in_mumu_channel[multisel] += weight;
+			increment(string("mumu_") + to_str(multisel), weight);
+			}
 		if ( !(isSingleMu || isSingleE || isDoubleMu || isDoubleE || isEMu))
+			{
 			weights_in_no_channel[multisel] += weight ;
+			increment(string("nochan_") + to_str(multisel), weight);
+			}
 		//weights_in_selections_int[multisel] += 1;
 		//break;
 
@@ -2435,24 +2454,24 @@ fprintf(csv_out, "New output (sums per whole job!):\n");
 //std::map<string, TH1D*> kino_distr_control;
 //top2pt_jets_pt_taucleaned
 
-cout << "some control distrs:" << endl;
-cout << kino_distr_control["top2pt_jets_pt_taucleaned"].Integral() << endl;
-cout << kino_distr_control["top2pt_jets_pt_taucleaned"].GetSize() << endl;
+// cout << "some control distrs:" << endl;
+// cout << kino_distr_control["top2pt_jets_pt_taucleaned"].Integral() << endl;
+// cout << kino_distr_control["top2pt_jets_pt_taucleaned"].GetSize() << endl;
 
-cout << kino_distr_control["all_jets_pt_taucleaned"].Integral() << endl;
-cout << kino_distr_control["all_jets_pt_taucleaned"].GetSize() << endl;
+// cout << kino_distr_control["all_jets_pt_taucleaned"].Integral() << endl;
+// cout << kino_distr_control["all_jets_pt_taucleaned"].GetSize() << endl;
 
-cout << kino_distr_control["all_jets_pt_correctedF"].Integral() << endl;
-cout << kino_distr_control["all_jets_pt_correctedF"].GetSize() << endl;
+// cout << kino_distr_control["all_jets_pt_correctedF"].Integral() << endl;
+// cout << kino_distr_control["all_jets_pt_correctedF"].GetSize() << endl;
 
-cout << kino_distr_control["all_jets_pt_corrected2"].Integral() << endl;
-cout << kino_distr_control["all_jets_pt_corrected2"].GetSize() << endl;
+// cout << kino_distr_control["all_jets_pt_corrected2"].Integral() << endl;
+// cout << kino_distr_control["all_jets_pt_corrected2"].GetSize() << endl;
 
-cout << kino_distr_control["all_jets_pt_slimmed"].Integral() << endl;
-cout << kino_distr_control["all_jets_pt_slimmed"].GetSize() << endl;
+// cout << kino_distr_control["all_jets_pt_slimmed"].Integral() << endl;
+// cout << kino_distr_control["all_jets_pt_slimmed"].GetSize() << endl;
 
-cout << kino_distr_control["all_jets_pt_corrected1"].Integral() << endl;
-cout << kino_distr_control["all_jets_pt_corrected1"].GetSize() << endl;
+// cout << kino_distr_control["all_jets_pt_corrected1"].Integral() << endl;
+// cout << kino_distr_control["all_jets_pt_corrected1"].GetSize() << endl;
 
 printout_counters(csv_out);
 printout_distrs(csv_out);
