@@ -1436,32 +1436,6 @@ for(size_t f=0; f<urls.size();++f)
 		// CONTROLINFO
 		// Control values for raw particles:
 
-		// leptons_control_info.raw.n->Fill(leptons.size(), weight); // hopefully
-		// for(size_t l=0; l<leptons.size(); ++l)
-		// 	{
-		// 	leptons_control_info.raw.pt->Fill(leptons[l].pt(), weight);
-		// 	leptons_control_info.raw.e->Fill(leptons[l].energy(), weight);
-		// 	int lid(leptons[l].pdgId());
-		// 	double leta(lid==11 ? leptons[l].el.superCluster()->eta() : leptons[l].eta());
-		// 	leptons_control_info.raw.eta->Fill(leta, weight);
-		// 	}
-
-		// taus_control_info.raw.n->Fill(taus.size(), weight);
-		// for(size_t n=0; n<taus.size(); ++n)
-		// 	{
-		// 	taus_control_info.raw.pt->Fill(taus[n].pt(), weight);
-		// 	taus_control_info.raw.e->Fill(taus[n].energy(), weight);
-		// 	taus_control_info.raw.eta->Fill(taus[n].eta(), weight);
-		// 	}
-
-		// // jets_control_info.raw.n->Fill(jets.size(), weight);
-		// for(size_t n=0; n<jets.size(); ++n)
-		// 	{
-		// 	// jets_control_info.raw.pt->Fill(jets[n].pt(), weight);
-		// 	// jets_control_info.raw.e->Fill(jets[n].energy(), weight);
-		// 	// jets_control_info.raw.eta->Fill(jets[n].eta(), weight);
-		// 	}
-
 		std::sort (leptons.begin(),  leptons.end(),  utils::sort_CandidatesByPt);
 
 		for(size_t n=0; n<leptons.size(); ++n)
@@ -1590,15 +1564,13 @@ for(size_t f=0; f<urls.size();++f)
 		// CONTROLINFO
 		// Control values for processed individual leptons:
 
-		for(size_t l=0; l<selLeptons.size(); ++l)
+		for(size_t n=0; n<selLeptons.size(); ++n)
 			{
-			// fill_pt_e( string("all_jets_pt_slimmed"), jets[ijet].pt(), weight);
-			fill_pt_e("all_leptons_pt_individual", selLeptons[l].pt(), weight);
-			// leptons_control_info.individual.pt->Fill(selLeptons[l].pt(), weight);
-			// leptons_control_info.individual.e->Fill(selLeptons[l].energy(), weight);
-			// int lid(selLeptons[l].pdgId());
-			// double leta(lid==11 ? selLeptons[l].el.superCluster()->eta() : selLeptons[l].eta());
-			// leptons_control_info.individual.eta->Fill(leta, weight);
+			fill_pt_e("all_leptons_pt_individual", selLeptons[n].pt(), weight);
+			if (n < 2)
+				{
+				fill_pt_e( string("top2pt_leptons_pt_individual"), selLeptons[n].pt(), weight);
+				}
 			}
 
 
@@ -1646,11 +1618,11 @@ for(size_t f=0; f<urls.size();++f)
 		// Control values for processed individual taus:
 		for(size_t n=0; n<selTaus.size(); ++n)
 			{
-			// fill_pt_e("all_leptons_pt_individual", selLeptons[l].pt(), weight);
 			fill_pt_e("all_taus_pt_individual", selTaus[n].pt(), weight);
-			// taus_control_info.individual.pt->Fill(selTaus[n].pt(), weight);
-			// taus_control_info.individual.e->Fill(selTaus[n].energy(), weight);
-			// taus_control_info.individual.eta->Fill(selTaus[n].eta(), weight);
+			if (n < 2)
+				{
+				fill_pt_e( string("top2pt_taus_pt_individual"), selTaus[n].pt(), weight);
+				}
 			}
 
 
@@ -1677,11 +1649,11 @@ for(size_t f=0; f<urls.size();++f)
 		// Control values for processed taus cleaned of leptons:
 		for(size_t n=0; n<selTausNoLep.size(); ++n)
 			{
-			//fill_pt_e("all_taus_pt_individual", selTaus[n].pt(), weight);
 			fill_pt_e("all_taus_pt_leptoncleaned", selTausNoLep[n].pt(), weight);
-			// taus_control_info.leptoncleaned.pt->Fill(selTausNoLep[n].pt(), weight);
-			// taus_control_info.leptoncleaned.e->Fill(selTausNoLep[n].energy(), weight);
-			// taus_control_info.leptoncleaned.eta->Fill(selTausNoLep[n].eta(), weight);
+			if (n < 2)
+				{
+				fill_pt_e( string("top2pt_taus_pt_leptoncleaned"), selTausNoLep[n].pt(), weight);
+				}
 			}
 
 
@@ -1719,9 +1691,6 @@ for(size_t f=0; f<urls.size();++f)
 			if(debug) cout << rawJet.eta() << " " << rawJet.pt() << " " << rawJet.energy() << endl;
 
 			// here is the correct1 jet correction point
-			// jets_control_info.corrected1.pt->Fill(rawJet.pt(), weight);
-			// jets_control_info.corrected1.e->Fill(rawJet.energy(), weight);
-			// jets_control_info.corrected1.eta->Fill(rawJet.eta(), weight);
 
 			fill_pt_e( string("all_jets_pt_raw"), rawJet.pt(), weight);
 			if (ijet < 2)
@@ -1739,9 +1708,6 @@ for(size_t f=0; f<urls.size();++f)
 			jet.setP4(rawJet*jesCor->getCorrection());
 
 			// here is the correct2 jet correction point
-			// jets_control_info.corrected2.pt->Fill(jet.pt(), weight);
-			// jets_control_info.corrected2.e->Fill(jet.energy(), weight);
-			// jets_control_info.corrected2.eta->Fill(jet.eta(), weight);
 
 			fill_pt_e( string("all_jets_pt_corrected2"), jet.pt(), weight);
 			if (ijet < 2)
@@ -1809,9 +1775,6 @@ for(size_t f=0; f<urls.size();++f)
 
 		for(size_t n=0; n<jets.size(); ++n)
 			{
-			// jets_control_info.correctedF.pt->Fill(jets[n].pt(), weight);
-			// jets_control_info.correctedF.e->Fill(jets[n].energy(), weight);
-			// jets_control_info.correctedF.eta->Fill(jets[n].eta(), weight);
 			if(debug) cout << jets[n].eta() << " " << jets[n].pt() << " " << jets[n].energy() << endl;
 			fill_pt_e( string("all_jets_pt_correctedF"), jets[n].pt(), weight);
 			if (n < 2)
@@ -1900,12 +1863,8 @@ for(size_t f=0; f<urls.size();++f)
 		std::sort (selJets.begin(),  selJets.end(),  utils::sort_CandidatesByPt);
 
 		// Control values for processed individual jets:
-		// jets_control_info.individual.n->Fill(selJets.size(), weight);
 		for(size_t n=0; n<selJets.size(); ++n)
 			{
-			// jets_control_info.individual.pt->Fill(selJets[n].pt(), weight);
-			// jets_control_info.individual.e->Fill(selJets[n].energy(), weight);
-			// jets_control_info.individual.eta->Fill(selJets[n].eta(), weight);
 
 			fill_pt_e( string("all_jets_pt_individual"), selJets[n].pt(), weight);
 			if (n < 2)
@@ -1937,12 +1896,8 @@ for(size_t f=0; f<urls.size();++f)
 
 
 		// Control values for processed jets cleaned of leptons:
-		// jets_control_info.leptoncleaned.n->Fill(selJetsNoLep.size(), weight);
 		for(size_t n=0; n<selJetsNoLep.size(); ++n)
 			{
-			// jets_control_info.leptoncleaned.pt->Fill(selJetsNoLep[n].pt(), weight);
-			// jets_control_info.leptoncleaned.e->Fill(selJetsNoLep[n].energy(), weight);
-			// jets_control_info.leptoncleaned.eta->Fill(selJetsNoLep[n].eta(), weight);
 
 			fill_pt_e( string("all_jets_pt_leptoncleaned"), selJetsNoLep[n].pt(), weight);
 			if (n < 2)
@@ -1971,12 +1926,8 @@ for(size_t f=0; f<urls.size();++f)
 			}
 
 		// Control values for processed jets cleaned of leptons and taus:
-		// jets_control_info.taucleaned.n->Fill(selJetsNoLepNoTau.size(), weight);
 		for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
 			{
-			// jets_control_info.taucleaned.pt->Fill(selJetsNoLepNoTau[n].pt(), weight);
-			// jets_control_info.taucleaned.e->Fill(selJetsNoLepNoTau[n].energy(), weight);
-			// jets_control_info.taucleaned.eta->Fill(selJetsNoLepNoTau[n].eta(), weight);
 
 			fill_pt_e( string("all_jets_pt_taucleaned"), selJetsNoLepNoTau[n].pt(), weight);
 			if (n < 2)
