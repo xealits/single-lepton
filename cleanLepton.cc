@@ -469,11 +469,17 @@ taus_control_info.raw.eta = (TH1F*) new TH1F("taus_eta_raw", ";;Eta", 200, -4., 
 //   increment( "control_point_name", weight )
 // TODO: and the multiselect weight-flow?
 
-typedef std::map<string, *TH1D>::iterator DistrFlow;
-DistrFlow kino_distr_control;
+//typedef std::map<string, *TH1D>::iterator DistrFlow;
+//typedef std::map<string, *TH1D> DistrFlow;
+//DistrFlow kino_distr_control;
 
-typedef std::map<string, double>::iterator WeightFlow;
-WeightFlow weight_flow_control;
+//typedef std::map<string, double>::iterator WeightFlow;
+//typedef std::map<string, double> WeightFlow;
+//WeightFlow weight_flow_control;
+
+std::map<string, TH1D*> kino_distr_control;
+std::map<string, double> weight_flow_control;
+
 
 int fill_pt_e(string control_point_name, double value)
 	{
@@ -482,7 +488,7 @@ int fill_pt_e(string control_point_name, double value)
 		{
 		// the control point distr has not been created/initialized
 		// create it:
-		kino_distr_control[control_point_name] = (TH1F*) new TH1F(control_point_name, ";;Pt/E(GeV)", 400, 0., 200.);
+		kino_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
 		}
 
 	// fill the distribution:
@@ -500,7 +506,7 @@ int fill_eta(string control_point_name, double value)
 		{
 		// the control point distr has not been created/initialized
 		// create it:
-		kino_distr_control[control_point_name] = (TH1F*) new TH1F(control_point_name, ";;Eta", 200, -4., 4.);
+		kino_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.);
 		}
 
 	// fill the distribution:
@@ -509,6 +515,8 @@ int fill_eta(string control_point_name, double value)
 	// return success:
 	return 0;
 	}
+
+
 
 
 int increment(string control_point_name, double weight)
@@ -529,6 +537,8 @@ int increment(string control_point_name, double weight)
 	}
 
 
+
+
 // Plain text output printing:
 
 int printout_distrs(FILE * out)
@@ -536,20 +546,20 @@ int printout_distrs(FILE * out)
 	// TODO: printout headers, then content
 	//kino_distr_control
 
-	for(DistrFlow iterator = kino_distr_control.begin(); iterator != kino_distr_control.end(); ++iterator)
+	for(std::map<string, TH1D*>::iterator it = kino_distr_control.begin(); it != kino_distr_control.end(); ++it)
 		{
 		// iterator->first = key
 		// iterator->second = value
 		// Repeat if you also want to iterate through the second map.
+		string name = it->first;
+		TH1D * distr = it->second;
 
 		// Header:
-		string name = iterator->first;
 		fprintf(out, "%s:header", name.c_str());
 		for (int i=0; i<distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinCenter(i));
 		fprintf(out, "\n");
 
 		// Content:
-		TH1F * distr = iterator->second;
 		fprintf(out, "%s:content", name.c_str());
 		for (int i=0; i<distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinContent(i));
 		fprintf(out, "\n");
@@ -563,12 +573,13 @@ int printout_counters(FILE * out)
 	// weight flow control
 	// Header:
 	fprintf(out, "weight_flow:header");
-	for(DistrFlow iterator = kino_distr_control.begin(); iterator != kino_distr_control.end(); ++iterator)
+
+	for(std::map<string, double>::iterator it = weight_flow_control.begin(); it != weight_flow_control.end(); ++it)
 		{
 		// iterator->first = key
 		// iterator->second = value
 		// Repeat if you also want to iterate through the second map.
-		string name = iterator->first;
+		string name = it->first;
 		// double weight_sum = iterator->second;
 		fprintf(out, ",%s", name.c_str());
 		}
@@ -576,18 +587,19 @@ int printout_counters(FILE * out)
 
 	// Content:
 	fprintf(out, "weight_flow:content");
-	for(DistrFlow iterator = kino_distr_control.begin(); iterator != kino_distr_control.end(); ++iterator)
+	for(std::map<string, double>::iterator it = weight_flow_control.begin(); it != weight_flow_control.end(); ++it)
 		{
 		// iterator->first = key
 		// iterator->second = value
 		// Repeat if you also want to iterate through the second map.
 		// string name = iterator->first;
-		double weight_sum = iterator->second;
+		double weight_sum = it->second;
 		fprintf(out, ",%g", weight_sum);
 		}
 	fprintf(out, "\n");
 	return 0;
 	}
+
 
 
 // FILE *csv_out;
