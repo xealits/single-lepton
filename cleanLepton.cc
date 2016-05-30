@@ -1601,9 +1601,9 @@ for(size_t f=0; f<urls.size();++f)
 			}
 
 		if(debug){
-			cout << "Printing trigger list" << endl;
-			for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
-			cout << *trnames << endl;
+			cout << "Printing trigger list is commented out here" << endl;
+			//for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
+			//cout << *trnames << endl;
 			cout << "----------- End of trigger list ----------" << endl;
 			//return 0;
 		}
@@ -2045,13 +2045,19 @@ for(size_t f=0; f<urls.size();++f)
 		jets_control_info.corrected1.n->Fill(jets.size(), weight);
 		jets_control_info.corrected2.n->Fill(jets.size(), weight);
 		jets_control_info.correctedF.n->Fill(jets.size(), weight);
+
+		if(debug) cout << "jet eta pt e, e x y z" << endl;
+
 		for(size_t ijet=0; ijet<jets.size(); ijet++)
 			{
 			// TODO: so does this mean "in place"?
 			pat::Jet& jet = jets[ijet];
 
+			if(debug) cout << jet.eta() << " " << jet.pt() << " " << jet.energy() << endl;
 			//correct JES
 			LorentzVector rawJet = jet.correctedP4("Uncorrected");
+
+			if(debug) cout << rawJet.eta() << " " << rawJet.pt() << " " << rawJet.energy() << endl;
 
 			// here is the correct1 jet correction point
 			jets_control_info.corrected1.pt->Fill(rawJet.pt(), weight);
@@ -2072,6 +2078,8 @@ for(size_t f=0; f<urls.size();++f)
 			jets_control_info.corrected2.pt->Fill(jet.pt(), weight);
 			jets_control_info.corrected2.e->Fill(jet.energy(), weight);
 			jets_control_info.corrected2.eta->Fill(jet.eta(), weight);
+
+			if(debug) cout << jet.eta() << " " << jet.pt() << " " << jet.energy() << endl;
 
 			//smear JER
 			//double newJERSF(1.0);
@@ -2115,6 +2123,12 @@ for(size_t f=0; f<urls.size();++f)
 			// i.e. check that the uncorrectedJet remains the same even when the corrected momentum is changed by this routine.
 			//to get the raw jet again
 			//jets[ijet].setVal("torawsf",1./(newJECSF*newJERSF));
+
+			if(debug)
+				{
+				cout << jet.eta() << " " << jet.pt() << " " << jet.energy() << endl;
+				cout << "-" << endl;
+				}
 			}
 
 		// here is the correctF jet correction point
@@ -2124,6 +2138,7 @@ for(size_t f=0; f<urls.size();++f)
 			jets_control_info.correctedF.pt->Fill(jets[n].pt(), weight);
 			jets_control_info.correctedF.e->Fill(jets[n].energy(), weight);
 			jets_control_info.correctedF.eta->Fill(jets[n].eta(), weight);
+			if(debug) cout << jets[n].eta() << " " << jets[n].pt() << " " << jets[n].energy() << endl;
 			}
 
 
@@ -2600,8 +2615,8 @@ for(size_t f=0; f<urls.size();++f)
 
 			} // End single lepton full analysis
 
-		if(debug){
-			cout << "Finished processing first event in the first file, exiting" << endl;
+		if(debug && iev == 10){
+			cout << "Finished processing the " << iev << " event in the first file, exiting" << endl;
 			//return 0;
 			break;
 			}
