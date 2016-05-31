@@ -508,26 +508,17 @@ int printout_distrs(FILE * out)
 int printout_counters(FILE * out)
 	{
 	// weight flow control
-	// Header:
-	fprintf(out, "weight_flow:header");
+
+	fprintf(out, "weight_flow:\n");
 
 	for(std::map<string, double>::iterator it = weight_flow_control.begin(); it != weight_flow_control.end(); ++it)
 		{
 		string name = it->first;
-		fprintf(out, ",%s", name.c_str());
-		}
-	fprintf(out, "\n");
-
-	//TODO: check if the order is the same in two loops!
-
-	// Content:
-	fprintf(out, "weight_flow:content");
-	for(std::map<string, double>::iterator it = weight_flow_control.begin(); it != weight_flow_control.end(); ++it)
-		{
 		double weight_sum = it->second;
-		fprintf(out, ",%g", weight_sum);
+		fprintf(out, "%s=%g", name.c_str(), weight_sum);
 		}
-	fprintf(out, "\n");
+	fprintf(out, "weight_flow end\n");
+
 	return 0;
 	}
 
@@ -2435,7 +2426,7 @@ for(size_t f=0; f<urls.size();++f)
 
 printf("Done processing the job of files\n");
 
-fprintf(csv_out, "End of file loop.\n");
+fprintf(csv_out, "End of (file loop) the job.\n");
 
 // Controls distributions of processed particles
 
