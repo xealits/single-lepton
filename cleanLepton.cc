@@ -2109,12 +2109,49 @@ for(size_t f=0; f<urls.size();++f)
 			{
 			weights_in_el_channel[multisel] += weight;
 			increment(string("e_") + to_string(multisel), weight);
+
+			// also save jet pts at this stage:
+			for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
+				{
+	
+				fill_pt_e( string("all_jets_pt_taucleaned_isoelectron"), selJetsNoLepNoTau[n].pt(), weight);
+				if (n < 2)
+					{
+					fill_pt_e( string("top2pt_jets_pt_taucleaned_isoelectron"), selJetsNoLepNoTau[n].pt(), weight);
+					}
+				}
 			}
+
 		if (isSingleMu)
 			{
 			weights_in_mu_channel[multisel] += weight;
 			increment(string("mu_") + to_string(multisel), weight);
+			// also save jet pts at this stage:
+			for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
+				{
+	
+				fill_pt_e( string("all_jets_pt_taucleaned_isomuon"), selJetsNoLepNoTau[n].pt(), weight);
+				if (n < 2)
+					{
+					fill_pt_e( string("top2pt_jets_pt_taucleaned_isomuon"), selJetsNoLepNoTau[n].pt(), weight);
+					}
+				}
 			}
+
+		if (isSingleMu || isSingleE)
+			{
+			// also save jet pts at this stage:
+			for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
+				{
+	
+				fill_pt_e( string("all_jets_pt_taucleaned_isolep"), selJetsNoLepNoTau[n].pt(), weight);
+				if (n < 2)
+					{
+					fill_pt_e( string("top2pt_jets_pt_taucleaned_isolep"), selJetsNoLepNoTau[n].pt(), weight);
+					}
+				}
+			}
+
 		if (isEMu)
 			{
 			weights_in_elmu_channel[multisel] += weight;
