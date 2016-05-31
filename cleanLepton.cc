@@ -563,6 +563,7 @@ bool isMC            = runProcess.getParameter<bool>  ("isMC");
 double xsec          = runProcess.getParameter<double>("xsec");
 int mctruthmode      = runProcess.getParameter<int>   ("mctruthmode");
 TString dtag         = runProcess.getParameter<std::string>("dtag");
+string dtag_s        = runProcess.getParameter<std::string>("dtag");
 string job_num       = runProcess.getParameter<std::string>("job_num");
 	
 const edm::ParameterSet& myVidElectronIdConf = runProcess.getParameterSet("electronidparas");
@@ -2514,8 +2515,8 @@ fprintf(csv_out, "New output (sums per whole job!):\n");
 // cout << kino_distr_control["all_jets_pt_corrected1"].GetSize() << endl;
 
 // hopefully TString will get converted to string...
-printout_counters(csv_out, string(isMC ? "MC,", "Data,") + dtag + string(",") + job_num);
-printout_distrs(csv_out, string(isMC ? "MC,", "Data,") + dtag + string(",") + job_num);
+printout_counters(csv_out, string(isMC ? "MC,": "Data,") + dtag_s + string(",") + job_num);
+printout_distrs(csv_out, string(isMC ? "MC,": "Data,") + dtag_s + string(",") + job_num);
 
 // So, each job output contains for each value:
 // value_name,MC/Data,dtag,job_num,value
