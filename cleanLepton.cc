@@ -479,7 +479,7 @@ int increment(string control_point_name, double weight)
 
 // Plain text output printing:
 
-int printout_distrs(FILE * out)
+int printout_distrs(FILE * out, string prefix)
 	{
 	//kino_distr_control
 
@@ -491,21 +491,29 @@ int printout_distrs(FILE * out)
 		string name = it->first;
 		TH1D * distr = & it->second;
 
-		// Header:
-		fprintf(out, "%s:header", name.c_str());
-		for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinCenter(i));
-		fprintf(out, "\n");
+		// // Header:
+		// fprintf(out, "%s:header", name.c_str());
+		// for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinCenter(i));
+		// fprintf(out, "\n");
 
-		// Content:
-		fprintf(out, "%s:content", name.c_str());
-		for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinContent(i));
+		// // Content:
+		// fprintf(out, "%s:content", name.c_str());
+		// for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinContent(i));
+		// fprintf(out, "\n");
+
+		// New output:
+		// fprintf(out, "%s:content", name.c_str());
+		for (int i=0; i < distr->GetSize(); i++)
+			{
+			fprintf(out, "%s,%s,%g,%g", name.c_str(), prefix.c_str(), distr->GetBinCenter(i), distr->GetBinContent(i));
+			}
 		fprintf(out, "\n");
 		}
 	return 0;
 	}
 
 
-int printout_counters(FILE * out)
+int printout_counters(FILE * out, string prefix)
 	{
 	// weight flow control
 
@@ -515,7 +523,7 @@ int printout_counters(FILE * out)
 		{
 		string name = it->first;
 		double weight_sum = it->second;
-		fprintf(out, "%s=%g", name.c_str(), weight_sum);
+		fprintf(out, "%s,%s,%g", name.c_str(), prefix.c_str(), weight_sum);
 		}
 	fprintf(out, "weight_flow end\n");
 
@@ -555,6 +563,7 @@ bool isMC            = runProcess.getParameter<bool>  ("isMC");
 double xsec          = runProcess.getParameter<double>("xsec");
 int mctruthmode      = runProcess.getParameter<int>   ("mctruthmode");
 TString dtag         = runProcess.getParameter<std::string>("dtag");
+string job_num       = runProcess.getParameter<std::string>("job_num");
 	
 const edm::ParameterSet& myVidElectronIdConf = runProcess.getParameterSet("electronidparas");
 const edm::ParameterSet& myVidElectronMainIdWPConf = myVidElectronIdConf.getParameterSet("tight");
@@ -804,7 +813,8 @@ string FileName = ((outUrl.ReplaceAll(".root",""))+".csv").Data();
 csv_out = fopen(FileName.c_str(), "w");
 
 // FIXME: it's initialization of a rare control point, make it automatic somehow? initialize all?
-increment( string("weight_passed_oursel"), 0. );
+// to check if processing goes well now
+// increment( string("weight_passed_oursel"), 0. );
 
 fprintf(csv_out, "Headers\n");
 
@@ -956,7 +966,7 @@ for(size_t f=0; f<urls.size();++f)
 		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
 		//   increment( "control_point_name", weight )
 
-		increment( string("n_miniaod_events"), 1.0 );
+		increment( string("weightflow_n_miniaod_events"), 1.0 );
 
 		singlelep_ttbar_initialevents->Fill(1);
 		iev++;
@@ -1149,8 +1159,8 @@ for(size_t f=0; f<urls.size();++f)
 		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
 		//   increment( "control_point_name", weight )
 
-		increment( string("weighted_raw_miniaod_events"), rawWeight );
-		increment( string("weighted_miniaod_events"), weight );
+		increment( string("weightflow_weighted_raw_miniaod_events"), rawWeight );
+		increment( string("weightflow_weighted_miniaod_events"), weight );
 
 
 		//num_inters = 1;
@@ -1195,7 +1205,7 @@ for(size_t f=0; f<urls.size();++f)
 		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
 		//   increment( "control_point_name", weight )
 
-		increment( string("weight_passed_lumi"), weight ); // should not matter
+		increment( string("weightflow_weight_passed_lumi"), weight ); // should not matter
 
 
 		// --------------------------------------------- apply trigger
@@ -1236,7 +1246,7 @@ for(size_t f=0; f<urls.size();++f)
 		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
 		//   increment( "control_point_name", weight )
 
-		increment( string("weight_passed_trig"), weight ); // should not matter
+		increment( string("weightflow_weight_passed_trig"), weight ); // should not matter
 
 		if(debug)
 			{
@@ -2077,11 +2087,12 @@ for(size_t f=0; f<urls.size();++f)
 
 		// inline control functions usage:
 		//   fill_pt_e( "control_point_name", value, weight)
+	// FIXME: do NEWMULTISELECT somehow well
 		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
 		//   increment( "control_point_name", weight )
 
 		if ((isSingleMu || isSingleE) && passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
-			increment( string("weight_passed_oursel"), weight );
+			increment( string("weightflow_weight_passed_oursel"), weight );
 
 		// MULTISELECT
 		// multiselection
@@ -2104,6 +2115,7 @@ for(size_t f=0; f<urls.size();++f)
 		*/
 
 		// with NEWMULTISELECT
+		// FIXME: do NEWMULTISELECT somehow well
 		// TODO: should these be orthigonal?
 		if (isSingleE)
 			{
@@ -2501,8 +2513,18 @@ fprintf(csv_out, "New output (sums per whole job!):\n");
 // cout << kino_distr_control["all_jets_pt_corrected1"].Integral() << endl;
 // cout << kino_distr_control["all_jets_pt_corrected1"].GetSize() << endl;
 
-printout_counters(csv_out);
-printout_distrs(csv_out);
+// hopefully TString will get converted to string...
+printout_counters(csv_out, string(isMC ? "MC,", "Data,") + dtag + string(",") + job_num);
+printout_distrs(csv_out, string(isMC ? "MC,", "Data,") + dtag + string(",") + job_num);
+
+// So, each job output contains for each value:
+// value_name,MC/Data,dtag,job_num,value
+// and the table for distr:
+// distr_name,MC/Data,dtag,job_num,bin,contents
+// simple grep/ack by first coloumn produces a ready data.frame for R
+// which should be summarised for each dataset -- easy with ddply
+// the only problem is:
+// FIXME: how to do MULTISELECT nicely here?
 
 
 fprintf(csv_out, "End of job output.\n\n");
