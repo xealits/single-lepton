@@ -2117,32 +2117,32 @@ for(size_t f=0; f<urls.size();++f)
 		if (isSingleE)
 			{
 			weights_in_el_channel[multisel] += weight;
-			increment(string("e_") + to_str(multisel), weight);
+			increment(string("e_") + to_string(multisel), weight);
 			}
 		if (isSingleMu)
 			{
 			weights_in_mu_channel[multisel] += weight;
-			increment(string("mu_") + to_str(multisel), weight);
+			increment(string("mu_") + to_string(multisel), weight);
 			}
 		if (isEMu)
 			{
 			weights_in_elmu_channel[multisel] += weight;
-			increment(string("emu_") + to_str(multisel), weight);
+			increment(string("emu_") + to_string(multisel), weight);
 			}
 		if (isDoubleE)
 			{
 			weights_in_elel_channel[multisel] += weight;
-			increment(string("ee_") + to_str(multisel), weight);
+			increment(string("ee_") + to_string(multisel), weight);
 			}
 		if (isDoubleMu)
 			{
 			weights_in_mumu_channel[multisel] += weight;
-			increment(string("mumu_") + to_str(multisel), weight);
+			increment(string("mumu_") + to_string(multisel), weight);
 			}
 		if ( !(isSingleMu || isSingleE || isDoubleMu || isDoubleE || isEMu))
 			{
 			weights_in_no_channel[multisel] += weight ;
-			increment(string("nochan_") + to_str(multisel), weight);
+			increment(string("nochan_") + to_string(multisel), weight);
 			}
 		//weights_in_selections_int[multisel] += 1;
 		//break;
