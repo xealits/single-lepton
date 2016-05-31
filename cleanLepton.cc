@@ -1443,9 +1443,9 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<taus.size(); ++n)
 			{
 			fill_pt_e( string("all_taus_pt_slimmed"), taus[n].pt(), weight);
-			if (n < 2)
+			if (n < 1)
 				{
-				fill_pt_e( string("top2pt_taus_pt_slimmed"), taus[n].pt(), weight);
+				fill_pt_e( string("top1pt_taus_pt_slimmed"), taus[n].pt(), weight);
 				}
 			}
 
@@ -1610,9 +1610,9 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<selTaus.size(); ++n)
 			{
 			fill_pt_e("all_taus_pt_individual", selTaus[n].pt(), weight);
-			if (n < 2)
+			if (n < 1)
 				{
-				fill_pt_e( string("top2pt_taus_pt_individual"), selTaus[n].pt(), weight);
+				fill_pt_e( string("top1pt_taus_pt_individual"), selTaus[n].pt(), weight);
 				}
 			}
 
@@ -1641,9 +1641,9 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<selTausNoLep.size(); ++n)
 			{
 			fill_pt_e("all_taus_pt_leptoncleaned", selTausNoLep[n].pt(), weight);
-			if (n < 2)
+			if (n < 1)
 				{
-				fill_pt_e( string("top2pt_taus_pt_leptoncleaned"), selTausNoLep[n].pt(), weight);
+				fill_pt_e( string("top1pt_taus_pt_leptoncleaned"), selTausNoLep[n].pt(), weight);
 				}
 			}
 
