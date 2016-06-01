@@ -1592,9 +1592,9 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<selLeptons.size(); ++n)
 			{
 			fill_pt_e("all_leptons_pt_individual", selLeptons[n].pt(), weight);
-			if (n < 2)
+			if (n < 1)
 				{
-				fill_pt_e( string("top2pt_leptons_pt_individual"), selLeptons[n].pt(), weight);
+				fill_pt_e( string("top1pt_leptons_pt_individual"), selLeptons[n].pt(), weight);
 				}
 			}
 
