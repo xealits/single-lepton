@@ -395,6 +395,16 @@ bool hasTauAsMother(const reco::GenParticle  p)
 #define NORMKINO_DISTR_SIZE 400
 
 
+// JobDef job_def = {string(isMC ? "MC": "Data"), dtag_s, job_num};
+
+struct JobDef
+{
+	string type;
+	string dtag;
+	string job_num;
+};
+
+
 // inline CONTROL:
 
 // map for TH1D and map for double (weight counters)
@@ -479,9 +489,10 @@ int increment(string control_point_name, double weight)
 
 // Plain text output printing:
 
-int printout_distrs(FILE * out, string prefix)
+int printout_distrs(FILE * out, JobDef JD)
 	{
 	//kino_distr_control
+	fprintf(out, "distr_header:distr_name:header/content,data_type,dtag,job_num,distr_values\n");
 
 	for(std::map<string, TH1D>::iterator it = kino_distr_control.begin(); it != kino_distr_control.end(); ++it)
 		{
@@ -492,38 +503,47 @@ int printout_distrs(FILE * out, string prefix)
 		TH1D * distr = & it->second;
 
 		// // Header:
-		// fprintf(out, "%s:header", name.c_str());
-		// for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinCenter(i));
-		// fprintf(out, "\n");
+		fprintf(out, "%s:header, %s,%s,%s", name.c_str(), JD.type.c_str(), JD.dtag.c_str(), JD.job_num.c_str());
+		for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinCenter(i));
+		fprintf(out, "\n");
 
 		// // Content:
-		// fprintf(out, "%s:content", name.c_str());
-		// for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinContent(i));
-		// fprintf(out, "\n");
+		fprintf(out, "%s:content, %s,%s,%s", name.c_str(), JD.type.c_str(), JD.dtag.c_str(), JD.job_num.c_str());
+		for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinContent(i));
+		fprintf(out, "\n");
 
 		// New output:
 		// fprintf(out, "%s:content", name.c_str());
-		for (int i=0; i < distr->GetSize(); i++)
-			{
-			fprintf(out, "%s,%s,%g,%g", name.c_str(), prefix.c_str(), distr->GetBinCenter(i), distr->GetBinContent(i));
-			}
-		fprintf(out, "\n");
+
+		// JD.type.c_str(), JD.dtag.c_str(), JD.job_num.c_str()
+		//for (int i=0; i < distr->GetSize(); i++)
+		//	{
+		//	fprintf(out, "%s,%s,%g,%g\n", name.c_str(), prefix.c_str(), distr->GetBinCenter(i), distr->GetBinContent(i));
+		//	}
+		//fprintf(out, "\n");
 		}
 	return 0;
 	}
 
 
-int printout_counters(FILE * out, string prefix)
+int printout_counters(FILE * out, JobDef JD)
 	{
 	// weight flow control
+	//struct JobDef
+	//{
+	//	string type;
+	//	string dtag;
+	//	string job_num;
+	//};
 
-	fprintf(out, "weight_flow:\n");
+	// fprintf(out, "weight_flow_header:%s,%s,%s\n", JD.type.c_str(), JD.dtag.c_str(), JD.job_num.c_str());
+	fprintf(out, "counter_header:val_name,data_type,dtag,job_num,value\n");
 
 	for(std::map<string, double>::iterator it = weight_flow_control.begin(); it != weight_flow_control.end(); ++it)
 		{
 		string name = it->first;
 		double weight_sum = it->second;
-		fprintf(out, "%s,%s,%g", name.c_str(), prefix.c_str(), weight_sum);
+		fprintf(out, "%s,%s,%s,%s,%g\n", name.c_str(), JD.type.c_str(), JD.dtag.c_str(), JD.job_num.c_str(), weight_sum);
 		}
 	fprintf(out, "weight_flow end\n");
 
@@ -565,6 +585,9 @@ int mctruthmode      = runProcess.getParameter<int>   ("mctruthmode");
 TString dtag         = runProcess.getParameter<std::string>("dtag");
 string dtag_s        = runProcess.getParameter<std::string>("dtag");
 string job_num       = runProcess.getParameter<std::string>("job_num");
+
+JobDef job_def = {string(isMC ? "MC": "Data"), dtag_s, job_num};
+
 	
 const edm::ParameterSet& myVidElectronIdConf = runProcess.getParameterSet("electronidparas");
 const edm::ParameterSet& myVidElectronMainIdWPConf = myVidElectronIdConf.getParameterSet("tight");
@@ -2517,8 +2540,11 @@ fprintf(csv_out, "New output (sums per whole job!):\n");
 // cout << kino_distr_control["all_jets_pt_corrected1"].GetSize() << endl;
 
 // hopefully TString will get converted to string...
-printout_counters(csv_out, string(isMC ? "MC,": "Data,") + dtag_s + string(",") + job_num);
-printout_distrs(csv_out, string(isMC ? "MC,": "Data,") + dtag_s + string(",") + job_num);
+
+//printout_counters(csv_out, string(isMC ? "MC,": "Data,") + dtag_s + string(",") + job_num);
+//printout_distrs(csv_out, string(isMC ? "MC,": "Data,") + dtag_s + string(",") + job_num);
+printout_counters(csv_out, job_def);
+printout_distrs(csv_out, job_def);
 
 // So, each job output contains for each value:
 // value_name,MC/Data,dtag,job_num,value
