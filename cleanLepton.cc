@@ -2293,7 +2293,7 @@ double lepton_ratio[156] = {
 			{
 			weights_in_el_channel[multisel] += weight;
 			increment(string("weightflow_e_") + to_string(multisel), weight);
-			fill_pt_e( string("top1pt_electron_pt_individual"), selLeptons.pt(), weight);
+			fill_pt_e( string("top1pt_electron_pt_individual"), selLeptons[0].pt(), weight);
 
 			// also save jet pts at this stage:
 			for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
@@ -2311,7 +2311,7 @@ double lepton_ratio[156] = {
 			{
 			weights_in_mu_channel[multisel] += weight;
 			increment(string("weightflow_mu_") + to_string(multisel), weight);
-			fill_pt_e( string("top1pt_muon_pt_individual"), selLeptons.pt(), weight);
+			fill_pt_e( string("top1pt_muon_pt_individual"), selLeptons[0].pt(), weight);
 
 			// also save jet pts at this stage:
 			for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
