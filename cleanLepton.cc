@@ -65,6 +65,7 @@
 
 #include <map>
 #include <string>
+#include <math.h>
 
 using namespace std;
 
@@ -1598,154 +1599,74 @@ for(size_t f=0; f<urls.size();++f)
 				}
 			}
 
+		// Here we can already assign leptonic channel
+		// electron or muon -- tau
+		// the selection is:
 
-/*
-30.5 -- 108
+		unsigned int n_leptons = selLeptons.size();
+		// Event classification. Single lepton triggers are used for offline selection of dilepton events. The "else if"s guarantee orthogonality
+		bool 
+			isSingleMu(false),
+			isSingleE(false),
+			isDoubleMu(false),
+			isDoubleE(false),
+			isEMu(false);
+		// int multiChannel(0);
 
-(pt>30 & pt < 108) int_round_down((pt - 30)*2)
 
-double lepton_ratio[156] = {
-	1.248247,
-	1.220556,
-	1.199264,
-	1.177714,
-	1.160368,
-	1.141068,
-	1.137692,
-	1.121285,
-	1.109062,
-	1.106955,
-	1.102183,
-	1.095370,
-	1.086499,
-	1.077705,
-	1.077699,
-	1.071551,
-	1.058111,
-	1.056416,
-	1.058335,
-	1.055972,
-	1.050670,
-	1.051131,
-	1.049859,
-	1.048041,
-	1.051732,
-	1.050106,
-	1.057824,
-	1.054303,
-	1.043802,
-	1.043897,
-	1.057754,
-	1.057819,
-	1.033718,
-	1.045752,
-	1.044958,
-	1.055843,
-	1.042920,
-	1.046145,
-	1.039275,
-	1.045708,
-	1.042493,
-	1.029820,
-	1.054370,
-	1.031532,
-	1.054782,
-	1.052757,
-	1.054024,
-	1.067891,
-	1.055044,
-	1.042002,
-	1.058667,
-	1.070374,
-	1.073523,
-	1.076293,
-	1.060245,
-	1.075324,
-	1.044423,
-	1.047971,
-	1.054410,
-	1.040302,
-	1.085171,
-	1.071735,
-	1.060975,
-	1.082888,
-	1.068838,
-	1.100344,
-	1.098888,
-	1.092261,
-	1.059624,
-	1.125863,
-	1.055428,
-	1.088562,
-	1.054459,
-	1.099309,
-	1.068812,
-	1.072574,
-	1.070694,
-	1.049630,
-	1.131422,
-	1.114850,
-	1.039440,
-	1.060915,
-	1.118384,
-	1.076514,
-	1.131590,
-	1.110776,
-	1.071288,
-	1.093596,
-	1.098133,
-	1.116297,
-	1.110002,
-	1.124893,
-	1.088826,
-	1.116959,
-	1.106535,
-	1.167961,
-	1.116661,
-	1.101774,
-	1.083196,
-	1.149086,
-	1.107969,
-	1.164765,
-	1.121528,
-	1.153841,
-	1.152845,
-	1.161465,
-	1.146044,
-	1.131073,
-	1.091776,
-	1.093951,
-	1.141955,
-	1.102161,
-	1.134302,
-	1.096436,
-	1.111692,
-	1.080508,
-	1.148870,
-	1.119708,
-	1.106819,
-	1.116573,
-	1.205902,
-	1.204651,
-	1.248829,
-	1.150974,
-	1.125061,
-	1.228262,
-	1.157388,
-	1.146036,
-	1.157164,
-	1.134323,
-	1.142986,
-	1.181776,
-	1.165495,
-	1.215730,
-	1.187447,
-	1.227525,
-	1.203157,
-	1.276985,
-	1.205082,
-	1.215622}
-*/
+		int slepId(0);
+
+		if(selLeptons.size()>0)
+			slepId=selLeptons[0].pdgId();
+
+		bool iso_lep = nVetoE==0 && nVetoMu==0 && selLeptons.size() == 1 && nGoodPV != 0; // 2^5
+		//if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
+		isSingleMu = (abs(slepId)==13) && muTrigger && iso_lep;
+		isSingleE  = (abs(slepId)==11) && eTrigger  && iso_lep;
+
+
+		// FIXME: this is absolutely a test procedure for leptons mismatch, delete later
+		if (isSingleE && isMC)
+			{
+			// the ratio table then:
+			double pt = selLeptons[0].pt();
+			if (pt > 30 && pt < 81)
+				{
+				double ratios[102] = {1.417432, 1.355603, 1.326855, 1.295397, 1.274588,
+					1.244550, 1.224524, 1.189812, 1.172887, 1.167444, 1.155932,
+					1.126863, 1.123598, 1.101529, 1.102847, 1.102109, 1.077481,
+					1.063031, 1.070628, 1.065650, 1.055504, 1.057805, 1.067119,
+					1.069570, 1.073800, 1.073553, 1.090602, 1.088997, 1.089411,
+					1.073635, 1.101547, 1.107392, 1.079771, 1.092838, 1.101382,
+					1.110520, 1.104568, 1.106222, 1.091441, 1.105385, 1.087636,
+					1.090410, 1.123266, 1.116482, 1.159609, 1.112731, 1.140635,
+					1.193607, 1.153018, 1.111796, 1.169275, 1.151467, 1.159238,
+					1.203220, 1.126885, 1.160726, 1.140825, 1.133395, 1.171352,
+					1.115036, 1.197012, 1.210529, 1.143451, 1.229832, 1.207743,
+					1.202648, 1.239188, 1.228262, 1.170988, 1.289559, 1.133405,
+					1.201752, 1.173881, 1.273580, 1.159010, 1.163254, 1.181294, 1.128886,
+					1.260505, 1.217777, 1.113412, 1.177267, 1.230890, 1.250940,
+					1.261494, 1.234183, 1.187044, 1.205113, 1.248632, 1.280663, 1.216726,
+					1.225326, 1.291109, 1.256174, 1.199306, 1.266343, 1.235425,
+					1.281472, 1.219297, 1.318849, 1.164462, 1.416536}
+				weight += ratios[floor((pt - 30)*2)];
+				}
+			}
+
+		if (isSingleMu && isMC)
+			{
+			double pt = selLeptons[0].pt();
+			if (pt > 30 && pt < 45.5)
+				{
+				double ratios[31] = {1.163884, 1.150239, 1.132176, 1.113742, 1.096949,
+					1.078991, 1.082796, 1.077936, 1.065941, 1.065551, 1.065027,
+					1.069034, 1.058150, 1.053311, 1.052812, 1.044186, 1.036055,
+					1.041379, 1.039200, 1.035185, 1.034690, 1.032413, 1.025401,
+					1.022467, 1.026297, 1.023207, 1.026607, 1.023327, 1.003550,
+					1.017521, 1.026832}
+				weight += ratios[floor((pt - 30)*2)];
+				}
+			}
 
 		// ------------------------------------------ select the individual taus
 		pat::TauCollection selTaus;
@@ -2186,7 +2107,7 @@ double lepton_ratio[156] = {
 
 		// -------------------------------------------------- all particles are selected
 
-		unsigned int n_leptons = selLeptons.size();
+		// unsigned int n_leptons = selLeptons.size(); // TODO: did it above, where leptons are processed. replace systematically?
 		// unsigned int n_taus = selTaus.size();
 		unsigned int n_taus = selTausNoLep.size();
 		//unsigned int n_jets = selJets.size();
@@ -2208,9 +2129,9 @@ double lepton_ratio[156] = {
 		// -------------------------------------------------- ASSIGN CHANNEL
 		//
 		std::vector < TString > chTags; chTags.clear();
-		int 
-			dilId (1),
-			slepId(0);
+		int
+			dilId (1);
+			// slepId(0);
 		LorentzVector dileptonSystem (0, 0, 0, 0);
 		if(selLeptons.size()>=2)
 			{
@@ -2222,23 +2143,25 @@ double lepton_ratio[156] = {
 				}
 			}
 
-		if(selLeptons.size()>0)
-			slepId=selLeptons[0].pdgId();
 
-		// Event classification. Single lepton triggers are used for offline selection of dilepton events. The "else if"s guarantee orthogonality
-		bool 
-			isSingleMu(false),
-			isSingleE(false),
-			isDoubleMu(false),
-			isDoubleE(false),
-			isEMu(false);
-		// int multiChannel(0);
+		// // TODO: did this classification above -- where the leptons are processed
+		// // Event classification. Single lepton triggers are used for offline selection of dilepton events. The "else if"s guarantee orthogonality
+		// if(selLeptons.size()>0)
+		// 	slepId=selLeptons[0].pdgId();
+
+		// bool 
+		// 	isSingleMu(false),
+		// 	isSingleE(false),
+		// 	isDoubleMu(false),
+		// 	isDoubleE(false),
+		// 	isEMu(false);
+		// // int multiChannel(0);
 
 
-		bool iso_lep = nVetoE==0 && nVetoMu==0 && selLeptons.size() == 1 && nGoodPV != 0; // 2^5
-		//if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
-		isSingleMu = (abs(slepId)==13) && muTrigger && iso_lep;
-		isSingleE  = (abs(slepId)==11) && eTrigger  && iso_lep;
+		// bool iso_lep = nVetoE==0 && nVetoMu==0 && selLeptons.size() == 1 && nGoodPV != 0; // 2^5
+		// //if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
+		// isSingleMu = (abs(slepId)==13) && muTrigger && iso_lep;
+		// isSingleE  = (abs(slepId)==11) && eTrigger  && iso_lep;
 		// TODO: last discrepancy with multiselect!
 		// TODO: and no double-lepton channel yet
 
