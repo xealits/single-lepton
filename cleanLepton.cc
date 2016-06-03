@@ -1978,9 +1978,10 @@ for(size_t f=0; f<urls.size();++f)
 
 		// FIXME: So are these MET corrections?
 		if(debug) cout << "Update also MET" << endl;
-		//std::vector<LorentzVector> newMet = utils::cmssw::getMETvariations(met.p4()/*recoMet*/,jets,selLeptons,isMC);
+		LorentzVector n_met = met.p4();
+		std::vector<LorentzVector> newMet = utils::cmssw::getMETvariations(n_met/*recoMet*/,jets,selLeptons,isMC);
 		// FIXME: Must choose a lepton collection. Perhaps loose leptons?
-		//met = newMet[utils::cmssw::METvariations::NOMINAL];
+		n_met = newMet[utils::cmssw::METvariations::NOMINAL];
 		if(debug) cout << "Jet Energy Corrections updated" << endl;
 
 
@@ -1988,7 +1989,7 @@ for(size_t f=0; f<urls.size();++f)
 		// METs with corrections
 		//
 		double met_pt_values[7];
-		met_pt_values[0] = met.pt();
+		met_pt_values[0] = n_met.pt();
 		met_pt_values[1] = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp).pt();
 		met_pt_values[2] = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown).pt();
 		met_pt_values[3] = mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp).pt();
@@ -2045,7 +2046,7 @@ for(size_t f=0; f<urls.size();++f)
 				{
 				selJets.push_back(jet);
 
-				double dphijmet = fabs (deltaPhi (met.phi(), jet.phi()));
+				double dphijmet = fabs (deltaPhi (n_met.phi(), jet.phi()));
 				if (dphijmet < mindphijmet) mindphijmet = dphijmet;
 				// FIXME: mindphijmet is not used anywhere now
 				}
@@ -2269,7 +2270,8 @@ for(size_t f=0; f<urls.size();++f)
 		//bool passJetSelection(selSingleLepJets.size()>1); // 2 jets // 2^4
 		//bool passJetSelection(selJets.size()>1); // 2 jets // 2^4
 		bool passJetSelection(n_jets>1); // 2 jets // 2^4
-		bool passMetSelection(met.pt()>40.); // MET > 40 // 2^3
+		// bool passMetSelection(met.pt()>40.); // MET > 40 // 2^3
+		bool passMetSelection(n_met.pt()>40.); // MET > 40 // 2^3
 		//bool passBtagsSelection(selSingleLepBJets.size()>0); // 1 b jet // 2^2
 		//bool passBtagsSelection(selBJets.size()>0); // 1 b jet // 2^2
 		bool passBtagsSelection(n_bjets>0); // 1 b jet // 2^2
