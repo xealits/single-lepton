@@ -1445,7 +1445,8 @@ for(size_t f=0; f<urls.size();++f)
 		fwlite::Handle<pat::METCollection> metsHandle;
 		metsHandle.getByLabel(ev, "slimmedMETs");
 		if(metsHandle.isValid() ) mets = *metsHandle;
-		LorentzVector met = mets[0].p4 ();
+		pat::MET met = mets[0];
+		// LorentzVector met = mets[0].p4 ();
 
 
 		if(debug){
@@ -1956,7 +1957,7 @@ for(size_t f=0; f<urls.size();++f)
 
 		// FIXME: So are these MET corrections?
 		if(debug) cout << "Update also MET" << endl;
-		std::vector<LorentzVector> newMet = utils::cmssw::getMETvariations(met/*recoMet*/,jets,selLeptons,isMC);
+		std::vector<LorentzVector> newMet = utils::cmssw::getMETvariations(met.p4()/*recoMet*/,jets,selLeptons,isMC);
 		// FIXME: Must choose a lepton collection. Perhaps loose leptons?
 		met = newMet[utils::cmssw::METvariations::NOMINAL];
 		if(debug) cout << "Jet Energy Corrections updated" << endl;
