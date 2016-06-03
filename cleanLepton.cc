@@ -47,8 +47,13 @@
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 
-#include "UserCode/llvv_fwk/interface/PatUtils.h"
+#include "EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibratorRun2.h"  
+#include "EgammaAnalysis/ElectronTools/interface/PhotonEnergyCalibratorRun2.h" 
+//#include "EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibrator.h"  
+//#include "EgammaAnalysis/ElectronTools/interface/PhotonEnergyCalibrator.h" 
 
+#include "UserCode/llvv_fwk/interface/PatUtils.h"
+#include "UserCode/llvv_fwk/interface/rochcor2015.h"
 
 #include "TSystem.h"
 #include "TFile.h"
@@ -1618,7 +1623,7 @@ for(size_t f=0; f<urls.size();++f)
 			passVetoId  = true;
 			passVetoIso = true;
 
-			leta(fabs(lid==11 ? nocor_lepton.el.superCluster()->eta() : nocor_lepton.eta()));
+			leta = fabs(lid==11 ? nocor_lepton.el.superCluster()->eta() : nocor_lepton.eta());
 			
 			// ---------------------- Main lepton kin
 			if(nocor_lepton.pt() < 30.)                       passKin = false;
@@ -1957,9 +1962,9 @@ for(size_t f=0; f<urls.size();++f)
 
 		// FIXME: So are these MET corrections?
 		if(debug) cout << "Update also MET" << endl;
-		std::vector<LorentzVector> newMet = utils::cmssw::getMETvariations(met.p4()/*recoMet*/,jets,selLeptons,isMC);
+		//std::vector<LorentzVector> newMet = utils::cmssw::getMETvariations(met.p4()/*recoMet*/,jets,selLeptons,isMC);
 		// FIXME: Must choose a lepton collection. Perhaps loose leptons?
-		met = newMet[utils::cmssw::METvariations::NOMINAL];
+		//met = newMet[utils::cmssw::METvariations::NOMINAL];
 		if(debug) cout << "Jet Energy Corrections updated" << endl;
 
 
