@@ -1532,8 +1532,10 @@ for(size_t f=0; f<urls.size();++f)
 
 		// ---------------------------------- leptons selection
 		LorentzVector muDiff(0., 0., 0., 0.), elDiff(0., 0., 0., 0.);
-		std::vector<patUtils::GenericLepton> selLeptons, selLeptons_nocor;
+		std::vector<patUtils::GenericLepton> selLeptons;
+		std::vector<patUtils::GenericLepton> selLeptons_nocor;
 		unsigned int nVetoE(0), nVetoMu(0);
+		unsigned int nVetoE_nocor(0), nVetoMu_nocor(0);
 		for(size_t ilep=0; ilep<leptons.size (); ++ilep)
 			{
 			patUtils::GenericLepton& lepton = leptons[ilep];
@@ -1614,7 +1616,9 @@ for(size_t f=0; f<urls.size();++f)
 			if     (passKin     && passId     && passIso)     selLeptons.push_back(lepton);
 			else if(passVetoKin && passVetoId && passVetoIso) lid==11 ? nVetoE++ : nVetoMu++;
 
-			// -----------  also, store the Pt distr for passing but not corrected lepton:
+
+
+			// -----------  also, store the Pt distr for passing but not corrected lepton: {TEST}
 
 			passKin     = true;
 			passId      = true;
@@ -1644,10 +1648,11 @@ for(size_t f=0; f<urls.size();++f)
 			passVetoIso = lid == 11 ? patUtils::passIso(nocor_lepton.el, patUtils::llvvElecIso::Loose) : patUtils::passIso(nocor_lepton.mu, patUtils::llvvMuonIso::Loose);
 
 			if     (passKin     && passId     && passIso)     selLeptons_nocor.push_back(nocor_lepton);
-			else if(passVetoKin && passVetoId && passVetoIso) lid==11 ? nVetoE++ : nVetoMu++;
+			else if(passVetoKin && passVetoId && passVetoIso) lid==11 ? nVetoE_nocor++ : nVetoMu_nocor++;
 			}
 
 		std::sort(selLeptons.begin(),   selLeptons.end(),   utils::sort_CandidatesByPt);
+		std::sort(selLeptons_nocor.begin(),   selLeptons_nocor.end(),   utils::sort_CandidatesByPt);
 		//LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
 
 		// Propagate lepton energy scale to MET
@@ -1656,27 +1661,6 @@ for(size_t f=0; f<urls.size();++f)
 		met.setUncShift(met.px() + muDiff.px()*0.01, met.py() + muDiff.py()*0.01, met.sumEt() + muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnDown); //assume 1% uncertainty on muon rochester
 		met.setUncShift(met.px() - elDiff.px()*0.01, met.py() - elDiff.py()*0.01, met.sumEt() - elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnUp);   //assume 1% uncertainty on electron scale correction
 		met.setUncShift(met.px() + elDiff.px()*0.01, met.py() + elDiff.py()*0.01, met.sumEt() + elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnDown); //assume 1% uncertainty on electron scale correction
-
-		// CONTROLINFO
-		// Control values for processed individual leptons:
-
-		for(size_t n=0; n<selLeptons.size(); ++n)
-			{
-			fill_pt_e("all_leptons_pt_individual", selLeptons[n].pt(), weight);
-			if (n < 1)
-				{
-				fill_pt_e( string("top1pt_leptons_pt_individual"), selLeptons[n].pt(), weight);
-				}
-			}
-
-		for(size_t n=0; n<selLeptons_nocor.size(); ++n)
-			{
-			fill_pt_e("all_leptons_nocor_pt_individual", selLeptons_nocor[n].pt(), weight);
-			if (n < 1)
-				{
-				fill_pt_e( string("top1pt_leptons_nocor_pt_individual"), selLeptons_nocor[n].pt(), weight);
-				}
-			}
 
 		// Here we can already assign leptonic channel
 		// electron or muon -- tau
@@ -1703,6 +1687,26 @@ for(size_t f=0; f<urls.size();++f)
 		isSingleMu = (abs(slepId)==13) && muTrigger && iso_lep;
 		isSingleE  = (abs(slepId)==11) && eTrigger  && iso_lep;
 
+		if (isSingleMu) fill_pt_e("singlemu_pt_individual", selLeptons[0].pt(), weight);
+		if (isSingleE)  fill_pt_e("singleel_pt_individual", selLeptons[0].pt(), weight);
+
+		// FIXME: testing not corrected leptons
+		bool
+			isSingleMu_nocor(false),
+			isSingleE_nocor(false);
+
+		int slepId_nocor(0);
+
+		if(selLeptons_nocor.size()>0)
+			slepId_nocor=selLeptons_nocor[0].pdgId();
+
+		bool iso_lep_nocor = nVetoE_nocor==0 && nVetoMu_nocor==0 && selLeptons_nocor.size() == 1 && nGoodPV != 0; // 2^5
+		//if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
+		isSingleMu_nocor = (abs(slepId_nocor)==13) && muTrigger && iso_lep_nocor;
+		isSingleE_nocor  = (abs(slepId_nocor)==11) && eTrigger  && iso_lep_nocor;
+
+		if (isSingleMu_nocor) fill_pt_e("singlemu_nocor_pt_individual", selLeptons_nocor[0].pt(), weight);
+		if (isSingleE_nocor)  fill_pt_e("singleel_nocor_pt_individual", selLeptons_nocor[0].pt(), weight);
 
 		// FIXME: this is absolutely a test procedure for leptons mismatch, delete later
 		/*
@@ -1748,6 +1752,18 @@ for(size_t f=0; f<urls.size();++f)
 				}
 			}
 		*/
+
+		// CONTROLINFO
+		// Control values for processed individual leptons:
+
+		for(size_t n=0; n<selLeptons.size(); ++n)
+			{
+			fill_pt_e("all_leptons_pt_individual", selLeptons[n].pt(), weight);
+			if (n < 1)
+				{
+				fill_pt_e( string("top1pt_leptons_pt_individual"), selLeptons[n].pt(), weight);
+				}
+			}
 
 		// ------------------------------------------ select the individual taus
 		pat::TauCollection selTaus;
