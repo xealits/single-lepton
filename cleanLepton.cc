@@ -729,8 +729,19 @@ JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + 
 // JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK4PFchs.txt").Data ());
 	
 // ------------------------------------- muon energy scale and uncertainties
-MuScleFitCorrector *muCor = NULL;
+// MuScleFitCorrector *muCor = NULL;
 // FIXME: MuScle fit corrections for 13 TeV not available yet (more Zs are needed) getMuonCorrector (jecDir, dtag);
+// TString muscleDir = runProcess.getParameter<std::string>("muscleDir");
+// gSystem->ExpandPathName(muscleDir);
+rochcor2015* muCor = new rochcor2015(); // This replaces the old MusScleFitCorrector that was used at RunI
+
+// Electron energy scale, based on https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer and adapted to this framework
+string EGammaEnergyCorrectionFile = "EgammaAnalysis/ElectronTools/data/76X_16DecRereco_2015";
+EpCombinationTool theEpCombinationTool;
+theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC 
+ElectronEnergyCalibratorRun2 ElectronEnCorrector(theEpCombinationTool, isMC, false, EGammaEnergyCorrectionFile);
+ElectronEnCorrector.initPrivateRng(new TRandom(1234));
+
 
 // --------------------------------------- lepton efficiencies
 LeptonEfficiencySF lepEff;
@@ -1514,7 +1525,7 @@ for(size_t f=0; f<urls.size();++f)
 		
 
 		// ---------------------------------- leptons selection
-		LorentzVector muDiff(0., 0., 0., 0.);
+		LorentzVector muDiff(0., 0., 0., 0.), elDiff(0., 0., 0., 0.);
 		std::vector<patUtils::GenericLepton> selLeptons;
 		unsigned int nVetoE(0), nVetoMu(0);
 		for(size_t ilep=0; ilep<leptons.size (); ++ilep)
@@ -1530,12 +1541,26 @@ for(size_t f=0; f<urls.size();++f)
 			//apply muon corrections
 			if(abs(lid) == 13 && muCor)
 				{
+				float qter;
 				TLorentzVector p4(lepton.px(), lepton.py(), lepton.pz(), lepton.energy());
-				muCor->applyPtCorrection(p4, lid < 0 ? -1 : 1);
-				if(isMC) muCor->applyPtSmearing(p4, lid < 0 ? -1 : 1, false);
+				// old corrections:
+				// muCor->applyPtCorrection(p4, lid < 0 ? -1 : 1);
+				// if(isMC) muCor->applyPtSmearing(p4, lid < 0 ? -1 : 1, false);
+				// roch-cor (rochcor) corrections:
+				if (isMC) muCor->momcor_mc  (p4, lid<0 ? -1 :1, 0, qter);
+				else muCor->momcor_data(p4, lid<0 ? -1 :1, 0, qter);
 				muDiff -= lepton.p4();
 				lepton.setP4(LorentzVector(p4.Px(), p4.Py(), p4.Pz(), p4.E()));
 				muDiff += lepton.p4();
+				}
+
+			//apply electron corrections
+			if(abs(lid)==11)
+				{
+				elDiff -= lepton.p4();
+				ElectronEnCorrector.calibrate(lepton.el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
+				lepton = patUtils::GenericLepton(lepton.el); //recreate the generic lepton to be sure that the p4 is ok
+				elDiff += lepton.p4();
 				}
 
 			//no need for charge info any longer
@@ -1584,7 +1609,14 @@ for(size_t f=0; f<urls.size();++f)
 			}
 
 		std::sort(selLeptons.begin(),   selLeptons.end(),   utils::sort_CandidatesByPt);
-		LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
+		//LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
+
+		// Propagate lepton energy scale to MET
+		met.setP4(met.p4() - muDiff - elDiff); //note this also propagates to all MET uncertainties
+		met.setUncShift(met.px() - muDiff.px()*0.01, met.py() - muDiff.py()*0.01, met.sumEt() - muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnUp);   //assume 1% uncertainty on muon rochester
+		met.setUncShift(met.px() + muDiff.px()*0.01, met.py() + muDiff.py()*0.01, met.sumEt() + muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnDown); //assume 1% uncertainty on muon rochester
+		met.setUncShift(met.px() - elDiff.px()*0.01, met.py() - elDiff.py()*0.01, met.sumEt() - elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnUp);   //assume 1% uncertainty on electron scale correction
+		met.setUncShift(met.px() + elDiff.px()*0.01, met.py() + elDiff.py()*0.01, met.sumEt() + elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnDown); //assume 1% uncertainty on electron scale correction
 
 		// CONTROLINFO
 		// Control values for processed individual leptons:
