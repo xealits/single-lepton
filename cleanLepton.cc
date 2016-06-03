@@ -1522,22 +1522,23 @@ for(size_t f=0; f<urls.size();++f)
 		//
 		// LEPTON ANALYSIS
 		//
-		
+
 
 		// ---------------------------------- leptons selection
 		LorentzVector muDiff(0., 0., 0., 0.), elDiff(0., 0., 0., 0.);
-		std::vector<patUtils::GenericLepton> selLeptons;
+		std::vector<patUtils::GenericLepton> selLeptons, selLeptons_nocor;
 		unsigned int nVetoE(0), nVetoMu(0);
 		for(size_t ilep=0; ilep<leptons.size (); ++ilep)
 			{
 			patUtils::GenericLepton& lepton = leptons[ilep];
+			patUtils::GenericLepton  nocor_lepton = leptons[ilep];
 
 			bool 
 				passKin(true),     passId(true),     passIso(true),
 				passVetoKin(true), passVetoId(true), passVetoIso(true);
-						
+
 			int lid(lepton.pdgId());
-						
+
 			//apply muon corrections
 			if(abs(lid) == 13 && muCor)
 				{
@@ -1606,6 +1607,38 @@ for(size_t f=0; f<urls.size();++f)
 
 			if     (passKin     && passId     && passIso)     selLeptons.push_back(lepton);
 			else if(passVetoKin && passVetoId && passVetoIso) lid==11 ? nVetoE++ : nVetoMu++;
+
+			// -----------  also, store the Pt distr for passing but not corrected lepton:
+
+			passKin     = true;
+			passId      = true;
+			passIso     = true;
+			passVetoKin = true;
+			passVetoId  = true;
+			passVetoIso = true;
+
+			leta(fabs(lid==11 ? nocor_lepton.el.superCluster()->eta() : nocor_lepton.eta()));
+			
+			// ---------------------- Main lepton kin
+			if(nocor_lepton.pt() < 30.)                       passKin = false;
+			if(leta > 2.1)                                    passKin = false;
+			if(lid == 11 && (leta > 1.4442 && leta < 1.5660)) passKin = false; // Crack veto
+
+			// ---------------------- Veto lepton kin
+			if (nocor_lepton.pt () < 20)                       passVetoKin = false;
+			if (leta > 2.1)                                    passVetoKin = false;
+			if (lid == 11 && (leta > 1.4442 && leta < 1.5660)) passVetoKin = false; // Crack veto
+
+			// ------------------------- lepton IDs
+			passId     = lid == 11 ? patUtils::passId(nocor_lepton.el, goodPV, patUtils::llvvElecId::Tight) : patUtils::passId(nocor_lepton.mu, goodPV, patUtils::llvvMuonId::StdTight);
+			passVetoId = lid == 11 ? patUtils::passId(nocor_lepton.el, goodPV, patUtils::llvvElecId::Loose) : patUtils::passId(nocor_lepton.mu, goodPV, patUtils::llvvMuonId::StdLoose);
+
+			// ------------------------- lepton isolation
+			passIso     = lid == 11 ? patUtils::passIso(nocor_lepton.el, patUtils::llvvElecIso::Tight) : patUtils::passIso(nocor_lepton.mu, patUtils::llvvMuonIso::Tight);
+			passVetoIso = lid == 11 ? patUtils::passIso(nocor_lepton.el, patUtils::llvvElecIso::Loose) : patUtils::passIso(nocor_lepton.mu, patUtils::llvvMuonIso::Loose);
+
+			if     (passKin     && passId     && passIso)     selLeptons_nocor.push_back(nocor_lepton);
+			else if(passVetoKin && passVetoId && passVetoIso) lid==11 ? nVetoE++ : nVetoMu++;
 			}
 
 		std::sort(selLeptons.begin(),   selLeptons.end(),   utils::sort_CandidatesByPt);
@@ -1627,6 +1660,15 @@ for(size_t f=0; f<urls.size();++f)
 			if (n < 1)
 				{
 				fill_pt_e( string("top1pt_leptons_pt_individual"), selLeptons[n].pt(), weight);
+				}
+			}
+
+		for(size_t n=0; n<selLeptons_nocor.size(); ++n)
+			{
+			fill_pt_e("all_leptons_nocor_pt_individual", selLeptons_nocor[n].pt(), weight);
+			if (n < 1)
+				{
+				fill_pt_e( string("top1pt_leptons_nocor_pt_individual"), selLeptons_nocor[n].pt(), weight);
 				}
 			}
 
@@ -1657,6 +1699,7 @@ for(size_t f=0; f<urls.size();++f)
 
 
 		// FIXME: this is absolutely a test procedure for leptons mismatch, delete later
+		/*
 		if (isSingleE && isMC)
 			{
 			// the ratio table then:
@@ -1698,6 +1741,7 @@ for(size_t f=0; f<urls.size();++f)
 				weight *= ratios[int((pt - 30)*2)];
 				}
 			}
+		*/
 
 		// ------------------------------------------ select the individual taus
 		pat::TauCollection selTaus;
