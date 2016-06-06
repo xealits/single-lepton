@@ -1549,9 +1549,9 @@ for(size_t f=0; f<urls.size();++f)
 		pat::ElectronCollection selElectrons;
 		unsigned int nVetoE(0);
 
-		for(unsigned int count_idiso_electrons = 0, size_t n=0; n<electrons.size (); ++n)
+		for(unsigned int count_idiso_electrons = 0, n=0; n<electrons.size (); ++n)
 			{
-			patUtils::Electron& electron = electrons[n];
+			pat::Electron& electron = electrons[n];
 
 			bool 
 				passKin(true),     passId(true),     passIso(true),
@@ -1564,7 +1564,7 @@ for(size_t f=0; f<urls.size();++f)
 				{
 				elDiff -= electron.p4();
 				ElectronEnCorrector.calibrate(electron, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
-				electron = patUtils::GenericLepton(electron.el); //recreate the generic electron to be sure that the p4 is ok
+				//electron = patUtils::GenericLepton(electron.el); //recreate the generic electron to be sure that the p4 is ok
 				elDiff += electron.p4();
 				}
 
@@ -1649,10 +1649,10 @@ for(size_t f=0; f<urls.size();++f)
 		unsigned int nVetoMu(0);
 		// unsigned int count_idiso_muons = 0;
 
-		for(unsigned int count_idiso_muons = 0, size_t n=0; n<muons.size (); ++n)
+		for(unsigned int count_idiso_muons = 0, n=0; n<muons.size (); ++n)
 			{
 			// patUtils::GenericLepton& lepton = leptons[n];
-			patUtils::Muon& muon = muons[n];
+			pat::Muon& muon = muons[n];
 
 			bool 
 				passKin(true),     passId(true),     passIso(true),
@@ -1968,7 +1968,7 @@ for(size_t f=0; f<urls.size();++f)
 		// ------------------------------------------ select the individual taus
 		pat::TauCollection selTaus;
 		int ntaus (0);
-		for (unsigned int count_ided_taus = 0, size_t n = 0; n < taus.size(); ++n)
+		for (unsigned int count_ided_taus = 0, n = 0; n < taus.size(); ++n)
 			{
 			pat::Tau& tau = taus[n];
 
@@ -2223,7 +2223,7 @@ for(size_t f=0; f<urls.size();++f)
 		// selJets pass cross-cleaning with taus later
 		// and b-tagging again
 		double mindphijmet (9999.);
-		for (unsigned int count_ided_jets, size_t ijet = 0; ijet < jets.size(); ++ijet)
+		for (unsigned int count_ided_jets = 0, ijet = 0; ijet < jets.size(); ++ijet)
 			{
 			pat::Jet& jet = jets[ijet];
 
@@ -2446,7 +2446,7 @@ for(size_t f=0; f<urls.size();++f)
 
 		// -------------------------------------------------- all particles are selected
 
-		// unsigned int n_leptons = selLeptons.size(); // TODO: did it above, where leptons are processed. replace systematically?
+		unsigned int n_leptons = selLeptons.size();
 		// unsigned int n_taus = selTaus.size();
 		unsigned int n_taus = selTausNoLep.size();
 		//unsigned int n_jets = selJets.size();
