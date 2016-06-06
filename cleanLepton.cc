@@ -1523,7 +1523,7 @@ for(size_t f=0; f<urls.size();++f)
 
 
 		// and also mets:
-		fill_pt_e( string("met0_slimmed_pt"), met.pt(), weight);
+		fill_pt_e( string("met0_all_slimmed_pt"), met.pt(), weight);
 
 
 
@@ -1638,6 +1638,10 @@ for(size_t f=0; f<urls.size();++f)
 			}
 
 
+		if(debug){
+			cout << "processed electrons" << endl;
+			}
+
 
 
 
@@ -1738,15 +1742,10 @@ for(size_t f=0; f<urls.size();++f)
 				}
 			}
 
+		if(debug){
+			cout << "processed muons" << endl;
+			}
 
-		// Propagate lepton energy scale to MET
-		met.setP4(met.p4() - muDiff - elDiff); //note this also propagates to all MET uncertainties
-		met.setUncShift(met.px() - muDiff.px()*0.01, met.py() - muDiff.py()*0.01, met.sumEt() - muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnUp);   //assume 1% uncertainty on muon rochester
-		met.setUncShift(met.px() + muDiff.px()*0.01, met.py() + muDiff.py()*0.01, met.sumEt() + muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnDown); //assume 1% uncertainty on muon rochester
-		met.setUncShift(met.px() - elDiff.px()*0.01, met.py() - elDiff.py()*0.01, met.sumEt() - elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnUp);   //assume 1% uncertainty on electron scale correction
-		met.setUncShift(met.px() + elDiff.px()*0.01, met.py() + elDiff.py()*0.01, met.sumEt() + elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnDown); //assume 1% uncertainty on electron scale correction
-
-		fill_pt_e( string("met0_all_leptoncorr_pt"), met.pt(), weight);
 
 		// Check for the single-electron/single-muon channels and save Pt-s if the event is in channel
 
@@ -1781,7 +1780,28 @@ for(size_t f=0; f<urls.size();++f)
 		if (isSingleMu) fill_pt_e("singlemu_muons_pt",     selMuons[0].pt(), weight);
 		if (isSingleE)  fill_pt_e("singleel_electrons_pt", selElectrons[0].pt(), weight);
 
-		if (isSingleE || isSingleMu) 		fill_pt_e( string("met0_singlelep_leptoncorr_pt"), met.pt(), weight);
+		if(debug){
+			cout << "assigned lepton channel" << endl;
+			}
+
+		if (isSingleE)  fill_pt_e( string("met0_singleel_slimmed_pt"), met.pt(), weight);
+		if (isSingleMu) fill_pt_e( string("met0_singlemu_slimmed_pt"), met.pt(), weight);
+
+		// ------------------------------------- Propagate lepton energy scale to MET
+		met.setP4(met.p4() - muDiff - elDiff); //note this also propagates to all MET uncertainties
+		met.setUncShift(met.px() - muDiff.px()*0.01, met.py() - muDiff.py()*0.01, met.sumEt() - muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnUp);   //assume 1% uncertainty on muon rochester
+		met.setUncShift(met.px() + muDiff.px()*0.01, met.py() + muDiff.py()*0.01, met.sumEt() + muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnDown); //assume 1% uncertainty on muon rochester
+		met.setUncShift(met.px() - elDiff.px()*0.01, met.py() - elDiff.py()*0.01, met.sumEt() - elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnUp);   //assume 1% uncertainty on electron scale correction
+		met.setUncShift(met.px() + elDiff.px()*0.01, met.py() + elDiff.py()*0.01, met.sumEt() + elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnDown); //assume 1% uncertainty on electron scale correction
+
+		fill_pt_e( string("met0_all_leptoncorr_pt"), met.pt(), weight);
+
+		if (isSingleE)  fill_pt_e( string("met0_singleel_leptoncorr_pt"), met.pt(), weight);
+		if (isSingleMu) fill_pt_e( string("met0_singlemu_leptoncorr_pt"), met.pt(), weight);
+
+		if(debug){
+			cout << "propagated lepton corrections to met" << endl;
+			}
 
 		// FIXME: this is absolutely a test procedure for leptons mismatch, delete later
 		/*
@@ -1835,6 +1855,10 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t l=0; l<selMuons.size(); ++l)     selLeptons.push_back(patUtils::GenericLepton (selMuons[l]     ));
 		std::sort(selLeptons.begin(), selLeptons.end(), utils::sort_CandidatesByPt);
 
+
+		if(debug){
+			cout << "merged selected leptons" << endl;
+			}
 
 		/* old lepton selection, left for reference
 		// ---------------------------------- leptons selection
@@ -2022,13 +2046,17 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<selTaus.size(); ++n)
 			{
 			fill_pt_e("all_taus_individual_pt", selTaus[n].pt(), weight);
-			if (n < 1)
+			if (n == 0)
 				{
 				fill_pt_e( string("top1pt_taus_individual_pt"), selTaus[n].pt(), weight);
+				if (isSingleE)  fill_pt_e( string("top1pt_taus_individual_singleel_pt"), selTaus[n].pt(), weight);
+				if (isSingleMu) fill_pt_e( string("top1pt_taus_individual_singlemu_pt"), selTaus[n].pt(), weight);
 				}
 			}
 
-		if (isSingleE || isSingleMu) fill_pt_e( string("top1pt_taus_individual_singlelep_pt"), selTaus[0].pt(), weight);
+		if(debug){
+			cout << "selected taus [individual]" << endl;
+			}
 
 
 		// ------------------------------------------ select the taus cleaned from leptons
@@ -2054,14 +2082,19 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<selTausNoLep.size(); ++n)
 			{
 			fill_pt_e("all_taus_leptoncleaned_pt", selTausNoLep[n].pt(), weight);
-			if (n < 1)
+			if (n == 0)
 				{
 				fill_pt_e( string("top1pt_taus_leptoncleaned_pt"), selTausNoLep[n].pt(), weight);
+				if (isSingleE)  fill_pt_e( string("top1pt_taus_lepcleaned_singleel_pt"), selTausNoLep[n].pt(), weight);
+				if (isSingleMu) fill_pt_e( string("top1pt_taus_lepcleaned_singlemu_pt"), selTausNoLep[n].pt(), weight);
 				}
 			}
 
-		if (isSingleE || isSingleMu) fill_pt_e( string("top1pt_taus_lepcleaned_singlelep_pt"), selTausNoLep[0].pt(), weight);
 
+
+		if(debug){
+			cout << "processed taus" << endl;
+			}
 
 		//
 		// ----------------------------------------------- JET/MET ANALYSIS
@@ -2198,7 +2231,8 @@ for(size_t f=0; f<urls.size();++f)
 		n_met = newMet[utils::cmssw::METvariations::NOMINAL];
 
 		fill_pt_e( string("met0_all_leptoncorr_jetcorr_pt"), n_met.pt(), weight);
-		if (isSingleMu || isSingleE) fill_pt_e( string("met0_all_leptoncorr_jetcorr_singlelep_pt"), n_met.pt(), weight);
+		if (isSingleMu) fill_pt_e( string("met0_all_leptoncorr_jetcorr_singlemu_pt"), n_met.pt(), weight);
+		if (isSingleE)  fill_pt_e( string("met0_all_leptoncorr_jetcorr_singleel_pt"), n_met.pt(), weight);
 
 		if(debug) cout << "Jet Energy Corrections updated" << endl;
 
@@ -2359,16 +2393,30 @@ for(size_t f=0; f<urls.size();++f)
 				fill_pt_e( string("top2pt_jets_taucleaned_pt"), selJetsNoLepNoTau[n].pt(), weight);
 				}
 
-			if (isSingleMu || isSingleE)
+			if (isSingleMu)
 				{
-				fill_pt_e( string("all_jets_taucleaned_singlelep_pt"), selJetsNoLepNoTau[n].pt(), weight);
+				fill_pt_e( string("all_jets_taucleaned_singlemu_pt"), selJetsNoLepNoTau[n].pt(), weight);
 				if (n < 2)
 					{
-					fill_pt_e( string("top2pt_jets_taucleaned_singlelep_pt"), selJetsNoLepNoTau[n].pt(), weight);
+					fill_pt_e( string("top2pt_jets_taucleaned_singlemu_pt"), selJetsNoLepNoTau[n].pt(), weight);
 					}
 				}
+
+			if (isSingleE)
+				{
+				fill_pt_e( string("all_jets_taucleaned_singleel_pt"), selJetsNoLepNoTau[n].pt(), weight);
+				if (n < 2)
+					{
+					fill_pt_e( string("top2pt_jets_taucleaned_singleel_pt"), selJetsNoLepNoTau[n].pt(), weight);
+					}
+				}
+
 			}
 
+
+		if(debug){
+			cout << "processed jets" << endl;
+			}
 
 
 		// --------------------------- B-tagged jets
@@ -2411,6 +2459,10 @@ for(size_t f=0; f<urls.size();++f)
 				}
 			}
 
+		if(debug){
+			cout << "processed b-tagged jets" << endl;
+			}
+
 
 		/* Done before
 		// ---------------------------- Clean jet collection from selected taus
@@ -2446,6 +2498,10 @@ for(size_t f=0; f<urls.size();++f)
 
 		// -------------------------------------------------- all particles are selected
 
+		if(debug){
+			cout << "all particle-objects are processed, checking channel selection" << endl;
+			}
+
 		unsigned int n_leptons = selLeptons.size();
 		// unsigned int n_taus = selTaus.size();
 		unsigned int n_taus = selTausNoLep.size();
@@ -2455,6 +2511,20 @@ for(size_t f=0; f<urls.size();++f)
 		unsigned int n_jets = selJetsNoLepNoTau.size();
 		// unsigned int n_bjets = selSingleLepBJets.size();
 		unsigned int n_bjets = selBJets.size();
+
+		if (isSingleE)
+			{
+			fill_pt_e( string("n_jets_singleel"), n_jets, weight);
+			fill_pt_e( string("n_bjets_singleel"), n_bjets, weight);
+			fill_pt_e( string("n_taus_singleel"), n_taus, weight);
+			}
+
+		if (isSingleMu)
+			{
+			fill_pt_e( string("n_jets_singlemu"), n_jets, weight);
+			fill_pt_e( string("n_bjets_singlemu"), n_bjets, weight);
+			fill_pt_e( string("n_taus_singlemu"), n_taus, weight);
+			}
 
 		n_selected_leptons_weighted[n_leptons > 100 ? 99 : n_leptons] += weight;
 		n_selected_taus_weighted [n_taus > 100 ? 99 : n_taus] += weight;
