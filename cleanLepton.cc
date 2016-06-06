@@ -1469,47 +1469,61 @@ for(size_t f=0; f<urls.size();++f)
 
 
 		// ------------------------------------ merging electrons and muons
-		std::vector<patUtils::GenericLepton> leptons;
-		for(size_t l=0; l<electrons.size(); ++l) leptons.push_back(patUtils::GenericLepton (electrons[l] ));
-		for(size_t l=0; l<muons.size(); ++l)     leptons.push_back(patUtils::GenericLepton (muons[l]     ));
-		std::sort(leptons.begin(), leptons.end(), utils::sort_CandidatesByPt);
+		// Let's merge after processing and channel assignment
+		// std::vector<patUtils::GenericLepton> leptons;
+		// for(size_t l=0; l<electrons.size(); ++l) leptons.push_back(patUtils::GenericLepton (electrons[l] ));
+		// for(size_t l=0; l<muons.size(); ++l)     leptons.push_back(patUtils::GenericLepton (muons[l]     ));
+		// std::sort(leptons.begin(), leptons.end(), utils::sort_CandidatesByPt);
 
 
 		// CONTROLINFO
 		// Control values for raw particles:
 
-		std::sort (leptons.begin(),  leptons.end(),  utils::sort_CandidatesByPt);
-
-		for(size_t n=0; n<leptons.size(); ++n)
+		std::sort (muons.begin(),  muons.end(),  utils::sort_CandidatesByPt);
+		for(size_t n=0; n<muons.size(); ++n)
 			{
-			fill_pt_e( string("all_leptons_pt_slimmed"), leptons[n].pt(), weight);
+			fill_pt_e( string("all_muons_slimmed_pt"), muons[n].pt(), weight);
 			if (n < 2)
 				{
-				fill_pt_e( string("top2pt_leptons_pt_slimmed"), leptons[n].pt(), weight);
+				fill_pt_e( string("top2pt_muons_slimmed_pt"), muons[n].pt(), weight);
 				}
 			}
 
-		std::sort (taus.begin(),  taus.end(),  utils::sort_CandidatesByPt);
+		std::sort (electrons.begin(),  electrons.end(),  utils::sort_CandidatesByPt);
+		for(size_t n=0; n<electrons.size(); ++n)
+			{
+			fill_pt_e( string("all_electrons_slimmed_pt"), electrons[n].pt(), weight);
+			if (n < 2)
+				{
+				fill_pt_e( string("top2pt_electrons_slimmed_pt"), electrons[n].pt(), weight);
+				}
+			}
 
+
+		std::sort (taus.begin(),  taus.end(),  utils::sort_CandidatesByPt);
 		for(size_t n=0; n<taus.size(); ++n)
 			{
-			fill_pt_e( string("all_taus_pt_slimmed"), taus[n].pt(), weight);
+			fill_pt_e( string("all_taus_slimmed_pt"), taus[n].pt(), weight);
 			if (n < 1)
 				{
-				fill_pt_e( string("top1pt_taus_pt_slimmed"), taus[n].pt(), weight);
+				fill_pt_e( string("top1pt_taus_slimmed_pt"), taus[n].pt(), weight);
 				}
 			}
 
 		std::sort (jets.begin(),  jets.end(),  utils::sort_CandidatesByPt);
-
 		for(size_t n=0; n<jets.size(); n++)
 		{
-			fill_pt_e( string("all_jets_pt_slimmed"), jets[n].pt(), weight);
+			fill_pt_e( string("all_jets_slimmed_pt"), jets[n].pt(), weight);
 			if (n < 2)
 				{
-				fill_pt_e( string("top2pt_jets_pt_slimmed"), jets[n].pt(), weight);
+				fill_pt_e( string("top2pt_jets_slimmed_pt"), jets[n].pt(), weight);
 				}
 		}
+
+
+
+		// and also mets:
+		fill_pt_e( string("met0_slimmed_pt"), met.pt(), weight);
 
 
 
@@ -1529,7 +1543,300 @@ for(size_t f=0; f<urls.size();++f)
 		// LEPTON ANALYSIS
 		//
 
+		// ---------------------------------- electrons selection
+		LorentzVector elDiff(0., 0., 0., 0.);
+		// std::vector<patUtils::GenericLepton>
+		pat::ElectronCollection selElectrons;
+		unsigned int nVetoE(0);
 
+		for(unsigned int count_idiso_electrons = 0, size_t n=0; n<electrons.size (); ++n)
+			{
+			patUtils::Electron& electron = electrons[n];
+
+			bool 
+				passKin(true),     passId(true),     passIso(true),
+				passVetoKin(true), passVetoId(true), passVetoIso(true);
+
+			int lid(electron.pdgId()); // should always be 11
+
+			//apply electron corrections
+			if(abs(lid)==11)
+				{
+				elDiff -= electron.p4();
+				ElectronEnCorrector.calibrate(electron, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
+				electron = patUtils::GenericLepton(electron.el); //recreate the generic electron to be sure that the p4 is ok
+				elDiff += electron.p4();
+				}
+
+			fill_pt_e( string("all_electrons_corrected_pt"), electron.pt(), weight);
+			if (n < 2)
+				{
+				fill_pt_e( string("top2pt_electrons_corrected_pt"), electron.pt(), weight);
+				}
+
+			//no need for charge info any longer
+			//lid = abs(lid);
+			//TString lepStr(lid == 13 ? "mu" : "e");
+			// should always be 11!
+					
+			// no need to mess with photon ID // //veto nearby photon (loose electrons are many times photons...)
+			// no need to mess with photon ID // double minDRlg(9999.);
+			// no need to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
+			// no need to mess with photon ID //   minDRlg=TMath::Min(minDRlg,deltaR(leptons[n].p4(),selPhotons[ipho].p4()));
+			// no need to mess with photon ID // if(minDRlg<0.1) continue;
+
+
+			// ------------------------- electron IDs
+			//Cut based identification
+			passId     = patUtils::passId(electron, goodPV, patUtils::llvvElecId::Tight);
+			passVetoId = patUtils::passId(electron, goodPV, patUtils::llvvElecId::Loose);
+
+			// ------------------------- electron isolation
+
+			passIso     = patUtils::passIso(electron, patUtils::llvvElecIso::Tight);
+			passVetoIso = patUtils::passIso(electron, patUtils::llvvElecIso::Loose);
+
+			if (passId && passIso)
+				{
+				fill_pt_e( string("all_electrons_idiso_pt"), electron.pt(), weight);
+				if (count_idiso_electrons < 2) fill_pt_e( string("top2pt_electrons_idiso_pt"), electron.pt(), weight);
+				count_idiso_electrons += 1;
+				}
+
+
+			// ---------------------------- kinematics
+			//double leta(fabs(lid==11 ? lepton.el.superCluster()->eta() : lepton.eta()));
+			double leta( electron.superCluster()->eta() );
+
+			// ---------------------- Main lepton kin
+			if(electron.pt() < 30.)                passKin = false;
+			if(leta > 2.1)                         passKin = false;
+			if(leta > 1.4442 && leta < 1.5660)     passKin = false; // Crack veto
+
+			// ---------------------- Veto lepton kin
+			if (electron.pt () < 20)            passVetoKin = false;
+			if (leta > 2.1)                     passVetoKin = false;
+			if (leta > 1.4442 && leta < 1.5660) passVetoKin = false; // Crack veto
+
+
+			if     (passKin     && passId     && passIso)     selElectrons.push_back(electron);
+			else if(passVetoKin && passVetoId && passVetoIso) nVetoE++;
+			}
+
+		// TODO: there should be no need to sort selected electrons here again -- they are in order of Pt
+		std::sort(selElectrons.begin(),   selElectrons.end(),   utils::sort_CandidatesByPt);
+		// std::sort(selLeptons.begin(),   selLeptons.end(),   utils::sort_CandidatesByPt);
+		// std::sort(selLeptons_nocor.begin(),   selLeptons_nocor.end(),   utils::sort_CandidatesByPt);
+
+		for(size_t n=0; n<selElectrons.size(); ++n)
+			{
+			fill_pt_e("all_electrons_pt_individual", selElectrons[n].pt(), weight);
+			if (n < 1)
+				{
+				fill_pt_e( string("top2pt_electrons_pt_individual"), selElectrons[n].pt(), weight);
+				}
+			}
+
+
+
+
+
+
+		// ---------------------------------- muons selection
+		LorentzVector muDiff(0., 0., 0., 0.);
+		// std::vector<patUtils::GenericLepton> selLeptons;
+		pat::MuonCollection selMuons;
+		unsigned int nVetoMu(0);
+		// unsigned int count_idiso_muons = 0;
+
+		for(unsigned int count_idiso_muons = 0, size_t n=0; n<muons.size (); ++n)
+			{
+			// patUtils::GenericLepton& lepton = leptons[n];
+			patUtils::Muon& muon = muons[n];
+
+			bool 
+				passKin(true),     passId(true),     passIso(true),
+				passVetoKin(true), passVetoId(true), passVetoIso(true);
+
+			int lid(muon.pdgId()); // should always be 13
+
+			//apply muon corrections
+			if(abs(lid) == 13 && muCor)
+				{
+				float qter;
+				TLorentzVector p4(muon.px(), muon.py(), muon.pz(), muon.energy());
+				// old corrections:
+				// muCor->applyPtCorrection(p4, lid < 0 ? -1 : 1);
+				// if(isMC) muCor->applyPtSmearing(p4, lid < 0 ? -1 : 1, false);
+				// roch-cor (rochcor) corrections:
+				if (isMC) muCor->momcor_mc  (p4, lid<0 ? -1 :1, 0, qter);
+				else muCor->momcor_data(p4, lid<0 ? -1 :1, 0, qter);
+				muDiff -= muon.p4();
+				muon.setP4(LorentzVector(p4.Px(), p4.Py(), p4.Pz(), p4.E()));
+				muDiff += muon.p4();
+				}
+
+			fill_pt_e( string("all_muons_corrected_pt"), muon.pt(), weight);
+			if (n < 2)
+				{
+				fill_pt_e( string("top2pt_muons_corrected_pt"), muon.pt(), weight);
+				}
+
+			//no need for charge info any longer
+			//lid = abs(lid);
+			//TString lepStr(lid == 13 ? "mu" : "e");
+					
+			// no need to mess with photon ID // //veto nearby photon (loose electrons are many times photons...)
+			// no need to mess with photon ID // double minDRlg(9999.);
+			// no need to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
+			// no need to mess with photon ID //   minDRlg=TMath::Min(minDRlg,deltaR(leptons[ilep].p4(),selPhotons[ipho].p4()));
+			// no need to mess with photon ID // if(minDRlg<0.1) continue;
+
+			//Cut based identification
+
+			// ------------------------- muon IDs
+			passId     = patUtils::passId(muon, goodPV, patUtils::llvvMuonId::StdTight);
+			passVetoId = patUtils::passId(muon, goodPV, patUtils::llvvMuonId::StdLoose);
+
+			// ------------------------- muon isolation
+			passIso     = patUtils::passIso(muon, patUtils::llvvMuonIso::Tight);
+			passVetoIso = patUtils::passIso(muon, patUtils::llvvMuonIso::Loose);
+
+			if (passId && passIso)
+				{
+				fill_pt_e( string("all_muons_idiso_pt"), muon.pt(), weight);
+				if (count_idiso_muons < 2) fill_pt_e( string("top2pt_muons_idiso_pt"), muon.pt(), weight);
+				count_idiso_muons += 1;
+				}
+
+
+			// ---------------------------- kinematics
+			double leta( muon.eta());
+
+			// ---------------------- Main muon kin
+			if(muon.pt() < 30.)   passKin = false;
+			if(leta > 2.1)        passKin = false;
+
+			// ---------------------- Veto muon kin
+			if (muon.pt () < 20)  passVetoKin = false;
+			if (leta > 2.1)       passVetoKin = false;
+
+			if     (passKin     && passId     && passIso)     selMuons.push_back(muon);
+			else if(passVetoKin && passVetoId && passVetoIso) nVetoMu++;
+			}
+
+
+		// TODO: there should be no need to sort selected muons here again -- they are in order of Pt
+		std::sort(selMuons.begin(),   selMuons.end(),   utils::sort_CandidatesByPt);
+
+		for(size_t n=0; n<selMuons.size(); ++n)
+			{
+			fill_pt_e("all_muons_pt_individual", selMuons[n].pt(), weight);
+			if (n < 1)
+				{
+				fill_pt_e( string("top2pt_muons_pt_individual"), selMuons[n].pt(), weight);
+				}
+			}
+
+
+		// Propagate lepton energy scale to MET
+		met.setP4(met.p4() - muDiff - elDiff); //note this also propagates to all MET uncertainties
+		met.setUncShift(met.px() - muDiff.px()*0.01, met.py() - muDiff.py()*0.01, met.sumEt() - muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnUp);   //assume 1% uncertainty on muon rochester
+		met.setUncShift(met.px() + muDiff.px()*0.01, met.py() + muDiff.py()*0.01, met.sumEt() + muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnDown); //assume 1% uncertainty on muon rochester
+		met.setUncShift(met.px() - elDiff.px()*0.01, met.py() - elDiff.py()*0.01, met.sumEt() - elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnUp);   //assume 1% uncertainty on electron scale correction
+		met.setUncShift(met.px() + elDiff.px()*0.01, met.py() + elDiff.py()*0.01, met.sumEt() + elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnDown); //assume 1% uncertainty on electron scale correction
+
+		fill_pt_e( string("met0_all_leptoncorr_pt"), met.pt(), weight);
+
+		// Check for the single-electron/single-muon channels and save Pt-s if the event is in channel
+
+		// Here we can already assign leptonic channel
+		// electron or muon -- tau
+		// the selection is:
+
+		// unsigned int n_leptons = selLeptons.size();
+		// Event classification. Single lepton triggers are used for offline selection of dilepton events. The "else if"s guarantee orthogonality
+		bool 
+			isSingleMu(false),
+			isSingleE(false),
+			isDoubleMu(false),
+			isDoubleE(false),
+			isEMu(false);
+		// int multiChannel(0);
+
+
+		// int slepId(0);
+
+		// if(selLeptons.size()>0)
+			// slepId=selLeptons[0].pdgId();
+
+		// bool iso_lep = nVetoE==0 && nVetoMu==0 && selLeptons.size() == 1 && nGoodPV != 0; // 2^5
+		//if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
+		// isSingleMu = (abs(slepId)==13) && muTrigger && iso_lep;
+		// isSingleE  = (abs(slepId)==11) && eTrigger  && iso_lep;
+		bool clean_lep_conditions = nVetoE==0 && nVetoMu==0 && nGoodPV != 0;
+		isSingleMu = selMuons.size() == 1 && selElectrons.size() == 0 && muTrigger && clean_lep_conditions;
+		isSingleE  = selMuons.size() == 0 && selElectrons.size() == 1 && eTrigger  && clean_lep_conditions;
+
+		if (isSingleMu) fill_pt_e("singlemu_muons_pt",     selMuons[0].pt(), weight);
+		if (isSingleE)  fill_pt_e("singleel_electrons_pt", selElectrons[0].pt(), weight);
+
+		if (isSingleE || isSingleMu) 		fill_pt_e( string("met0_singlelep_leptoncorr_pt"), met.pt(), weight);
+
+		// FIXME: this is absolutely a test procedure for leptons mismatch, delete later
+		/*
+		if (isSingleE && isMC)
+			{
+			// the ratio table then:
+			double pt = selLeptons[0].pt();
+			if (pt > 30 && pt < 81)
+				{
+				double ratios[102] = {1.417432, 1.355603, 1.326855, 1.295397, 1.274588,
+					1.244550, 1.224524, 1.189812, 1.172887, 1.167444, 1.155932,
+					1.126863, 1.123598, 1.101529, 1.102847, 1.102109, 1.077481,
+					1.063031, 1.070628, 1.065650, 1.055504, 1.057805, 1.067119,
+					1.069570, 1.073800, 1.073553, 1.090602, 1.088997, 1.089411,
+					1.073635, 1.101547, 1.107392, 1.079771, 1.092838, 1.101382,
+					1.110520, 1.104568, 1.106222, 1.091441, 1.105385, 1.087636,
+					1.090410, 1.123266, 1.116482, 1.159609, 1.112731, 1.140635,
+					1.193607, 1.153018, 1.111796, 1.169275, 1.151467, 1.159238,
+					1.203220, 1.126885, 1.160726, 1.140825, 1.133395, 1.171352,
+					1.115036, 1.197012, 1.210529, 1.143451, 1.229832, 1.207743,
+					1.202648, 1.239188, 1.228262, 1.170988, 1.289559, 1.133405,
+					1.201752, 1.173881, 1.273580, 1.159010, 1.163254, 1.181294, 1.128886,
+					1.260505, 1.217777, 1.113412, 1.177267, 1.230890, 1.250940,
+					1.261494, 1.234183, 1.187044, 1.205113, 1.248632, 1.280663, 1.216726,
+					1.225326, 1.291109, 1.256174, 1.199306, 1.266343, 1.235425,
+					1.281472, 1.219297, 1.318849, 1.164462, 1.416536};
+				weight *= ratios[int((pt - 30)*2)];
+				}
+			}
+
+		if (isSingleMu && isMC)
+			{
+			double pt = selLeptons[0].pt();
+			if (pt > 30 && pt < 45.5)
+				{
+				double ratios[31] = {1.163884, 1.150239, 1.132176, 1.113742, 1.096949,
+					1.078991, 1.082796, 1.077936, 1.065941, 1.065551, 1.065027,
+					1.069034, 1.058150, 1.053311, 1.052812, 1.044186, 1.036055,
+					1.041379, 1.039200, 1.035185, 1.034690, 1.032413, 1.025401,
+					1.022467, 1.026297, 1.023207, 1.026607, 1.023327, 1.003550,
+					1.017521, 1.026832};
+				weight *= ratios[int((pt - 30)*2)];
+				}
+			}
+		*/
+
+		// Finally, merge leptons for cross-cleaning with taus and jets:
+
+		std::vector<patUtils::GenericLepton> selLeptons;
+		for(size_t l=0; l<selElectrons.size(); ++l) selLeptons.push_back(patUtils::GenericLepton (selElectrons[l] ));
+		for(size_t l=0; l<selMuons.size(); ++l)     selLeptons.push_back(patUtils::GenericLepton (selMuons[l]     ));
+		std::sort(selLeptons.begin(), selLeptons.end(), utils::sort_CandidatesByPt);
+
+
+		/* old lepton selection, left for reference
 		// ---------------------------------- leptons selection
 		LorentzVector muDiff(0., 0., 0., 0.), elDiff(0., 0., 0., 0.);
 		std::vector<patUtils::GenericLepton> selLeptons;
@@ -1655,123 +1962,17 @@ for(size_t f=0; f<urls.size();++f)
 		std::sort(selLeptons_nocor.begin(),   selLeptons_nocor.end(),   utils::sort_CandidatesByPt);
 		//LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
 
-		// Propagate lepton energy scale to MET
-		met.setP4(met.p4() - muDiff - elDiff); //note this also propagates to all MET uncertainties
-		met.setUncShift(met.px() - muDiff.px()*0.01, met.py() - muDiff.py()*0.01, met.sumEt() - muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnUp);   //assume 1% uncertainty on muon rochester
-		met.setUncShift(met.px() + muDiff.px()*0.01, met.py() + muDiff.py()*0.01, met.sumEt() + muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnDown); //assume 1% uncertainty on muon rochester
-		met.setUncShift(met.px() - elDiff.px()*0.01, met.py() - elDiff.py()*0.01, met.sumEt() - elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnUp);   //assume 1% uncertainty on electron scale correction
-		met.setUncShift(met.px() + elDiff.px()*0.01, met.py() + elDiff.py()*0.01, met.sumEt() + elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnDown); //assume 1% uncertainty on electron scale correction
-
-		// Here we can already assign leptonic channel
-		// electron or muon -- tau
-		// the selection is:
-
-		unsigned int n_leptons = selLeptons.size();
-		// Event classification. Single lepton triggers are used for offline selection of dilepton events. The "else if"s guarantee orthogonality
-		bool 
-			isSingleMu(false),
-			isSingleE(false),
-			isDoubleMu(false),
-			isDoubleE(false),
-			isEMu(false);
-		// int multiChannel(0);
-
-
-		int slepId(0);
-
-		if(selLeptons.size()>0)
-			slepId=selLeptons[0].pdgId();
-
-		bool iso_lep = nVetoE==0 && nVetoMu==0 && selLeptons.size() == 1 && nGoodPV != 0; // 2^5
-		//if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
-		isSingleMu = (abs(slepId)==13) && muTrigger && iso_lep;
-		isSingleE  = (abs(slepId)==11) && eTrigger  && iso_lep;
-
-		if (isSingleMu) fill_pt_e("singlemu_pt_individual", selLeptons[0].pt(), weight);
-		if (isSingleE)  fill_pt_e("singleel_pt_individual", selLeptons[0].pt(), weight);
-
-		// FIXME: testing not corrected leptons
-		bool
-			isSingleMu_nocor(false),
-			isSingleE_nocor(false);
-
-		int slepId_nocor(0);
-
-		if(selLeptons_nocor.size()>0)
-			slepId_nocor=selLeptons_nocor[0].pdgId();
-
-		bool iso_lep_nocor = nVetoE_nocor==0 && nVetoMu_nocor==0 && selLeptons_nocor.size() == 1 && nGoodPV != 0; // 2^5
-		//if(selLeptons.size()!=1 || nGoodPV==0) continue; // Veto requirement alredy applied during the event categoriziation
-		isSingleMu_nocor = (abs(slepId_nocor)==13) && muTrigger && iso_lep_nocor;
-		isSingleE_nocor  = (abs(slepId_nocor)==11) && eTrigger  && iso_lep_nocor;
-
-		if (isSingleMu_nocor) fill_pt_e("singlemu_nocor_pt_individual", selLeptons_nocor[0].pt(), weight);
-		if (isSingleE_nocor)  fill_pt_e("singleel_nocor_pt_individual", selLeptons_nocor[0].pt(), weight);
-
-		// FIXME: this is absolutely a test procedure for leptons mismatch, delete later
-		/*
-		if (isSingleE && isMC)
-			{
-			// the ratio table then:
-			double pt = selLeptons[0].pt();
-			if (pt > 30 && pt < 81)
-				{
-				double ratios[102] = {1.417432, 1.355603, 1.326855, 1.295397, 1.274588,
-					1.244550, 1.224524, 1.189812, 1.172887, 1.167444, 1.155932,
-					1.126863, 1.123598, 1.101529, 1.102847, 1.102109, 1.077481,
-					1.063031, 1.070628, 1.065650, 1.055504, 1.057805, 1.067119,
-					1.069570, 1.073800, 1.073553, 1.090602, 1.088997, 1.089411,
-					1.073635, 1.101547, 1.107392, 1.079771, 1.092838, 1.101382,
-					1.110520, 1.104568, 1.106222, 1.091441, 1.105385, 1.087636,
-					1.090410, 1.123266, 1.116482, 1.159609, 1.112731, 1.140635,
-					1.193607, 1.153018, 1.111796, 1.169275, 1.151467, 1.159238,
-					1.203220, 1.126885, 1.160726, 1.140825, 1.133395, 1.171352,
-					1.115036, 1.197012, 1.210529, 1.143451, 1.229832, 1.207743,
-					1.202648, 1.239188, 1.228262, 1.170988, 1.289559, 1.133405,
-					1.201752, 1.173881, 1.273580, 1.159010, 1.163254, 1.181294, 1.128886,
-					1.260505, 1.217777, 1.113412, 1.177267, 1.230890, 1.250940,
-					1.261494, 1.234183, 1.187044, 1.205113, 1.248632, 1.280663, 1.216726,
-					1.225326, 1.291109, 1.256174, 1.199306, 1.266343, 1.235425,
-					1.281472, 1.219297, 1.318849, 1.164462, 1.416536};
-				weight *= ratios[int((pt - 30)*2)];
-				}
-			}
-
-		if (isSingleMu && isMC)
-			{
-			double pt = selLeptons[0].pt();
-			if (pt > 30 && pt < 45.5)
-				{
-				double ratios[31] = {1.163884, 1.150239, 1.132176, 1.113742, 1.096949,
-					1.078991, 1.082796, 1.077936, 1.065941, 1.065551, 1.065027,
-					1.069034, 1.058150, 1.053311, 1.052812, 1.044186, 1.036055,
-					1.041379, 1.039200, 1.035185, 1.034690, 1.032413, 1.025401,
-					1.022467, 1.026297, 1.023207, 1.026607, 1.023327, 1.003550,
-					1.017521, 1.026832};
-				weight *= ratios[int((pt - 30)*2)];
-				}
-			}
 		*/
 
-		// CONTROLINFO
-		// Control values for processed individual leptons:
-
-		for(size_t n=0; n<selLeptons.size(); ++n)
-			{
-			fill_pt_e("all_leptons_pt_individual", selLeptons[n].pt(), weight);
-			if (n < 1)
-				{
-				fill_pt_e( string("top1pt_leptons_pt_individual"), selLeptons[n].pt(), weight);
-				}
-			}
 
 		// ------------------------------------------ select the individual taus
 		pat::TauCollection selTaus;
 		int ntaus (0);
-		for (size_t itau = 0; itau < taus.size(); ++itau)
+		for (unsigned int count_ided_taus = 0, size_t n = 0; n < taus.size(); ++n)
 			{
-			pat::Tau& tau = taus[itau];
-			if (tau.pt() < 20. || fabs (tau.eta()) > 2.3) continue;
+			pat::Tau& tau = taus[n];
+
+			// ---------- IDs
 					
 			// if(!tau.isPFTau()) continue; // Only PFTaus // It should be false for slimmedTaus
 			// if(tau.emFraction() >=2.) continue;
@@ -1786,7 +1987,9 @@ for(size_t f=0; f<urls.size();++f)
 			if (tau.tauID ("againstMuonTight3")                          <0.5) continue; // Medium working point not usable. Available values: Loose, Tight
 			//if (tau.tauID ("againstElectronMediumMVA5")                  <0.5) continue; // Tight working point not usable. Avaiable values: VLoose, Loose, Medium
 			if (tau.tauID ("againstElectronMediumMVA6")                  <0.5) continue;
-					
+			
+			fill_pt_e( string("all_taus_4discrs_pt"), tau.pt(), weight);
+
 			// Pixel hits cut (will be available out of the box in new MINIAOD production)
 			{
 			int nChHadPixelHits = 0;
@@ -1799,7 +2002,16 @@ for(size_t f=0; f<urls.size();++f)
 				}
 			if(nChHadPixelHits==0) continue;
 			}
-			/////
+
+			fill_pt_e( string("all_taus_ided_pt"), tau.pt(), weight);
+			if (count_ided_taus<1)
+				{
+				fill_pt_e( string("top1pt_taus_ided_pt"), tau.pt(), weight);
+				count_ided_taus += 1;
+				}
+
+			// --------- Kinematics
+			if (tau.pt() < 20. || fabs (tau.eta()) > 2.3) continue;
 
 			selTaus.push_back(tau);
 			ntaus++;
@@ -1809,13 +2021,14 @@ for(size_t f=0; f<urls.size();++f)
 		// Control values for processed individual taus:
 		for(size_t n=0; n<selTaus.size(); ++n)
 			{
-			fill_pt_e("all_taus_pt_individual", selTaus[n].pt(), weight);
+			fill_pt_e("all_taus_individual_pt", selTaus[n].pt(), weight);
 			if (n < 1)
 				{
-				fill_pt_e( string("top1pt_taus_pt_individual"), selTaus[n].pt(), weight);
+				fill_pt_e( string("top1pt_taus_individual_pt"), selTaus[n].pt(), weight);
 				}
 			}
 
+		if (isSingleE || isSingleMu) fill_pt_e( string("top1pt_taus_individual_singlelep_pt"), selTaus[0].pt(), weight);
 
 
 		// ------------------------------------------ select the taus cleaned from leptons
@@ -1840,13 +2053,14 @@ for(size_t f=0; f<urls.size();++f)
 		// Control values for processed taus cleaned of leptons:
 		for(size_t n=0; n<selTausNoLep.size(); ++n)
 			{
-			fill_pt_e("all_taus_pt_leptoncleaned", selTausNoLep[n].pt(), weight);
+			fill_pt_e("all_taus_leptoncleaned_pt", selTausNoLep[n].pt(), weight);
 			if (n < 1)
 				{
-				fill_pt_e( string("top1pt_taus_pt_leptoncleaned"), selTausNoLep[n].pt(), weight);
+				fill_pt_e( string("top1pt_taus_leptoncleaned_pt"), selTausNoLep[n].pt(), weight);
 				}
 			}
 
+		if (isSingleE || isSingleMu) fill_pt_e( string("top1pt_taus_lepcleaned_singlelep_pt"), selTausNoLep[0].pt(), weight);
 
 
 		//
@@ -1982,6 +2196,10 @@ for(size_t f=0; f<urls.size();++f)
 		std::vector<LorentzVector> newMet = utils::cmssw::getMETvariations(n_met/*recoMet*/,jets,selLeptons,isMC);
 		// FIXME: Must choose a lepton collection. Perhaps loose leptons?
 		n_met = newMet[utils::cmssw::METvariations::NOMINAL];
+
+		fill_pt_e( string("met0_all_leptoncorr_jetcorr_pt"), n_met.pt(), weight);
+		if (isSingleMu || isSingleE) fill_pt_e( string("met0_all_leptoncorr_jetcorr_singlelep_pt"), n_met.pt(), weight);
+
 		if(debug) cout << "Jet Energy Corrections updated" << endl;
 
 
@@ -2005,7 +2223,7 @@ for(size_t f=0; f<urls.size();++f)
 		// selJets pass cross-cleaning with taus later
 		// and b-tagging again
 		double mindphijmet (9999.);
-		for (size_t ijet = 0; ijet < jets.size(); ++ijet)
+		for (unsigned int count_ided_jets, size_t ijet = 0; ijet < jets.size(); ++ijet)
 			{
 			pat::Jet& jet = jets[ijet];
 
@@ -2015,17 +2233,29 @@ for(size_t f=0; f<urls.size();++f)
 			// Was 4.7 in eta. Tightened for computing time. 3.0 ensures that we don't cut associations with leptons (0.4 from 2.4)
 
 			//mc truth for this jet
-			const reco::GenJet * genJet = jet.genJet();
-			TString jetType (genJet && genJet->pt() > 0 ? "truejetsid" : "pujetsid");
+			//const reco::GenJet * genJet = jet.genJet();
+			//TString jetType (genJet && genJet->pt() > 0 ? "truejetsid" : "pujetsid");
 			// TODO: this mctruth for jets it is never used in the code
 
 			//jet id
 			bool passPFloose = passPFJetID("Loose", jet); 
 			// FIXME: check when pileup ID will come out
 
+			if (passPFloose)
+				{
+				fill_pt_e( string("all_jets_ided_pt"), jet.pt(), weight);
+				if (count_ided_jets < 2)
+					{
+					fill_pt_e( string("top2pt_jets_ided_pt"), jet.pt(), weight);
+					count_ided_jets += 1;
+					}
+				}
+
 			// and now the tighter final selection
 			double eta = jet.eta();
 			double pt  = jet.pt();
+			bool passKino = pt > 30. && fabs(eta) < 2.5;
+
 			// corrections:
 			// TODO: are they MC-only?
 			/* no smeared  jet pt values for now
@@ -2042,7 +2272,9 @@ for(size_t f=0; f<urls.size();++f)
 			// vary JesDown is pt_values[1]
 			// if (!passPFloose || jet.pt() <30. || fabs(jet.eta()) > 2.5) continue;
 			// if (passPFloose && (pt > 30. || pt_values[0] > 30. || pt_values[1] > 30.) && fabs(eta) < 2.5)
-			if (passPFloose && pt > 30. && fabs(eta) < 2.5)
+
+
+			if (passPFloose && passKino)
 				{
 				selJets.push_back(jet);
 
@@ -2058,10 +2290,10 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<selJets.size(); ++n)
 			{
 
-			fill_pt_e( string("all_jets_pt_individual"), selJets[n].pt(), weight);
+			fill_pt_e( string("all_jets_individual_pt"), selJets[n].pt(), weight);
 			if (n < 2)
 				{
-				fill_pt_e( string("top2pt_jets_pt_individual"), selJets[n].pt(), weight);
+				fill_pt_e( string("top2pt_jets_individual_pt"), selJets[n].pt(), weight);
 				}
 			}
 
@@ -2091,10 +2323,10 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<selJetsNoLep.size(); ++n)
 			{
 
-			fill_pt_e( string("all_jets_pt_leptoncleaned"), selJetsNoLep[n].pt(), weight);
+			fill_pt_e( string("all_jets_leptoncleaned_pt"), selJetsNoLep[n].pt(), weight);
 			if (n < 2)
 				{
-				fill_pt_e( string("top2pt_jets_pt_leptoncleaned"), selJetsNoLep[n].pt(), weight);
+				fill_pt_e( string("top2pt_jets_leptoncleaned_pt"), selJetsNoLep[n].pt(), weight);
 				}
 			}
 
@@ -2121,10 +2353,19 @@ for(size_t f=0; f<urls.size();++f)
 		for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
 			{
 
-			fill_pt_e( string("all_jets_pt_taucleaned"), selJetsNoLepNoTau[n].pt(), weight);
+			fill_pt_e( string("all_jets_taucleaned_pt"), selJetsNoLepNoTau[n].pt(), weight);
 			if (n < 2)
 				{
-				fill_pt_e( string("top2pt_jets_pt_taucleaned"), selJetsNoLepNoTau[n].pt(), weight);
+				fill_pt_e( string("top2pt_jets_taucleaned_pt"), selJetsNoLepNoTau[n].pt(), weight);
+				}
+
+			if (isSingleMu || isSingleE)
+				{
+				fill_pt_e( string("all_jets_taucleaned_singlelep_pt"), selJetsNoLepNoTau[n].pt(), weight);
+				if (n < 2)
+					{
+					fill_pt_e( string("top2pt_jets_taucleaned_singlelep_pt"), selJetsNoLepNoTau[n].pt(), weight);
+					}
 				}
 			}
 
@@ -2315,36 +2556,34 @@ for(size_t f=0; f<urls.size();++f)
 			{
 			weights_in_el_channel[multisel] += weight;
 			increment(string("weightflow_e_") + to_string(multisel), weight);
-			fill_pt_e( string("top1pt_electron_pt_individual"), selLeptons[0].pt(), weight);
+			fill_pt_e( string("top1pt_electrons_pt_individual"), selLeptons[0].pt(), weight);
 
 			// also save jet pts at this stage:
-			for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
-				{
-	
-				fill_pt_e( string("all_jets_pt_taucleaned_isoelectron"), selJetsNoLepNoTau[n].pt(), weight);
-				if (n < 2)
-					{
-					fill_pt_e( string("top2pt_jets_pt_taucleaned_isoelectron"), selJetsNoLepNoTau[n].pt(), weight);
-					}
-				}
+			//for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
+			//	{
+			//	fill_pt_e( string("all_jets_pt_taucleaned_isoelectron"), selJetsNoLepNoTau[n].pt(), weight);
+			//	if (n < 2)
+			//		{
+			//		fill_pt_e( string("top2pt_jets_pt_taucleaned_isoelectron"), selJetsNoLepNoTau[n].pt(), weight);
+			//		}
+			//	}
 			}
 
 		if (isSingleMu)
 			{
 			weights_in_mu_channel[multisel] += weight;
 			increment(string("weightflow_mu_") + to_string(multisel), weight);
-			fill_pt_e( string("top1pt_muon_pt_individual"), selLeptons[0].pt(), weight);
+			fill_pt_e( string("top1pt_muons_pt_individual"), selLeptons[0].pt(), weight);
 
 			// also save jet pts at this stage:
-			for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
-				{
-	
-				fill_pt_e( string("all_jets_pt_taucleaned_isomuon"), selJetsNoLepNoTau[n].pt(), weight);
-				if (n < 2)
-					{
-					fill_pt_e( string("top2pt_jets_pt_taucleaned_isomuon"), selJetsNoLepNoTau[n].pt(), weight);
-					}
-				}
+			//for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
+			//	{
+			//	fill_pt_e( string("all_jets_pt_taucleaned_isomuon"), selJetsNoLepNoTau[n].pt(), weight);
+			//	if (n < 2)
+			//		{
+			//		fill_pt_e( string("top2pt_jets_pt_taucleaned_isomuon"), selJetsNoLepNoTau[n].pt(), weight);
+			//		}
+			//	}
 			}
 
 		if (isSingleMu || isSingleE)
@@ -2352,15 +2591,14 @@ for(size_t f=0; f<urls.size();++f)
 			increment(string("weightflow_lep_") + to_string(multisel), weight);
 
 			// also save jet pts at this stage:
-			for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
-				{
-	
-				fill_pt_e( string("all_jets_pt_taucleaned_isolep"), selJetsNoLepNoTau[n].pt(), weight);
-				if (n < 2)
-					{
-					fill_pt_e( string("top2pt_jets_pt_taucleaned_isolep"), selJetsNoLepNoTau[n].pt(), weight);
-					}
-				}
+			//for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
+			//	{
+			//	fill_pt_e( string("all_jets_pt_taucleaned_isolep"), selJetsNoLepNoTau[n].pt(), weight);
+			//	if (n < 2)
+			//		{
+			//		fill_pt_e( string("top2pt_jets_pt_taucleaned_isolep"), selJetsNoLepNoTau[n].pt(), weight);
+			//		}
+			//	}
 			}
 
 		if (isEMu)
