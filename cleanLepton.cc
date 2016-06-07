@@ -1883,6 +1883,15 @@ for(size_t f=0; f<urls.size();++f)
 			cout << "merged selected leptons" << endl;
 			}
 
+		if (selLeptons.size()>1)
+			{
+			int dilep_ids = selLeptons[0].pdgId() * selLeptons[1].pdgId();
+
+			if (fabs(dilep_ids) == 121 ) isDoubleE = true;
+			else if (fabs(dilep_ids) == 169 ) isDoubleMu = true;
+			else isEMu = true;
+			}
+
 		/* old lepton selection, left for reference
 		// ---------------------------------- leptons selection
 		LorentzVector muDiff(0., 0., 0., 0.), elDiff(0., 0., 0., 0.);
