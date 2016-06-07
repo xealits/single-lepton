@@ -1788,12 +1788,13 @@ for(size_t f=0; f<urls.size();++f)
 		if (isSingleMu) fill_pt_e( string("met0_singlemu_slimmed_pt"), met.pt(), weight);
 
 		// ------------------------------------- Propagate lepton energy scale to MET
+		/* Don't propagate for now (v10.14)
 		met.setP4(met.p4() - muDiff - elDiff); //note this also propagates to all MET uncertainties
 		met.setUncShift(met.px() - muDiff.px()*0.01, met.py() - muDiff.py()*0.01, met.sumEt() - muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnUp);   //assume 1% uncertainty on muon rochester
 		met.setUncShift(met.px() + muDiff.px()*0.01, met.py() + muDiff.py()*0.01, met.sumEt() + muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnDown); //assume 1% uncertainty on muon rochester
 		met.setUncShift(met.px() - elDiff.px()*0.01, met.py() - elDiff.py()*0.01, met.sumEt() - elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnUp);   //assume 1% uncertainty on electron scale correction
 		met.setUncShift(met.px() + elDiff.px()*0.01, met.py() + elDiff.py()*0.01, met.sumEt() + elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnDown); //assume 1% uncertainty on electron scale correction
-
+		*/
 		fill_pt_e( string("met0_all_leptoncorr_pt"), met.pt(), weight);
 
 		if (isSingleE)  fill_pt_e( string("met0_singleel_leptoncorr_pt"), met.pt(), weight);
