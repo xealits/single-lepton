@@ -425,25 +425,26 @@ struct JobDef
 
 //std::map<string, TH1D*> th1d_distr_control;
 std::map<string, TH1D> th1d_distr_control;
+std::map<string, TH1I> th1i_distr_control;
 std::map<string, double> weight_flow_control;
 
 
-int fill_n(string control_point_name, double value, double weight)
+int fill_n(string control_point_name, unsigned int value, double weight)
 	{
 	// check if control point has been initialized
-	if (th1d_distr_control.find(control_point_name) == th1d_distr_control.end() )
+	if (th1i_distr_control.find(control_point_name) == th1i_distr_control.end() )
 		{
 		// the control point distr has not been created/initialized
 		// create it:
-		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
-		th1d_distr_control[control_point_name] = TH1D(control_point_name.c_str(), ";;N", 100, 0., 100.);
+		//th1i_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
+		th1i_distr_control[control_point_name] = TH1I(control_point_name.c_str(), ";;N", 100, 0., 100.);
 		//cout << "creating " << control_point_name << endl;
 		}
 
 	// fill the distribution:
-	th1d_distr_control[control_point_name].Fill(value, weight);
+	th1i_distr_control[control_point_name].Fill(value, weight);
 	//cout << "filled " << control_point_name << endl;
-	//cout << th1d_distr_control[control_point_name].Integral() << endl;
+	//cout << th1i_distr_control[control_point_name].Integral() << endl;
 
 	// return success:
 	return 0;
@@ -549,6 +550,36 @@ int printout_distrs(FILE * out, JobDef JD)
 		//	}
 		//fprintf(out, "\n");
 		}
+
+	for(std::map<string, TH1I>::iterator it = th1i_distr_control.begin(); it != th1i_distr_control.end(); ++it)
+		{
+		// iterator->first = key
+		// iterator->second = value
+
+		string name = it->first;
+		TH1I * distr = & it->second;
+
+		// // Header:
+		fprintf(out, "%s:header, %s,%s,%s", name.c_str(), JD.type.c_str(), JD.dtag.c_str(), JD.job_num.c_str());
+		for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinCenter(i));
+		fprintf(out, "\n");
+
+		// // Content:
+		fprintf(out, "%s:content, %s,%s,%s", name.c_str(), JD.type.c_str(), JD.dtag.c_str(), JD.job_num.c_str());
+		for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinContent(i));
+		fprintf(out, "\n");
+
+		// New output:
+		// fprintf(out, "%s:content", name.c_str());
+
+		// JD.type.c_str(), JD.dtag.c_str(), JD.job_num.c_str()
+		//for (int i=0; i < distr->GetSize(); i++)
+		//	{
+		//	fprintf(out, "%s,%s,%g,%g\n", name.c_str(), prefix.c_str(), distr->GetBinCenter(i), distr->GetBinContent(i));
+		//	}
+		//fprintf(out, "\n");
+		}
+
 	return 0;
 	}
 
@@ -1652,7 +1683,7 @@ for(size_t f=0; f<urls.size();++f)
 
 		for(size_t n=0; n<selElectrons.size(); ++n)
 			{
-			fill_pt_e("all_electrons_pt_individual", selElectrons[n].pt(), weight);
+			fill_pt_e( string("all_electrons_pt_individual"), selElectrons[n].pt(), weight);
 			if (n < 1)
 				{
 				fill_pt_e( string("top2pt_electrons_pt_individual"), selElectrons[n].pt(), weight);
@@ -1757,7 +1788,7 @@ for(size_t f=0; f<urls.size();++f)
 
 		for(size_t n=0; n<selMuons.size(); ++n)
 			{
-			fill_pt_e("all_muons_pt_individual", selMuons[n].pt(), weight);
+			fill_pt_e( string("all_muons_pt_individual"), selMuons[n].pt(), weight);
 			if (n < 1)
 				{
 				fill_pt_e( string("top2pt_muons_pt_individual"), selMuons[n].pt(), weight);
@@ -1799,8 +1830,8 @@ for(size_t f=0; f<urls.size();++f)
 		isSingleMu = selMuons.size() == 1 && selElectrons.size() == 0 && muTrigger && clean_lep_conditions;
 		isSingleE  = selMuons.size() == 0 && selElectrons.size() == 1 && eTrigger  && clean_lep_conditions;
 
-		if (isSingleMu) fill_pt_e("singlemu_muons_pt",     selMuons[0].pt(), weight);
-		if (isSingleE)  fill_pt_e("singleel_electrons_pt", selElectrons[0].pt(), weight);
+		if (isSingleMu) fill_pt_e( string("singlemu_muons_pt"),     selMuons[0].pt(), weight);
+		if (isSingleE)  fill_pt_e( string("singleel_electrons_pt"), selElectrons[0].pt(), weight);
 
 		if(debug){
 			cout << "assigned lepton channel" << endl;
@@ -2092,7 +2123,7 @@ for(size_t f=0; f<urls.size();++f)
 		// Control values for processed individual taus:
 		for(size_t n=0; n<selTaus.size(); ++n)
 			{
-			fill_pt_e("all_taus_individual_pt", selTaus[n].pt(), weight);
+			fill_pt_e( string("all_taus_individual_pt"), selTaus[n].pt(), weight);
 			if (n == 0)
 				{
 				fill_pt_e( string("top1pt_taus_individual_pt"), selTaus[n].pt(), weight);
@@ -2128,7 +2159,7 @@ for(size_t f=0; f<urls.size();++f)
 		// Control values for processed taus cleaned of leptons:
 		for(size_t n=0; n<selTausNoLep.size(); ++n)
 			{
-			fill_pt_e("all_taus_leptoncleaned_pt", selTausNoLep[n].pt(), weight);
+			fill_pt_e( string("all_taus_leptoncleaned_pt"), selTausNoLep[n].pt(), weight);
 			if (n == 0)
 				{
 				fill_pt_e( string("top1pt_taus_leptoncleaned_pt"), selTausNoLep[n].pt(), weight);
