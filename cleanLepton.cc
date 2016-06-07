@@ -423,27 +423,49 @@ struct JobDef
 
 // TODO: and the multiselect weight-flow?
 
-//std::map<string, TH1D*> kino_distr_control;
-std::map<string, TH1D> kino_distr_control;
+//std::map<string, TH1D*> th1d_distr_control;
+std::map<string, TH1D> th1d_distr_control;
 std::map<string, double> weight_flow_control;
+
+
+int fill_n(string control_point_name, double value, double weight)
+	{
+	// check if control point has been initialized
+	if (th1d_distr_control.find(control_point_name) == th1d_distr_control.end() )
+		{
+		// the control point distr has not been created/initialized
+		// create it:
+		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
+		th1d_distr_control[control_point_name] = TH1D(control_point_name.c_str(), ";;N", 100, 0., 100.);
+		//cout << "creating " << control_point_name << endl;
+		}
+
+	// fill the distribution:
+	th1d_distr_control[control_point_name].Fill(value, weight);
+	//cout << "filled " << control_point_name << endl;
+	//cout << th1d_distr_control[control_point_name].Integral() << endl;
+
+	// return success:
+	return 0;
+	}
 
 
 int fill_pt_e(string control_point_name, double value, double weight)
 	{
 	// check if control point has been initialized
-	if (kino_distr_control.find(control_point_name) == kino_distr_control.end() )
+	if (th1d_distr_control.find(control_point_name) == th1d_distr_control.end() )
 		{
 		// the control point distr has not been created/initialized
 		// create it:
-		//kino_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
-		kino_distr_control[control_point_name] = TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
+		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
+		th1d_distr_control[control_point_name] = TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
 		//cout << "creating " << control_point_name << endl;
 		}
 
 	// fill the distribution:
-	kino_distr_control[control_point_name].Fill(value, weight);
+	th1d_distr_control[control_point_name].Fill(value, weight);
 	//cout << "filled " << control_point_name << endl;
-	//cout << kino_distr_control[control_point_name].Integral() << endl;
+	//cout << th1d_distr_control[control_point_name].Integral() << endl;
 
 	// return success:
 	return 0;
@@ -453,16 +475,16 @@ int fill_pt_e(string control_point_name, double value, double weight)
 int fill_eta(string control_point_name, double value, double weight)
 	{
 	// check if control point has been initialized
-	if (kino_distr_control.find(control_point_name) == kino_distr_control.end() )
+	if (th1d_distr_control.find(control_point_name) == th1d_distr_control.end() )
 		{
 		// the control point distr has not been created/initialized
 		// create it:
-		//kino_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.);
-		kino_distr_control[control_point_name] = TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.);
+		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.);
+		th1d_distr_control[control_point_name] = TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.);
 		}
 
 	// fill the distribution:
-	kino_distr_control[control_point_name].Fill(value, weight);
+	th1d_distr_control[control_point_name].Fill(value, weight);
 
 	// return success:
 	return 0;
@@ -496,10 +518,10 @@ int increment(string control_point_name, double weight)
 
 int printout_distrs(FILE * out, JobDef JD)
 	{
-	//kino_distr_control
+	//th1d_distr_control
 	fprintf(out, "distr_header:distr_name:header/content,data_type,dtag,job_num,distr_values\n");
 
-	for(std::map<string, TH1D>::iterator it = kino_distr_control.begin(); it != kino_distr_control.end(); ++it)
+	for(std::map<string, TH1D>::iterator it = th1d_distr_control.begin(); it != th1d_distr_control.end(); ++it)
 		{
 		// iterator->first = key
 		// iterator->second = value
@@ -2515,16 +2537,16 @@ for(size_t f=0; f<urls.size();++f)
 
 		if (isSingleE)
 			{
-			fill_pt_e( string("n_jets_singleel"), n_jets, weight);
-			fill_pt_e( string("n_bjets_singleel"), n_bjets, weight);
-			fill_pt_e( string("n_taus_singleel"), n_taus, weight);
+			fill_n( string("n_jets_singleel"), n_jets, weight);
+			fill_n( string("n_bjets_singleel"), n_bjets, weight);
+			fill_n( string("n_taus_singleel"), n_taus, weight);
 			}
 
 		if (isSingleMu)
 			{
-			fill_pt_e( string("n_jets_singlemu"), n_jets, weight);
-			fill_pt_e( string("n_bjets_singlemu"), n_bjets, weight);
-			fill_pt_e( string("n_taus_singlemu"), n_taus, weight);
+			fill_n( string("n_jets_singlemu"), n_jets, weight);
+			fill_n( string("n_bjets_singlemu"), n_bjets, weight);
+			fill_n( string("n_taus_singlemu"), n_taus, weight);
 			}
 
 		n_selected_leptons_weighted[n_leptons > 100 ? 99 : n_leptons] += weight;
@@ -2999,27 +3021,27 @@ fprintf(csv_out, "New output (sums per whole job!):\n");
 //   printout_distrs(FILE * out)
 //   printout_counters(FILE * out)
 
-//std::map<string, TH1D*> kino_distr_control;
+//std::map<string, TH1D*> th1d_distr_control;
 //top2pt_jets_pt_taucleaned
 
 // cout << "some control distrs:" << endl;
-// cout << kino_distr_control["top2pt_jets_pt_taucleaned"].Integral() << endl;
-// cout << kino_distr_control["top2pt_jets_pt_taucleaned"].GetSize() << endl;
+// cout << th1d_distr_control["top2pt_jets_pt_taucleaned"].Integral() << endl;
+// cout << th1d_distr_control["top2pt_jets_pt_taucleaned"].GetSize() << endl;
 
-// cout << kino_distr_control["all_jets_pt_taucleaned"].Integral() << endl;
-// cout << kino_distr_control["all_jets_pt_taucleaned"].GetSize() << endl;
+// cout << th1d_distr_control["all_jets_pt_taucleaned"].Integral() << endl;
+// cout << th1d_distr_control["all_jets_pt_taucleaned"].GetSize() << endl;
 
-// cout << kino_distr_control["all_jets_pt_correctedF"].Integral() << endl;
-// cout << kino_distr_control["all_jets_pt_correctedF"].GetSize() << endl;
+// cout << th1d_distr_control["all_jets_pt_correctedF"].Integral() << endl;
+// cout << th1d_distr_control["all_jets_pt_correctedF"].GetSize() << endl;
 
-// cout << kino_distr_control["all_jets_pt_corrected2"].Integral() << endl;
-// cout << kino_distr_control["all_jets_pt_corrected2"].GetSize() << endl;
+// cout << th1d_distr_control["all_jets_pt_corrected2"].Integral() << endl;
+// cout << th1d_distr_control["all_jets_pt_corrected2"].GetSize() << endl;
 
-// cout << kino_distr_control["all_jets_pt_slimmed"].Integral() << endl;
-// cout << kino_distr_control["all_jets_pt_slimmed"].GetSize() << endl;
+// cout << th1d_distr_control["all_jets_pt_slimmed"].Integral() << endl;
+// cout << th1d_distr_control["all_jets_pt_slimmed"].GetSize() << endl;
 
-// cout << kino_distr_control["all_jets_pt_corrected1"].Integral() << endl;
-// cout << kino_distr_control["all_jets_pt_corrected1"].GetSize() << endl;
+// cout << th1d_distr_control["all_jets_pt_corrected1"].Integral() << endl;
+// cout << th1d_distr_control["all_jets_pt_corrected1"].GetSize() << endl;
 
 // hopefully TString will get converted to string...
 
