@@ -1887,9 +1887,24 @@ for(size_t f=0; f<urls.size();++f)
 			{
 			int dilep_ids = selLeptons[0].pdgId() * selLeptons[1].pdgId();
 
-			if (fabs(dilep_ids) == 121 ) isDoubleE = true;
-			else if (fabs(dilep_ids) == 169 ) isDoubleMu = true;
-			else isEMu = true;
+			if (fabs(dilep_ids) == 121 )
+				{
+				isDoubleE = true;
+				fill_pt_e( string("leptons_doublee_2leptons_pt"), selLeptons[0].pt(), weight);
+				fill_pt_e( string("leptons_doublee_2leptons_pt"), selLeptons[1].pt(), weight);
+				}
+			else if (fabs(dilep_ids) == 169 )
+				{
+				isDoubleMu = true;
+				fill_pt_e( string("leptons_doublemu_2leptons_pt"), selLeptons[0].pt(), weight);
+				fill_pt_e( string("leptons_doublemu_2leptons_pt"), selLeptons[1].pt(), weight);
+				}
+			else
+				{
+				isEMu = true;
+				fill_pt_e( string("leptons_emu_2leptons_pt"), selLeptons[0].pt(), weight);
+				fill_pt_e( string("leptons_emu_2leptons_pt"), selLeptons[1].pt(), weight);
+				}
 			}
 
 		/* old lepton selection, left for reference
@@ -2443,6 +2458,14 @@ for(size_t f=0; f<urls.size();++f)
 					}
 				}
 
+			if (isEMu)
+				{
+				fill_pt_e( string("jets_all_taucleaned_emu_pt"), selJetsNoLepNoTau[n].pt(), weight);
+				if (n < 2)
+					{
+					fill_pt_e( string("jets_top2pt_taucleaned_emu_pt"), selJetsNoLepNoTau[n].pt(), weight);
+					}
+				}
 			}
 
 
