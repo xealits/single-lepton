@@ -1939,11 +1939,14 @@ for(size_t f=0; f<urls.size();++f)
 			cout << "merged selected leptons" << endl;
 			}
 
-		if (selLeptons.size()>1)
+		// TODO: more conditions for double-lepton channel? No veto leptons etc?
+		// in progress...
+		if (selLeptons.size()==2 && clean_lep_conditions)
 			{
+			// so this should be a double-lepton channel
+			// TODO: remove tau-selection below?
 			int dilep_ids = selLeptons[0].pdgId() * selLeptons[1].pdgId();
 
-			// FIXME: more conditions for double-lepton channel? No veto leptons etc?
 			if (fabs(dilep_ids) == 121 )
 				{
 				isDoubleE = true;
@@ -2704,12 +2707,15 @@ for(size_t f=0; f<urls.size();++f)
 
 		// inline control functions usage:
 		//   fill_pt_e( "control_point_name", value, weight)
-	// FIXME: do NEWMULTISELECT somehow well
+		// FIXME: do NEWMULTISELECT somehow well
 		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
 		//   increment( "control_point_name", weight )
 
 		if ((isSingleMu || isSingleE) && passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
-			increment( string("weightflow_weight_passed_oursel"), weight );
+			increment( string("weightflow_weight_passed_singlelep_selection"), weight );
+
+		if ((isDoubleE || isDoubleMu || isEMu) && passJetSelection && passMetSelection && passBtagsSelection)
+			increment( string("weightflow_weight_passed_doublelep_selection"), weight );
 
 		// MULTISELECT
 		// multiselection
