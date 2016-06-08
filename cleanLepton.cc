@@ -2714,8 +2714,22 @@ for(size_t f=0; f<urls.size();++f)
 		if ((isSingleMu || isSingleE) && passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
 			increment( string("weightflow_weight_passed_singlelep_selection"), weight );
 
+		if ((isSingleMu) && passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
+			increment( string("weightflow_weight_passed_singleel_selection"), weight );
+		if ((isSingleE) && passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
+			increment( string("weightflow_weight_passed_singlemu_selection"), weight );
+
+
+
 		if ((isDoubleE || isDoubleMu || isEMu) && passJetSelection && passMetSelection && passBtagsSelection)
 			increment( string("weightflow_weight_passed_doublelep_selection"), weight );
+
+		if ((isDoubleE) && passJetSelection && passMetSelection && passBtagsSelection)
+			increment( string("weightflow_weight_passed_doubleel_selection"), weight );
+		if ((isDoubleMu) && passJetSelection && passMetSelection && passBtagsSelection)
+			increment( string("weightflow_weight_passed_doublemu_selection"), weight );
+		if ((isEMu) && passJetSelection && passMetSelection && passBtagsSelection)
+			increment( string("weightflow_weight_passed_doubleemu_selection"), weight );
 
 		// MULTISELECT
 		// multiselection
