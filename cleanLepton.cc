@@ -1255,6 +1255,11 @@ for(size_t f=0; f<urls.size();++f)
 		increment( string("weightflow_weighted_raw_miniaod_events"), rawWeight );
 		increment( string("weightflow_weighted_miniaod_events"), weight );
 
+		fill_n( string("pileup_weight_pergoodpv"), nGoodPV, weight);
+		fill_n( string("pileup_rawweight_pergoodpv"), nGoodPV, rawWeight);
+
+		fill_n( string("pileup_weight_pernuminters"), num_inters, weight);
+		fill_n( string("pileup_rawweight_pernuminters"), num_inters, rawWeight);
 
 		//num_inters = 1;
 		if (num_inters>99) num_inters = 99;
@@ -1263,12 +1268,19 @@ for(size_t f=0; f<urls.size();++f)
 		//if (num_inters<0)  num_inters = 0;
 		if (weightGen<0)
 			{
+			increment( string("negative_events"), 1 );
+			fill_n( string("pileup_negative_weight_pernuminters"), num_inters, weight);
+			fill_n( string("pileup_negative_rawweight_pernuminters"), num_inters, rawWeight);
+
 			negative_event_nvtx[num_inters] += 1;
 			negative_event_pernvtx_weight[num_inters] += weight;
 			negative_event_pergoodpv_weight[nGoodPV] += weight;
 			}
 		else
 			{
+			increment( string("positive_events"), 1 );
+			fill_n( string("pileup_positive_weight_pernuminters"), num_inters, weight);
+			fill_n( string("pileup_positive_rawweight_pernuminters"), num_inters, rawWeight);
 			positive_event_nvtx[num_inters] += 1;
 			positive_event_pernvtx_weight[num_inters] += weight;
 			positive_event_pergoodpv_weight[nGoodPV] += weight;
