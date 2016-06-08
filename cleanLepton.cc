@@ -667,6 +667,9 @@ TString outUrl = runProcess.getParameter<std::string>("outfile");
 // Good lumi mask
 lumiUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));
 
+// for new orthogonality [TESTING]
+bool isSingleElectronDataset = !isMC && dtag.Contains ("SingleEle");
+// old trigger dataset orthogonality:
 bool
 	filterOnlySINGLEE  (false),
 	filterOnlySINGLEMU (false);
@@ -1337,8 +1340,13 @@ for(size_t f=0; f<urls.size();++f)
 			utils::passTriggerPatterns (tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*")
 			);
 		
-		if(filterOnlySINGLEMU) {                    eTrigger = false; }
-		if(filterOnlySINGLEE)  { muTrigger = false;                   }
+		//if(filterOnlySINGLEMU) {                    eTrigger = false; }
+		//if(filterOnlySINGLEE)  { muTrigger = false;                   }
+		// SingleMuon-dataset jobs process double-HLT events
+		// SingleElectron-dataset jobs skip them
+
+		// if data and SingleElectron dataset and both triggers -- skip event
+		if (!isMC && isSingleElectronDataset && eTrigger && muTrigger) continue;
 		
 		if (!(eTrigger || muTrigger)) continue;   //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
 
@@ -1839,8 +1847,13 @@ for(size_t f=0; f<urls.size();++f)
 		// isSingleMu = (abs(slepId)==13) && muTrigger && iso_lep;
 		// isSingleE  = (abs(slepId)==11) && eTrigger  && iso_lep;
 		bool clean_lep_conditions = nVetoE==0 && nVetoMu==0 && nGoodPV != 0;
-		isSingleMu = selMuons.size() == 1 && selElectrons.size() == 0 && muTrigger && clean_lep_conditions;
-		isSingleE  = selMuons.size() == 0 && selElectrons.size() == 1 && eTrigger  && clean_lep_conditions;
+		// TODO: test if trigger needed here at all
+		//isSingleMu = selMuons.size() == 1 && selElectrons.size() == 0 && muTrigger && clean_lep_conditions;
+		//isSingleE  = selMuons.size() == 0 && selElectrons.size() == 1 && eTrigger  && clean_lep_conditions;
+		// FIXME: TESTING new, trigger-less channel assignment
+		isSingleMu = selMuons.size() == 1 && selElectrons.size() == 0 && clean_lep_conditions;
+		isSingleE  = selMuons.size() == 0 && selElectrons.size() == 1 && clean_lep_conditions;
+
 
 		if (isSingleMu) fill_pt_e( string("singlemu_muons_pt"),     selMuons[0].pt(), weight);
 		if (isSingleE)  fill_pt_e( string("singleel_electrons_pt"), selElectrons[0].pt(), weight);
@@ -1930,6 +1943,7 @@ for(size_t f=0; f<urls.size();++f)
 			{
 			int dilep_ids = selLeptons[0].pdgId() * selLeptons[1].pdgId();
 
+			// FIXME: more conditions for double-lepton channel? No veto leptons etc?
 			if (fabs(dilep_ids) == 121 )
 				{
 				isDoubleE = true;
