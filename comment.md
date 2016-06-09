@@ -179,19 +179,18 @@ The steps of Pietro's code with changes.
   - muons,
   - electrons,
   - jets,
-  - gammas,
   - METs (collection of MET -- there are different MET algorithms!)
      **we use the 0th MET of slimmedMETs collection in 76x MINIAODs v2 -- it is type 1 MET**
   - taus
-* merging electrons and muons
+* not merging electrons and muons
 * leptons selection
-  + muon corrections are not applied --- should be updated with new uncertainty corrections
+  + muon corrections are applied with rochester correction procedure
+    implemented in https://github.com/cms2l2v/2l2v_fwk/blob/master/interface/rochcor2015.h
+  + electron corrections applied with CMSSW `EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibratorRun2.h`
   + kinematics, good and veto, lepton IDs and isolation -> **new isolation**
     - muons:
       good: P_T > 26, eta < 2.4, tight muon
-      isolation I_rel,PF < 0.15 -- tight cut
       veto: P_T > 10, eta < 2.5, loose muon
-      isolation I_rel,PF < 0.25 -- loose cut.
 
       IDs are according to
       https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2
@@ -218,11 +217,10 @@ The steps of Pietro's code with changes.
 
     - electrons:
       good: P_T > 30, eta < 2.4,
-      (tocheck I_rel,PF < 0.15, Electron MVATrigV0 > 0.9)
       veto: P_T > 15, eta < 2.5,
-      (tocheck I_rel,PF < 0.25, MVATrigV0 > 0)
-      current IDs are according to //https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_25ns
-      the isolation is included into the ID cuts.
+      IDs and isolation are done with cut-based procedure according to
+      https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_25ns
+      (Isolation twiki requested)
 
 * select the taus -> **0 leave as is**
   + tau pt > 20, eta < 2.3
