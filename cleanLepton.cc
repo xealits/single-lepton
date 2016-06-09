@@ -450,6 +450,27 @@ int fill_n(string control_point_name, unsigned int value, double weight)
 	return 0;
 	}
 
+int fill_pu(string control_point_name, double value, double weight)
+	{
+	// check if control point has been initialized
+	if (th1d_distr_control.find(control_point_name) == th1d_distr_control.end() )
+		{
+		// the control point distr has not been created/initialized
+		// create it:
+		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
+		th1d_distr_control[control_point_name] = TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 100, 0., 100.);
+		//cout << "creating " << control_point_name << endl;
+		}
+
+	// fill the distribution:
+	th1d_distr_control[control_point_name].Fill(value, weight);
+	//cout << "filled " << control_point_name << endl;
+	//cout << th1d_distr_control[control_point_name].Integral() << endl;
+
+	// return success:
+	return 0;
+	}
+
 
 int fill_pt_e(string control_point_name, double value, double weight)
 	{
@@ -1202,10 +1223,10 @@ for(size_t f=0; f<urls.size();++f)
 
 		// ----------------------------------------- Apply pileup reweighting
 		// why don't use nGoodPV for Pile-Up?
-		unsigned int num_inters = 0;
+		unsigned int num_inters = 0, num_inters_raw = 0;
+		double weight_pu_test = weight;
 		if(isMC)
 			{
-			/* FIXME: testing raw vtx.size()
 			int ngenITpu = 0;
 			fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
 			puInfoH.getByLabel (ev, "slimmedAddPileupInfo");
@@ -1231,11 +1252,15 @@ for(size_t f=0; f<urls.size();++f)
 			//num_inters = puInfoH->at(0).getTrueNumInteractions(); // in 76 it seems to not work, returns 0 always
 			// Using Pietro's PU number vertices:
 			num_inters = ngenITpu;
-			*/
-			num_inters = vtx.size();
 			if (num_inters<100) {puWeight = direct_pileup_reweight[num_inters];}
 			else {puWeight = 1.5e-16;}
 			weight *= puWeight;
+
+			// FIXME: testing raw vtx.size()
+			num_inters_raw = vtx.size();
+			if (num_inters_raw<100) {puWeight = direct_pileup_reweight[num_inters_raw];}
+			else {puWeight = 1.5e-16;}
+			weight_pu_test *= puWeight;
 			// TODO: implement error margins of pile-up
 			}
 		else
@@ -1261,13 +1286,14 @@ for(size_t f=0; f<urls.size();++f)
 		increment( string("weightflow_weighted_raw_miniaod_events"), rawWeight );
 		increment( string("weightflow_weighted_miniaod_events"), weight );
 
-		fill_n( string("pileup_rawweight_perrawvtxsize"), vtx.size(), rawWeight);
+		fill_pu( string("pileup_rawweight_perrawvtxsize"), vtx.size(), rawWeight);
+		fill_pu( string("pileup_weight_perrawvtxsize"), vtx.size(), weight_pu_test);
 
-		fill_n( string("pileup_weight_pergoodpv"), nGoodPV, weight);
-		fill_n( string("pileup_rawweight_pergoodpv"), nGoodPV, rawWeight);
+		fill_pu( string("pileup_weight_pergoodpv"), nGoodPV, weight);
+		fill_pu( string("pileup_rawweight_pergoodpv"), nGoodPV, rawWeight);
 
-		fill_n( string("pileup_weight_pernuminters"), num_inters, weight);
-		fill_n( string("pileup_rawweight_pernuminters"), num_inters, rawWeight);
+		fill_pu( string("pileup_weight_pernuminters"), num_inters, weight);
+		fill_pu( string("pileup_rawweight_pernuminters"), num_inters, rawWeight);
 
 		//num_inters = 1;
 		if (num_inters>99) num_inters = 99;
@@ -1277,8 +1303,8 @@ for(size_t f=0; f<urls.size();++f)
 		if (weightGen<0)
 			{
 			increment( string("negative_events"), 1 );
-			fill_n( string("pileup_negative_weight_pernuminters"), num_inters, weight);
-			fill_n( string("pileup_negative_rawweight_pernuminters"), num_inters, rawWeight);
+			fill_pu( string("pileup_negative_weight_pernuminters"), num_inters, weight);
+			fill_pu( string("pileup_negative_rawweight_pernuminters"), num_inters, rawWeight);
 
 			negative_event_nvtx[num_inters] += 1;
 			negative_event_pernvtx_weight[num_inters] += weight;
@@ -1287,8 +1313,8 @@ for(size_t f=0; f<urls.size();++f)
 		else
 			{
 			increment( string("positive_events"), 1 );
-			fill_n( string("pileup_positive_weight_pernuminters"), num_inters, weight);
-			fill_n( string("pileup_positive_rawweight_pernuminters"), num_inters, rawWeight);
+			fill_pt_e( string("pileup_positive_weight_pernuminters"), num_inters, weight);
+			fill_pt_e( string("pileup_positive_rawweight_pernuminters"), num_inters, rawWeight);
 			positive_event_nvtx[num_inters] += 1;
 			positive_event_pernvtx_weight[num_inters] += weight;
 			positive_event_pergoodpv_weight[nGoodPV] += weight;
