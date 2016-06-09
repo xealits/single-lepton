@@ -1205,6 +1205,7 @@ for(size_t f=0; f<urls.size();++f)
 		unsigned int num_inters = 0;
 		if(isMC)
 			{
+			/* FIXME: testing raw vtx.size()
 			int ngenITpu = 0;
 			fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
 			puInfoH.getByLabel (ev, "slimmedAddPileupInfo");
@@ -1230,6 +1231,8 @@ for(size_t f=0; f<urls.size();++f)
 			//num_inters = puInfoH->at(0).getTrueNumInteractions(); // in 76 it seems to not work, returns 0 always
 			// Using Pietro's PU number vertices:
 			num_inters = ngenITpu;
+			*/
+			num_inters = vtx.size();
 			if (num_inters<100) {puWeight = direct_pileup_reweight[num_inters];}
 			else {puWeight = 1.5e-16;}
 			weight *= puWeight;
@@ -1257,6 +1260,8 @@ for(size_t f=0; f<urls.size();++f)
 
 		increment( string("weightflow_weighted_raw_miniaod_events"), rawWeight );
 		increment( string("weightflow_weighted_miniaod_events"), weight );
+
+		fill_n( string("pileup_rawweight_perrawvtxsize"), vtx.size(), rawWeight);
 
 		fill_n( string("pileup_weight_pergoodpv"), nGoodPV, weight);
 		fill_n( string("pileup_rawweight_pergoodpv"), nGoodPV, rawWeight);

@@ -237,7 +237,9 @@ The steps of Pietro's code with changes.
   + corrections
     - uncorrect with `jet.correctedP4("Uncorrected")`
     - apply `FactorizedJetCorrector` for JES (jet energy scale) corrections
+      https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorFWLite
     - smear JER (jet energy resolution) in MC
+      https://twiki.cern.ch/twiki/bin/view/CMS/JetResolution#JER_Scaling_factors_and_Uncertai
   + individual jet selection
     - IDs from https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
     loose jet is required
@@ -247,9 +249,10 @@ The steps of Pietro's code with changes.
 * b-jets via "pfCombinedInclusiveSecondaryVertexV2BJetTags" > 0.89 (medium working point)
 
 * MET
-  + MET 0 from slimmedMETs is used
+  + MET 0 from slimmedMETs is used (TODO: confirm correction type)
   + (disabled new procedure due to large mismatch) propagate lepton corrections to MET
   + propagate jet and lepton corrections to MET with getMETvariations
+    (TODO: check getMETvariations -- there is some electron-muon difference)
 * ASSIGN CHANNEL
 * Single lepton full analysis
   + *Clean jet collection from selected taus* moved it up to common selection
