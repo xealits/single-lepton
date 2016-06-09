@@ -234,7 +234,7 @@ The steps of Pietro's code with changes.
   + tau pt > 20, eta < 2.3
   + overlap with selLeptons $\delta R > 0.4 $
 * jets
-  + corrections
+  + corrections (TODO Fall2015_ files from ...)
     - uncorrect with `jet.correctedP4("Uncorrected")`
     - apply `FactorizedJetCorrector` for JES (jet energy scale) corrections
       https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorFWLite

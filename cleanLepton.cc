@@ -234,7 +234,7 @@ namespace utils
 			}
 		*/
 
-		enum METvariations { NOMINAL, JERUP, JERDOWN, JESUP, JESDOWN, UMETUP, UMETDOWN, LESUP, LESDOWN };    
+		enum METvariations { NOMINAL, JERUP, JERDOWN, JESUP, JESDOWN, UMETUP, UMETDOWN, LESUP, LESDOWN };
 
 		std::vector<LorentzVector> getMETvariations(LorentzVector &rawMETP4, pat::JetCollection &jets, std::vector<patUtils::GenericLepton> &leptons,bool isMC)
 			{
@@ -269,7 +269,7 @@ namespace utils
 					{
 					if(jets[ijet].pt()==0) continue;
 					double jetsf(1.0);
-					// FIXME: change the way this is stored (to not storing it)              
+					// FIXME: change the way this is stored (to not storing it)
 					/// if(ivar==JERUP)   jetsf=jets[ijet].getVal("jerup")/jets[ijet].pt();
 					/// if(ivar==JERDOWN) jetsf=jets[ijet].getVal("jerdown")/jets[ijet].pt();
 					/// if(ivar==JESUP)   jetsf=jets[ijet].getVal("jesup")/jets[ijet].pt();
@@ -1765,7 +1765,7 @@ for(size_t f=0; f<urls.size();++f)
 			// patUtils::GenericLepton& lepton = leptons[n];
 			pat::Muon& muon = muons[n];
 
-			bool 
+			bool
 				passKin(true),     passId(true),     passIso(true),
 				passVetoKin(true), passVetoId(true), passVetoIso(true);
 
@@ -2665,20 +2665,6 @@ for(size_t f=0; f<urls.size();++f)
 		// unsigned int n_bjets = selSingleLepBJets.size();
 		unsigned int n_bjets = selBJets.size();
 
-		if (isSingleE)
-			{
-			fill_n( string("n_jets_singleel"), n_jets, weight);
-			fill_n( string("n_bjets_singleel"), n_bjets, weight);
-			fill_n( string("n_taus_singleel"), n_taus, weight);
-			}
-
-		if (isSingleMu)
-			{
-			fill_n( string("n_jets_singlemu"), n_jets, weight);
-			fill_n( string("n_bjets_singlemu"), n_bjets, weight);
-			fill_n( string("n_taus_singlemu"), n_taus, weight);
-			}
-
 		n_selected_leptons_weighted[n_leptons > 100 ? 99 : n_leptons] += weight;
 		n_selected_taus_weighted [n_taus > 100 ? 99 : n_taus] += weight;
 		n_selected_jets_weighted [n_jets > 100 ? 99 : n_jets] += weight;
@@ -2686,25 +2672,11 @@ for(size_t f=0; f<urls.size();++f)
 
 		// and the sum of weight before splitting into channels:
 		weight_before_channel_select += weight;
+		increment(string("weight_before_channel_select"), weight)
 
 		//
 		// -------------------------------------------------- ASSIGN CHANNEL
 		//
-		std::vector < TString > chTags; chTags.clear();
-		int
-			dilId (1);
-			// slepId(0);
-		LorentzVector dileptonSystem (0, 0, 0, 0);
-		if(selLeptons.size()>=2)
-			{
-			for (size_t ilep = 0; ilep < 2; ilep++)
-				{
-				dilId *= selLeptons[ilep].pdgId();
-				int id(abs (selLeptons[ilep].pdgId()));
-				dileptonSystem += selLeptons[ilep].p4();
-				}
-			}
-
 
 		// // TODO: did this classification above -- where the leptons are processed
 		// // Event classification. Single lepton triggers are used for offline selection of dilepton events. The "else if"s guarantee orthogonality
@@ -2730,179 +2702,71 @@ for(size_t f=0; f<urls.size();++f)
 		// --------------------------- store weights at different selections
 		// Event selection booleans for el-tau and mu-tau channels
 
-		// bool passJetRawSelection(selSingleLepJets.size()>1); // 2 jets
-		//bool passJetSelection(selSingleLepJets.size()>1); // 2 jets // 2^4
-		//bool passJetSelection(selJets.size()>1); // 2 jets // 2^4
-		bool passJetSelection(n_jets>1); // 2 jets // 2^4
-		// bool passMetSelection(met.pt()>40.); // MET > 40 // 2^3
-		bool passMetSelection(n_met.pt()>40.); // MET > 40 // 2^3
-		//bool passBtagsSelection(selSingleLepBJets.size()>0); // 1 b jet // 2^2
-		//bool passBtagsSelection(selBJets.size()>0); // 1 b jet // 2^2
-		bool passBtagsSelection(n_bjets>0); // 1 b jet // 2^2
-		bool passTauSelection(n_taus==1); // only 1 tau // 2^1
-		bool passOS( n_taus>0 && n_leptons>0 ? selLeptons[0].pdgId() * selTausNoLep[0].pdgId() < 0 : 0); // Oposite sign // 2^0
-
-
-		// inline control functions usage:
-		//   fill_pt_e( "control_point_name", value, weight)
-		// FIXME: do NEWMULTISELECT somehow well
-		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
-		//   increment( "control_point_name", weight )
-
-		if ((isSingleMu || isSingleE) && passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
-			increment( string("weightflow_weight_passed_singlelep_selection"), weight );
-
-		if ((isSingleMu) && passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
-			increment( string("weightflow_weight_passed_singleel_selection"), weight );
-		if ((isSingleE) && passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
-			increment( string("weightflow_weight_passed_singlemu_selection"), weight );
-
-
-
-		if ((isDoubleE || isDoubleMu || isEMu) && passJetSelection && passMetSelection && passBtagsSelection)
-			increment( string("weightflow_weight_passed_doublelep_selection"), weight );
-
-		if ((isDoubleE) && passJetSelection && passMetSelection && passBtagsSelection)
-			increment( string("weightflow_weight_passed_doubleel_selection"), weight );
-		if ((isDoubleMu) && passJetSelection && passMetSelection && passBtagsSelection)
-			increment( string("weightflow_weight_passed_doublemu_selection"), weight );
-		if ((isEMu) && passJetSelection && passMetSelection && passBtagsSelection)
-			increment( string("weightflow_weight_passed_doubleemu_selection"), weight );
-
-		// MULTISELECT
-		// multiselection
-		// TODO: multisel should be done per-channel, now it is one (el/mu) for all 
-		unsigned int multisel = 0;
-		// multisel += (isSingleMu ? 1 : 0); //! should be 1
-		// multisel += (isSingleE ? 2 : 0);
-		multisel += (passJetSelection ? 1 : 0);
-		multisel += (passMetSelection ? 2 : 0);
-		multisel += (passBtagsSelection ? 4 : 0);
-		multisel += (passTauSelection ? 8 : 0);
-		multisel += (passOS ? 16 : 0);
-
-		/* debugging
-		if (multisel > MULTISEL_SIZE)
-			{
-			printf("in event %d too large multisel: %d", iev, multisel);
-			break;
-			}
-		*/
-
-		// with NEWMULTISELECT
-		// FIXME: do NEWMULTISELECT somehow well
-		// TODO: should these be orthigonal?
-		if (isSingleE)
-			{
-			weights_in_el_channel[multisel] += weight;
-			increment(string("weightflow_e_") + to_string(multisel), weight);
-			fill_pt_e( string("top1pt_electrons_pt_individual"), selLeptons[0].pt(), weight);
-
-			// also save jet pts at this stage:
-			//for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
-			//	{
-			//	fill_pt_e( string("all_jets_pt_taucleaned_isoelectron"), selJetsNoLepNoTau[n].pt(), weight);
-			//	if (n < 2)
-			//		{
-			//		fill_pt_e( string("top2pt_jets_pt_taucleaned_isoelectron"), selJetsNoLepNoTau[n].pt(), weight);
-			//		}
-			//	}
-			}
-
-		if (isSingleMu)
-			{
-			weights_in_mu_channel[multisel] += weight;
-			increment(string("weightflow_mu_") + to_string(multisel), weight);
-			fill_pt_e( string("top1pt_muons_pt_individual"), selLeptons[0].pt(), weight);
-
-			// also save jet pts at this stage:
-			//for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
-			//	{
-			//	fill_pt_e( string("all_jets_pt_taucleaned_isomuon"), selJetsNoLepNoTau[n].pt(), weight);
-			//	if (n < 2)
-			//		{
-			//		fill_pt_e( string("top2pt_jets_pt_taucleaned_isomuon"), selJetsNoLepNoTau[n].pt(), weight);
-			//		}
-			//	}
-			}
-
-		if (isSingleMu || isSingleE)
-			{
-			increment(string("weightflow_lep_") + to_string(multisel), weight);
-
-			// also save jet pts at this stage:
-			//for(size_t n=0; n<selJetsNoLepNoTau.size(); ++n)
-			//	{
-			//	fill_pt_e( string("all_jets_pt_taucleaned_isolep"), selJetsNoLepNoTau[n].pt(), weight);
-			//	if (n < 2)
-			//		{
-			//		fill_pt_e( string("top2pt_jets_pt_taucleaned_isolep"), selJetsNoLepNoTau[n].pt(), weight);
-			//		}
-			//	}
-			}
-
-		if (isEMu)
-			{
-			weights_in_elmu_channel[multisel] += weight;
-			increment(string("weightflow_emu_") + to_string(multisel), weight);
-			}
-		if (isDoubleE)
-			{
-			weights_in_elel_channel[multisel] += weight;
-			increment(string("weightflow_ee_") + to_string(multisel), weight);
-			}
-		if (isDoubleMu)
-			{
-			weights_in_mumu_channel[multisel] += weight;
-			increment(string("weightflow_mumu_") + to_string(multisel), weight);
-			}
-		if ( !(isSingleMu || isSingleE || isDoubleMu || isDoubleE || isEMu))
-			{
-			weights_in_no_channel[multisel] += weight ;
-			increment(string("weightflow_nochan_") + to_string(multisel), weight);
-			}
-		//weights_in_selections_int[multisel] += 1;
-		//break;
-
-
-		// TODO: properly count multichannel?
-		if (isSingleE && isSingleMu) nMultiChannel++;
-
-		if(debug){
-			cout << "channel is defined, running the event selection" << endl;
-			}
-
-		// Dilepton full analysis
-		// There is no dilepton analysis now
-		//if( isDoubleE || isEMu || isDoubleMu){ continue; }
 
 		// ------------------------------------------ Single lepton full analysis
+		if (isSingleMu || isSingleE)
+			{
+			// in-channel selection/multiselect for leptons
 
-		if(isSingleMu || isSingleE){
-			// if we pass one of channel selections -- save event
-			// TODO: reformat this, don't recheck the same booleans
 			singlelep_ttbar_preselectedevents->Fill(1);
 
-			// Event selection booleans
-			/* Use the same selections as in multiselect
-			bool passJetSelection(selSingleLepJets.size()>1); // 2 jets
-			bool passMetSelection(met.pt()>40.); // MET > 40
-			// all METs:
-			bool passMetSelection(met_pt_values[0]>40. || met_pt_values[1]>40. || met_pt_values[2]>40. || met_pt_values[3]>40. || met_pt_values[4]>40. || met_pt_values[5]>40. || met_pt_values[6]>40.);
-			bool passBtagsSelection(selBJets.size()>0); // 1 b jet
-			bool passTauSelection(selTaus.size()==1); // only 1 tau
-			bool passOS(selTaus.size()>0 ? selLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0); // Oposite sign
-			*/
 
-			/* TODO: re-enable these steps and other control points
-			if (passJetSelection)
+			// bool passJetRawSelection(selSingleLepJets.size()>1); // 2 jets
+			//bool passJetSelection(selSingleLepJets.size()>1); // 2 jets // 2^4
+			//bool passJetSelection(selJets.size()>1); // 2 jets // 2^4
+			bool passJetSelection(n_jets>1); // 2 jets // 2^4
+			// bool passMetSelection(met.pt()>40.); // MET > 40 // 2^3
+			bool passMetSelection(n_met.pt()>40.); // MET > 40 // 2^3
+			//bool passBtagsSelection(selSingleLepBJets.size()>0); // 1 b jet // 2^2
+			//bool passBtagsSelection(selBJets.size()>0); // 1 b jet // 2^2
+			bool passBtagsSelection(n_bjets>0); // 1 b jet // 2^2
+			bool passTauSelection(n_taus==1); // only 1 tau // 2^1
+			bool passOS( n_taus>0 && n_leptons>0 ? selLeptons[0].pdgId() * selTausNoLep[0].pdgId() < 0 : 0); // Oposite sign // 2^0
+
+
+			// MULTISELECT
+			// multiselection
+			// TODO: multisel should be done per-channel, now it is one (el/mu) for all 
+			unsigned int multisel = 0;
+			// multisel += (isSingleMu ? 1 : 0); //! should be 1
+			// multisel += (isSingleE ? 2 : 0);
+			multisel += (passJetSelection ? 1 : 0);
+			multisel += (passMetSelection ? 2 : 0);
+			multisel += (passBtagsSelection ? 4 : 0);
+			multisel += (passTauSelection ? 8 : 0);
+			multisel += (passOS ? 16 : 0);
+
+			if (passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
+				increment( string("weightflow_weight_passed_singlelep_selection"), weight );
+
+			if (isSingleMu)
 				{
-				if(isSingleMu) singlelep_ttbar_selected2_mu_events->Fill(1);
-				else if (isSingleE) singlelep_ttbar_selected2_el_events->Fill(1);
-				}
-			*/
+				fill_n( string("n_jets_singlemu"), n_jets, weight);
+				fill_n( string("n_bjets_singlemu"), n_bjets, weight);
+				fill_n( string("n_taus_singlemu"), n_taus, weight);
 
-			// common-selection
+				weights_in_mu_channel[multisel] += weight;
+				increment(string("weightflow_mu_") + to_string(multisel), weight);
+				fill_pt_e( string("top1pt_muons_pt_individual"), selLeptons[0].pt(), weight);
+
+				if (passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
+					increment( string("weightflow_weight_passed_singleel_selection"), weight );
+				}
+
+			if (isSingleE)
+				{
+				fill_n( string("n_jets_singleel"), n_jets, weight);
+				fill_n( string("n_bjets_singleel"), n_bjets, weight);
+				fill_n( string("n_taus_singleel"), n_taus, weight);
+
+				weights_in_el_channel[multisel] += weight;
+				increment(string("weightflow_e_") + to_string(multisel), weight);
+				fill_pt_e( string("top1pt_electrons_pt_individual"), selLeptons[0].pt(), weight);
+
+				if (passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
+					increment( string("weightflow_weight_passed_singlemu_selection"), weight );
+				}
+
 			if(passJetSelection && passBtagsSelection) // 2 jets, 1 b jet, 1 isolated lepton
 				{
 				/* now these histograms are dissabled -- use counters to substitute them
@@ -2911,32 +2775,8 @@ for(size_t f=0; f<urls.size();++f)
 				*/
 				crossel_sum_weights_raw += rawWeight;
 				crossel_sum_weights += weight;
-				/*
-				fprintf(csv_out, "crossel:%d,%d,%g,%g,%d,", num_inters, nGoodPV, rawWeight, weight, isSingleE);
-				pb.SetPxPyPzE( selBJets[0].px(), selBJets[0].py(), selBJets[0].pz(), selBJets[0].pt()); // 
-				pbb.SetPxPyPzE( selJets[1].px(), selJets[1].py(), selJets[1].pz(), selJets[1].pt()); // or take another B???
-				pl.SetPxPyPzE( selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
-				plb.SetPxPyPzE( selLeptons[1].px(), selLeptons[1].py(), selLeptons[1].pz(), selLeptons[1].pt());
-				// no kino1 for now
-				//prest = pb + pbb + pl + plb;
-				//fprintf(csv_out, "kino1:\n");
-				//fprintf(csv_out, "%g, %g, %g, %g,", pl.E(), plb.E(), pb.E(), pbb.E());
-				//fprintf(csv_out, "%g, %g, %g,", (prest.X()*prest.X() + prest.Y()*prest.Y() + prest.Z()*prest.Z()),
-						//(prest.X()*prest.X() + prest.Y()*prest.Y()), met.pt());
-				//fprintf(csv_out, "%g, %g, %g,\n", prest*(pl+pb), pl*pb, plb*pbb);
-				//fprintf(csv_out, "%g, %g, %g\n", (pl+pb).Angle(prest.Vect()), pl.Angle(pb.Vect()), plb.Angle(pbb.Vect()));
-				//fprintf(csv_out, "kino2:\n");
-				fprintf(csv_out, "%g,%g,%g,%g,", pl.X(), pl.Y(), pl.Z(), pl.E());
-				//fprintf(csv_out, "%g,%g,%g,%g,", plb.X(), plb.Y(), plb.Z(), plb.E());
-				fprintf(csv_out, "%g,%g,%g,%g,", pb.X(), pb.Y(), pb.Z(), pb.E());
-				//fprintf(csv_out, "%g,%g,%g,%g\n", pbb.X(), pbb.Y(), pbb.Z(), pbb.E());
-				fprintf(csv_out, "%g,%g,%g,%g,", selJets[0].px(), selJets[0].py(), selJets[0].pz(), selJets[0].pt() );
-				fprintf(csv_out, "%g,%g,%g,%g\n", selJets[1].px(), selJets[1].py(), selJets[1].pz(), selJets[1].pt() );
-				*/
 				}
 
-
-			// oursel: 2 jets, 1 b, 1 iso lepton, 1 tau
 			if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS )
 				{
 				// TODO: try saving the whole event
@@ -2977,37 +2817,90 @@ for(size_t f=0; f<urls.size();++f)
 				fprintf(csv_out, "%g,%g,%g,%g\n", selJetsNoLepNoTau[1].px(), selJetsNoLepNoTau[1].py(), selJetsNoLepNoTau[1].pz(), selJetsNoLepNoTau[1].pt() );
 
 				}
+			}
 
-			// Mara's selection booleans
-			// bool passMaraJetSelection(selJetsNoLepNoTau.size()>3); // 4 jets
-			bool passMaraJetSelection( selJetsNoLep.size()>3 ); // 4 jets
-			bool passMaraBtagsSelection( selBJets.size()>1 ); // 2 b-tag
-			// NOTICE: these selBJets are computed from tau-cleaned jets -- there should be no tau-cleaning in Mara's selection
-			bool passMaraLeptonSelection( selLeptons.size()>0 ); // 1 lepton
+		// inline control functions usage:
+		//   fill_pt_e( "control_point_name", value, weight)
+		// FIXME: do NEWMULTISELECT somehow well
+		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
+		//   increment( "control_point_name", weight )
 
-			if(passMaraJetSelection && passMaraBtagsSelection && passMaraLeptonSelection)
+
+		// --------------------------------------------- Dilepton full analysis
+		if (isDoubleE || isDoubleMu || isEMu)
+			{
+			int dilId (1);
+			// slepId(0);
+			LorentzVector dileptonSystem (0, 0, 0, 0);
+			if(selLeptons.size()>=2)
 				{
-				/* now these histograms are disabled -- counters to substitute them
-				if(isSingleMu) singlelep_ttbar_maraselected_mu_events->Fill(1);
-				else if (isSingleE) singlelep_ttbar_maraselected_el_events->Fill(1);
-				*/
-				marasel_sum_weights_raw += rawWeight;
-				marasel_sum_weights += weight;
-				fprintf(csv_out, "marasel:%d,%d,%g,%g,%d,", num_inters, nGoodPV, rawWeight, weight, isSingleE);
-				// TODO: print out separately b-jets and all other jets?
-				pb.SetPxPyPzE(  selBJets[0].px(), selBJets[0].py(), selBJets[0].pz(), selBJets[0].pt()); // 
-				pbb.SetPxPyPzE( selBJets[1].px(), selBJets[1].py(), selBJets[1].pz(), selBJets[1].pt());
-				pl.SetPxPyPzE(  selLeptons[0].px(), selLeptons[0].py(), selLeptons[0].pz(), selLeptons[0].pt());
-				fprintf(csv_out, "%g,%g,%g,%g,", pl.X(), pl.Y(), pl.Z(), pl.E());
-				fprintf(csv_out, "%g,%g,%g,%g,", pb.X(), pb.Y(), pb.Z(), pb.E());
-				fprintf(csv_out, "%g,%g,%g,%g,", pbb.X(), pbb.Y(), pbb.Z(), pbb.E());
-				fprintf(csv_out, "%g,%g,%g,%g,", selJetsNoLep[0].px(), selJetsNoLep[0].py(), selJetsNoLep[0].pz(), selJetsNoLep[0].pt() );
-				fprintf(csv_out, "%g,%g,%g,%g,", selJetsNoLep[1].px(), selJetsNoLep[1].py(), selJetsNoLep[1].pz(), selJetsNoLep[1].pt() );
-				fprintf(csv_out, "%g,%g,%g,%g,", selJetsNoLep[2].px(), selJetsNoLep[2].py(), selJetsNoLep[2].pz(), selJetsNoLep[2].pt() );
-				fprintf(csv_out, "%g,%g,%g,%g\n", selJetsNoLep[3].px(), selJetsNoLep[3].py(), selJetsNoLep[3].pz(), selJetsNoLep[3].pt() );
+				for (size_t ilep = 0; ilep < 2; ilep++)
+					{
+					dilId *= selLeptons[ilep].pdgId();
+					int id(abs (selLeptons[ilep].pdgId()));
+					dileptonSystem += selLeptons[ilep].p4();
+					}
 				}
 
-			} // End single lepton full analysis
+			// Event selection booleans
+			bool passMllVeto(isEMu ? dileptonSystem.mass()>12. : (fabs(dileptonSystem.mass()-91.)>15 && dileptonSystem.mass()>12. ) );
+			// bool passJetSelection(selJets.size()>1);
+			bool passJetSelection(n_jets>1);
+			bool passMetSelection(met.pt()>40.);
+			bool passOS(selLeptons[0].pdgId() * selLeptons[1].pdgId() < 0 );
+			// bool passBtagsSelection(selBJets.size()>1); // FIXME: differentiate chhiggs selection from cross-section selection
+			bool passBtagsSelection(n_bjets>0);
+
+			// MULTISELECT
+			unsigned int multisel = 0;
+			multisel += (passMllVeto ? 1 : 0);
+			multisel += (passJetSelection ? 2 : 0);
+			multisel += (passMetSelection ? 4 : 0);
+			multisel += (passOS ? 8 : 0);
+			multisel += (passBtagsSelection ? 16 : 0);
+
+			if (passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
+				increment( string("weightflow_weight_passed_doublelep_selection"), weight );
+		
+			if (isDoubleE)
+				{
+				increment(string("weightflow_ee_") + to_string(multisel), weight);
+
+				if( passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
+					increment( string("weightflow_weight_passed_doubleel_selection"), weight );
+				}
+
+			if (isDoubleMu)
+				{
+				increment(string("weightflow_mumu_") + to_string(multisel), weight);
+
+				if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
+					increment( string("weightflow_weight_passed_doublemu_selection"), weight );
+				}
+
+			if (isEMu)
+				{
+				increment(string("weightflow_emu_") + to_string(multisel), weight);
+				if (passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
+					increment( string("weightflow_weight_passed_doubleemu_selection"), weight );
+				}
+			}
+
+		/* debugging
+		if (multisel > MULTISEL_SIZE)
+			{
+			printf("in event %d too large multisel: %d", iev, multisel);
+			break;
+			}
+		*/
+
+		// TODO: properly count multichannel?
+		if (isSingleE && isSingleMu) nMultiChannel++;
+
+		if(debug){
+			cout << "channel is defined, running the event selection" << endl;
+			}
+
 
 		if(debug && iev == 10){
 			cout << "Finished processing the " << iev << " event in the first file, exiting" << endl;
