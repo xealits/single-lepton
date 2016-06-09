@@ -2672,7 +2672,7 @@ for(size_t f=0; f<urls.size();++f)
 
 		// and the sum of weight before splitting into channels:
 		weight_before_channel_select += weight;
-		increment(string("weight_before_channel_select"), weight)
+		increment(string("weight_before_channel_select"), weight);
 
 		//
 		// -------------------------------------------------- ASSIGN CHANNEL
