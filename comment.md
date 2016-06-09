@@ -223,42 +223,33 @@ The steps of Pietro's code with changes.
       (Isolation twiki requested)
 
 * select the taus -> **0 leave as is**
-  + tau pt > 20, eta < 2.3
-  + overlap with selLeptons $\delta R > 0.4 $
   + 4 tau ID discriminators (**check if up to date**) from https://twiki.cern.ch/twiki/bin/viewauth/CMS/TauIDRecommendation13TeV:
-    decayModeFindingNewDMs > 0.5
-    (switching to decayModeFinding)
-    (could use decayModeFindingOldDMs)
+    decayModeFinding > 0.5
     byMediumCombinedIsolationDeltaBetaCorr3Hits > 0.5
     againstMuonTight3 > 0.5
-    againstElectronMediumMVA5 > 0.5
-    (switching to againstElectronMediumMVA6)
+    againstElectronMediumMVA6 > 0.5
   + pixel hits cut (*"should be available out of the mox in new MINIAOD"* --- ?):
     basically now we check if tau.signalChargedHadrCands
     have at least 1 element with numberOfPixelHits > 0
-* JET/MET ANALYSIS -> **0 leave as is** -> update b-jets working point to 0.8
-  + MET 0 is used
-  + it only selects jets, some of them -- as b-tagged
-  + only 1 parameter is obtained from MET
-  + updateJEC
-  + newMet = getMETvariations
-  + selecting jets:
-      - pt, eta, *mctruth (?), cross-clean with l/gamma dR, jet ID
-        our selection:
-        we do a loose selection on kinematics,
-        then cross-clean with leptons and **taus**,
-        and do the tighter final kinematics, ID and cleanup selection,
-        which is the same as Mara's except 0.89 b-tag working point and **tau** cleanup
-        pt > 30, eta < 2.5, dR > 0.4 with leptons and taus,
-        jet ID is loose according to Particle Flow cuts from
-        https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
-      - Mara's analysis:
-        P_T > 30, eta < 2.4, lepton-jet dR > 0.4,
-        b-tagging --- CSVv2 > 0.8 (medium WP) (pfCombinedInclusiveSecondaryVertexV2BJetTags --- ?),
-        jet ID is loose
+  + tau pt > 20, eta < 2.3
+  + overlap with selLeptons $\delta R > 0.4 $
+* jets
+  + corrections
+    - uncorrect with `jet.correctedP4("Uncorrected")`
+    - apply `FactorizedJetCorrector` for JES (jet energy scale) corrections
+    - smear JER (jet energy resolution) in MC
+  + individual jet selection
+    - IDs from https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
+    loose jet is required
+    - pt > 30, eta < 2.5
   + dphijmet = fabs( deltaPhi(curr_jet, met) ) -- and save the min
-  + b-tagging via hasCSVtag:
-      "pfCombinedInclusiveSecondaryVertexV2BJetTags" > 0.8
+  + cross-clean of leptons and taus with deltaR > 0.4
+* b-jets via "pfCombinedInclusiveSecondaryVertexV2BJetTags" > 0.89 (medium working point)
+
+* MET
+  + MET 0 from slimmedMETs is used
+  + (disabled new procedure due to large mismatch) propagate lepton corrections to MET
+  + propagate jet and lepton corrections to MET with getMETvariations
 * ASSIGN CHANNEL
 * Single lepton full analysis
   + *Clean jet collection from selected taus* moved it up to common selection
