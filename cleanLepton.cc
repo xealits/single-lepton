@@ -1078,6 +1078,12 @@ for(size_t f=0; f<urls.size();++f)
 	for (ev.toBegin(); !ev.atEnd(); ++ev)
 		{
 
+		if(debug && iev == 10){
+			cout << "Finished processing the " << iev << " event in the file, exiting" << endl;
+			//return 0;
+			break;
+			}
+
 		// inline control functions usage:
 		//   fill_pt_e( "control_point_name", value, weight)
 		//   fill_eta( "control_point_name", value, weight )   <-- different TH1F range and binning
@@ -2901,12 +2907,6 @@ for(size_t f=0; f<urls.size();++f)
 			cout << "channel is defined, running the event selection" << endl;
 			}
 
-
-		if(debug && iev == 10){
-			cout << "Finished processing the " << iev << " event in the first file, exiting" << endl;
-			//return 0;
-			break;
-			}
 
 		} // End single file event loop
 
