@@ -2161,7 +2161,8 @@ for(size_t f=0; f<urls.size();++f)
 			if (tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")<0.5) continue; // See whether to us the new byMediumPileupWeightedIsolation3Hits that is available only for dynamic strip reconstruction (default in CMSSW_7_4_14)
 			if (tau.tauID ("againstMuonTight3")                          <0.5) continue; // Medium working point not usable. Available values: Loose, Tight
 			//if (tau.tauID ("againstElectronMediumMVA5")                  <0.5) continue; // Tight working point not usable. Avaiable values: VLoose, Loose, Medium
-			if (tau.tauID ("againstElectronMediumMVA6")                  <0.5) continue;
+			// if (tau.tauID ("againstElectronMediumMVA6")                  <0.5) continue;
+			if (tau.tauID ("againstElectronTightMVA6")                  <0.5) continue;
 			
 			fill_pt_e( string("all_taus_4discrs_pt"), tau.pt(), weight);
 
