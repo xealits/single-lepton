@@ -1078,7 +1078,7 @@ for(size_t f=0; f<urls.size();++f)
 	for (ev.toBegin(); !ev.atEnd(); ++ev)
 		{
 
-		if(debug && iev == 10){
+		if(debug && iev == 2){
 			cout << "Finished processing the " << iev << " event in the file, exiting" << endl;
 			//return 0;
 			break;
@@ -1426,14 +1426,45 @@ for(size_t f=0; f<urls.size();++f)
 		fwlite::Handle<reco::GenParticleCollection> genHandle;
 		genHandle.getByLabel(ev, "prunedGenParticles");
 		if(genHandle.isValid() ) gen = *genHandle;
-		
+
+
+		// -------------------------- trying to extract what decay was generated here
+		// iEvent.getByLabel("genParticles", genParticles);
+		// for(size_t i = 0; i < genParticles->size(); ++ i) {
+		// }
+		if (debug) {
+			for(size_t i = 0; i < gen.size(); ++ i) {
+				const GenParticle & p = gen[i];
+				int id = p.pdgId();
+				int st = p.status();
+				int n = p.numberOfDaughters();
+				cout << i << ": " << id << " " << st;
+				if ( p.numberOfMothers() != 0) {
+					const Candidate * mom = p.mother();
+					cout << " <- " << mom->pdgId() << " " << mom->status();
+				}
+				cout << "\n";
+				if (n>0) {
+					cout << "\t|-> " ;
+					for (int j = 0; j < n; ++j) {
+						const Candidate * d = p.daughter( j );
+						cout << d->pdgId() << " " << d->status() << "; " ;
+					}
+					cout << "\n";
+				}
+			}
+		}
+
+
+
 		// FIXME: Save time and don't load the rest of the objects when selecting by mctruthmode :)
-		bool hasTop(false);
-		int
-		ngenLeptonsStatus3(0),
-		ngenLeptonsNonTauSonsStatus3(0),
-		ngenTausStatus3(0),
-		ngenQuarksStatus3(0);
+		//bool hasTop(false);
+		//int
+		//ngenLeptonsStatus3(0),
+		//ngenLeptonsNonTauSonsStatus3(0),
+		//ngenTausStatus3(0),
+		//ngenQuarksStatus3(0);
+
 		//double tPt(0.), tbarPt(0.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop
 		//float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
 		// TODO: what is this??
