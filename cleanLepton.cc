@@ -390,6 +390,51 @@ bool hasTauAsMother(const reco::GenParticle  p)
 	}
 
 
+/*
+ * string find_W_decay(const reco::Candidate * W) {
+ *
+ * returns a substring {el, mu, tau, q} identifing which decay happend
+ * or returns "" string if something weird happend
+ *
+ * Usage:
+ * const reco::Candidate * W = p.daughter( W_num );
+ * mc_decay += find_W_decay(W);
+*/
+string find_W_decay(const reco::Candidate * W) {
+	const reco::Candidate * p = W; // eeh.. how C passes const arguments? are they local to function
+	int d0_id, d1_id; // ids of decay daughters
+	//bool found_decay=false;
+	// follow W, whatever happens to it (who knows! defensive programming here)
+	// until leptonic/quarkonic decay is found
+	// 
+	// assume there can be only W->W transitions inbetween (TODO: to check actually)
+	//while (!found_decay) {
+	while (true) {
+		int n = p->numberOfDaughters();
+		switch(n) {
+		case 0: return string("");
+		case 1: // it should be another W->W transition
+			p = p->daughter(0);
+			break; // there should not be no infinite loop here!
+		case 2: // so, it should be the decay
+			//found_decay = true;
+			d0_id = fabs(p->daughter(0)->pdgId());
+			d1_id = fabs(p->daughter(1)->pdgId());
+			if (d0_id == 15 || d1_id == 15 ) return string("tau");
+			if (d0_id == 11 || d1_id == 11 ) return string("el");
+			if (d0_id == 13 || d1_id == 13 ) return string("mu");
+			return string("q"); // FiXME: quite dangerous control-flow!
+		default: // and this is just crazy
+			return string("");
+		}
+	}
+}
+
+// int n = p.numberOfDaughters();
+// if (n == 2) { // it is a decay vertes of t to something
+// int d0_id = p.daughter(0)->pdgId();
+// int d1_id = p.daughter(1)->pdgId();
+
 
 
 
@@ -664,6 +709,9 @@ int mctruthmode      = runProcess.getParameter<int>   ("mctruthmode");
 TString dtag         = runProcess.getParameter<std::string>("dtag");
 string dtag_s        = runProcess.getParameter<std::string>("dtag");
 string job_num       = runProcess.getParameter<std::string>("job_num");
+string mc_decay(""); // Some MC datasets are inclusive, but analysis needs info on separate channels from them
+// thus the events are traversed and the channel is found
+// currently it is done only for TTbar channel (isTTbarMC)
 
 JobDef job_def = {string(isMC ? "MC": "Data"), dtag_s, job_num};
 
@@ -1383,9 +1431,11 @@ for(size_t f=0; f<urls.size();++f)
 		// SingleElectron-dataset jobs skip them
 
 		// if data and SingleElectron dataset and both triggers -- skip event
-		if (!isMC && isSingleElectronDataset && eTrigger && muTrigger) continue;
+		if (!debug) {
+			if (!isMC && isSingleElectronDataset && eTrigger && muTrigger) continue;
 		
-		if (!(eTrigger || muTrigger)) continue;   //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
+			if (!(eTrigger || muTrigger)) continue;   //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
+		}
 
 		sum_weights_passtrig_raw += rawWeight;
 		sum_weights_passtrig += weight;
@@ -1432,28 +1482,97 @@ for(size_t f=0; f<urls.size();++f)
 		// iEvent.getByLabel("genParticles", genParticles);
 		// for(size_t i = 0; i < genParticles->size(); ++ i) {
 		// }
+		// listings of particles' mother-daughters  show
+		// W status 44 can turn into the same W status 44 several times
+		// W status 62 decays into leton-neutrino
+		//
+		// otozh
+		// there are numerous ways to do it:
+		//  - find motherless particles (protons in our case) and move from them
+		//  - just check out two first particles in the collection -- it seems these are the mothers always
+		//  - find t-quarks among particles and transverse their branches,
+		//    hoping that t and tbar cannot happen in not a ttbar pair
+		//
+		// let's do the naive 3 version
+		// targeting:
+		//   find decay vertex t-W
+		//   follow along W and find decay vertex to leptons or quarks
+		// -- thus recursion is needed
+
+		// traversing separate t quarks
+		//if (debug) {
+		if (isTTbarMC) {
+			//string mc_decay(""); // move to all job parameters
+			// every found t-quark decay branch will be added as a substring to this string (el, mu, tau, q)
+			// TODO: what to do if there are > t-decays than 1 ttbar pair in an event? (naive traverse approach also doesn't work?)
+			for(size_t i = 0; i < gen.size(); ++ i) {
+				const reco::GenParticle & p = gen[i];
+				int id = p.pdgId();
+				int st = p.status(); // TODO: check what is status in decat simulation (pythia for our TTbar set)
+
+				if (id == 6) { // if it is a t quark
+					// looking for W+ and its' leptonic decay
+					// without checks, just checking 2 daughters
+					int n = p.numberOfDaughters();
+					if (n == 2) { // it is a decay vertes of t to something
+						int d0_id = p.daughter(0)->pdgId();
+						int d1_id = p.daughter(1)->pdgId();
+						int W_num = d0_id == 24 ? 0 : (d1_id == 24 ? 1 : -1) ;
+						if (W_num < 0) continue;
+						const reco::Candidate * W = p.daughter( W_num );
+						mc_decay += find_W_decay(W);
+					}
+				}
+
+				if (id == -6) { // if it is a tbar quark
+					// looking for W- and its' leptonic decay
+					int n = p.numberOfDaughters();
+					if (n == 2) { // it is a decay vertes of t to something
+						int d0_id = p.daughter(0)->pdgId();
+						int d1_id = p.daughter(1)->pdgId();
+						int W_num = d0_id == -24 ? 0 : (d1_id == -24 ? 1 : -1) ;
+						if (W_num < 0) continue;
+						const reco::Candidate * W = p.daughter( W_num );
+						mc_decay += find_W_decay(W);
+						mc_decay += string("bar");
+					}
+				}
+			}
+			// so, mc_decay will be populated with strings matching t decays
+			// hopefully, in TTbar sample only ttbar decays are present and it is not ambigous
+		}
+
+		if (debug) {
+			cout << "MC suffix " << mc_decay << " is found\n";
+		}
+
+
+		/* List of mother-daughters for all particles
+		 * TODO: make it into a separate function
+
 		if (debug) {
 			for(size_t i = 0; i < gen.size(); ++ i) {
-				const GenParticle & p = gen[i];
+				const reco::GenParticle & p = gen[i];
 				int id = p.pdgId();
 				int st = p.status();
 				int n = p.numberOfDaughters();
 				cout << i << ": " << id << " " << st;
-				if ( p.numberOfMothers() != 0) {
-					const Candidate * mom = p.mother();
+				if (p.numberOfMothers() != 0) {
+					const reco::Candidate * mom = p.mother();
 					cout << " <- " << mom->pdgId() << " " << mom->status();
 				}
 				cout << "\n";
 				if (n>0) {
 					cout << "\t|-> " ;
 					for (int j = 0; j < n; ++j) {
-						const Candidate * d = p.daughter( j );
+						const reco::Candidate * d = p.daughter( j );
 						cout << d->pdgId() << " " << d->status() << "; " ;
 					}
 					cout << "\n";
 				}
 			}
 		}
+		*/
 
 
 
