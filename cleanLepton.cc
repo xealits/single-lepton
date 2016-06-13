@@ -1125,8 +1125,9 @@ for(size_t f=0; f<urls.size();++f)
 
 	for (ev.toBegin(); !ev.atEnd(); ++ev)
 		{
+		mc_decay = string("");
 
-		if(debug && iev == 2){
+		if(debug && iev == 10){
 			cout << "Finished processing the " << iev << " event in the file, exiting" << endl;
 			//return 0;
 			break;
@@ -1547,8 +1548,8 @@ for(size_t f=0; f<urls.size();++f)
 		}
 
 
-		/* List of mother-daughters for all particles
-		 * TODO: make it into a separate function
+		//* List of mother-daughters for all particles
+		//* TODO: make it into a separate function
 
 		if (debug) {
 			for(size_t i = 0; i < gen.size(); ++ i) {
@@ -1557,9 +1558,10 @@ for(size_t f=0; f<urls.size();++f)
 				int st = p.status();
 				int n = p.numberOfDaughters();
 				cout << i << ": " << id << " " << st;
-				if (p.numberOfMothers() != 0) {
-					const reco::Candidate * mom = p.mother();
-					cout << " <- " << mom->pdgId() << " " << mom->status();
+				if (p.numberOfMothers() != 0) cout << " <- " ;
+				for (int j = 0 ; j < p.numberOfMothers(); ++j) {
+					const reco::Candidate * mom = p.mother(j);
+					cout << " " << mom->pdgId() << " " << mom->status() << ";";
 				}
 				cout << "\n";
 				if (n>0) {
@@ -1572,7 +1574,6 @@ for(size_t f=0; f<urls.size();++f)
 				}
 			}
 		}
-		*/
 
 
 
