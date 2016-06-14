@@ -946,6 +946,8 @@ beff = 0.559;
 // --------------------------------------- pileup weighting
 // pile-up is done directly with direct_pileup_reweight
 std::vector<double> direct_pileup_reweight = runProcess.getParameter < std::vector < double >>("pileup_reweight_direct");
+std::vector<double> direct_pileup_reweight_up = runProcess.getParameter < std::vector < double >>("pileup_reweight_direct_up");
+std::vector<double> direct_pileup_reweight_down = runProcess.getParameter < std::vector < double >>("pileup_reweight_direct_down");
 	
 gROOT->cd ();                 //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
 
@@ -1062,7 +1064,7 @@ fprintf(csv_out, "\n");
 // EVENTOUT
 
 fprintf(csv_out, "crossel:pu_num_inters,nGoodPV, rawWeight, weight, isElectron, l_px,l_py,l_pz,l_e, b1_px,b1_py,b1_pz,b1_e, j1_px,j1_py,j1_pz,j1_e,j2_px,j2_py,j2_pz,j2_e\n");
-fprintf(csv_out, "oursel: iev, pu_num_inters,nGoodPV, rawWeight, weight, isElectron,");
+fprintf(csv_out, "oursel: iev, pu_num_inters,nGoodPV, rawWeight, weight, weight_up, weight_down, isElectron,");
 fprintf(csv_out, "met_0, met_1, met_2, met_3, met_4, met_5, met_6,");
 fprintf(csv_out, "l_vz, l_px,l_py,l_pz,l_e,");
 fprintf(csv_out, "tau_vz, tau_px,tau_py,tau_pz,tau_e,");
@@ -1293,15 +1295,17 @@ for(size_t f=0; f<urls.size();++f)
 
 		// ---------------------------------- pileup weight
 		double puWeight         (1.0);
+		double puWeight_up      (1.0);
+		double puWeight_down    (1.0);
 
 		// rawWeight is everything but Pile-Up
 		double rawWeight        (1.0);
 
 		// final weight of the event
 		double weight           (1.0);
+		double weight_up        (1.0);
+		double weight_down      (1.0);
 		// and systematic corrections? TODO: check how TotalWeight_plus is used?
-		double TotalWeight_plus (1.0);
-		double TotalWeight_minus(1.0);
 
 
 		// ---------------------------------- these are weird NLO -1 weights
@@ -1439,15 +1443,19 @@ for(size_t f=0; f<urls.size();++f)
 			//num_inters = puInfoH->at(0).getTrueNumInteractions(); // in 76 it seems to not work, returns 0 always
 			// Using Pietro's PU number vertices:
 			num_inters = ngenITpu;
-			if (num_inters<100) {puWeight = direct_pileup_reweight[num_inters];}
-			else {puWeight = 1.5e-16;}
-			weight *= puWeight;
+			if (num_inters<100) {
+				puWeight = direct_pileup_reweight[num_inters];
+				puWeight_up = direct_pileup_reweight_up[num_inters];
+				puWeight_down = direct_pileup_reweight_down[num_inters];
+			}
+			else {//puWeight = 0; puWeight_up = 0; puWeight_down = 0;
+				continue; // just move on
+			}
 
 			// FIXME: testing raw vtx.size()
 			num_inters_raw = vtx.size();
-			if (num_inters_raw<100) {puWeight = direct_pileup_reweight[num_inters_raw];}
-			else {puWeight = 1.5e-16;}
-			weight_pu_test *= puWeight;
+			if (num_inters_raw<100) {weight_pu_test *= direct_pileup_reweight[num_inters_raw];}
+			else {weight_pu_test *= 1.5e-16;}
 			// TODO: implement error margins of pile-up
 			}
 		else
@@ -1459,6 +1467,10 @@ for(size_t f=0; f<urls.size();++f)
 			// let's try using the size of primary vertex collection (before selecting the good vertices)
 			num_inters = vtx.size();
 			}
+
+		weight *= puWeight;
+		weight_up *= puWeight_up;
+		weight_down *= puWeight_down;
 
 		// --------------- here the weighting/shaping of MC should be done
 		// --------------------- save distributions of weights
@@ -1472,15 +1484,21 @@ for(size_t f=0; f<urls.size();++f)
 
 		increment( string("weightflow_weighted_raw_miniaod_events"), rawWeight );
 		increment( string("weightflow_weighted_miniaod_events"), weight );
+		increment( string("weightflow_weighted_up_miniaod_events"), weight_up );
+		increment( string("weightflow_weighted_down_miniaod_events"), weight_down );
 
 		fill_pu( string("pileup_rawweight_perrawvtxsize"), vtx.size(), rawWeight);
 		fill_pu( string("pileup_weight_perrawvtxsize"), vtx.size(), weight_pu_test);
 
-		fill_pu( string("pileup_weight_pergoodpv"), nGoodPV, weight);
 		fill_pu( string("pileup_rawweight_pergoodpv"), nGoodPV, rawWeight);
+		fill_pu( string("pileup_weight_pergoodpv"), nGoodPV, weight);
+		fill_pu( string("pileup_weight_up_pergoodpv"), nGoodPV, weight_up);
+		fill_pu( string("pileup_weight_down_pergoodpv"), nGoodPV, weight_down);
 
-		fill_pu( string("pileup_weight_pernuminters"), num_inters, weight);
 		fill_pu( string("pileup_rawweight_pernuminters"), num_inters, rawWeight);
+		fill_pu( string("pileup_weight_pernuminters"), num_inters, weight);
+		fill_pu( string("pileup_weight_up_pernuminters"), num_inters, weight_up);
+		fill_pu( string("pileup_weight_down_pernuminters"), num_inters, weight_down);
 
 		//num_inters = 1;
 		if (num_inters>99) num_inters = 99;
@@ -1532,6 +1550,8 @@ for(size_t f=0; f<urls.size();++f)
 		//   increment( "control_point_name", weight )
 
 		increment( string("weightflow_weight_passed_lumi"), weight ); // should not matter
+		increment( string("weightflow_weight_up_passed_lumi"), weight_up ); // should not matter
+		increment( string("weightflow_weight_down_passed_lumi"), weight_down ); // should not matter
 
 
 		// --------------------------------------------- apply trigger
@@ -1580,6 +1600,8 @@ for(size_t f=0; f<urls.size();++f)
 		//   increment( "control_point_name", weight )
 
 		increment( string("weightflow_weight_passed_trig"), weight ); // should not matter
+		increment( string("weightflow_weight_up_passed_trig"), weight_up ); // should not matter
+		increment( string("weightflow_weight_down_passed_trig"), weight_down ); // should not matter
 
 		if(debug)
 			{
@@ -2862,6 +2884,8 @@ for(size_t f=0; f<urls.size();++f)
 		// and the sum of weight before splitting into channels:
 		weight_before_channel_select += weight;
 		increment(string("weight_before_channel_select"), weight);
+		increment(string("weight_up_before_channel_select"), weight_up);
+		increment(string("weight_down_before_channel_select"), weight_down);
 
 		//
 		// -------------------------------------------------- ASSIGN CHANNEL
@@ -2925,8 +2949,11 @@ for(size_t f=0; f<urls.size();++f)
 			multisel += (passTauSelection ? 8 : 0);
 			multisel += (passOS ? 16 : 0);
 
-			if (passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
+			if (passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS) {
 				increment( string("weightflow_weight_passed_singlelep_selection"), weight );
+				increment( string("weightflow_weight_up_passed_singlelep_selection"), weight_up );
+				increment( string("weightflow_weight_down_passed_singlelep_selection"), weight_down );
+			}
 
 			if (isSingleMu)
 				{
@@ -2936,10 +2963,14 @@ for(size_t f=0; f<urls.size();++f)
 
 				weights_in_mu_channel[multisel] += weight;
 				increment(string("weightflow_mu_") + to_string(multisel), weight);
+				increment(string("weightflow_up_mu_") + to_string(multisel), weight_up);
+				increment(string("weightflow_down_mu_") + to_string(multisel), weight_down);
 				fill_pt_e( string("top1pt_muons_pt_individual"), selLeptons[0].pt(), weight);
+				fill_pt_e( string("top1pt_muons_pt_individual_up"), selLeptons[0].pt(), weight_up);
+				fill_pt_e( string("top1pt_muons_pt_individual_down"), selLeptons[0].pt(), weight_down);
 
 				if (passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
-					increment( string("weightflow_weight_passed_singleel_selection"), weight );
+					increment( string("weightflow_weight_passed_singlemu_selection"), weight );
 				}
 
 			if (isSingleE)
@@ -2950,10 +2981,14 @@ for(size_t f=0; f<urls.size();++f)
 
 				weights_in_el_channel[multisel] += weight;
 				increment(string("weightflow_e_") + to_string(multisel), weight);
+				increment(string("weightflow_up_e_") + to_string(multisel), weight_up);
+				increment(string("weightflow_down_e_") + to_string(multisel), weight_down);
 				fill_pt_e( string("top1pt_electrons_pt_individual"), selLeptons[0].pt(), weight);
+				fill_pt_e( string("top1pt_electrons_pt_individual_up"), selLeptons[0].pt(), weight_up);
+				fill_pt_e( string("top1pt_electrons_pt_individual_down"), selLeptons[0].pt(), weight_down);
 
 				if (passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
-					increment( string("weightflow_weight_passed_singlemu_selection"), weight );
+					increment( string("weightflow_weight_passed_singleel_selection"), weight );
 				}
 
 			if(passJetSelection && passBtagsSelection) // 2 jets, 1 b jet, 1 isolated lepton
@@ -2979,7 +3014,7 @@ for(size_t f=0; f<urls.size();++f)
 					//singlelep_ttbar_selected_el_events->Fill(1);
 					oursel_sum_weights_el += weight;
 					}
-				fprintf(csv_out, "oursel:%d,%d,%d,%g,%g,%d,", iev, num_inters, nGoodPV, rawWeight, weight, isSingleE);
+				fprintf(csv_out, "oursel:%d,%d,%d,%g,%g,%g,%g,%d,", iev, num_inters, nGoodPV, rawWeight, weight, weight_up, weight_down, isSingleE);
 				oursel_sum_weights_raw += rawWeight;
 				oursel_sum_weights += weight;
 
@@ -3048,12 +3083,17 @@ for(size_t f=0; f<urls.size();++f)
 			multisel += (passOS ? 8 : 0);
 			multisel += (passBtagsSelection ? 16 : 0);
 
-			if (passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
+			if (passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection) {
 				increment( string("weightflow_weight_passed_doublelep_selection"), weight );
+				increment( string("weightflow_weight_up_passed_doublelep_selection"), weight_up );
+				increment( string("weightflow_weight_down_passed_doublelep_selection"), weight_down );
+			}
 		
 			if (isDoubleE)
 				{
 				increment(string("weightflow_ee_") + to_string(multisel), weight);
+				increment(string("weightflow_up_ee_") + to_string(multisel), weight_up);
+				increment(string("weightflow_down_ee_") + to_string(multisel), weight_down);
 
 				if( passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
 					increment( string("weightflow_weight_passed_doubleel_selection"), weight );
@@ -3062,6 +3102,8 @@ for(size_t f=0; f<urls.size();++f)
 			if (isDoubleMu)
 				{
 				increment(string("weightflow_mumu_") + to_string(multisel), weight);
+				increment(string("weightflow_up_mumu_") + to_string(multisel), weight_up);
+				increment(string("weightflow_down_mumu_") + to_string(multisel), weight_down);
 
 				if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
 					increment( string("weightflow_weight_passed_doublemu_selection"), weight );
@@ -3070,6 +3112,8 @@ for(size_t f=0; f<urls.size();++f)
 			if (isEMu)
 				{
 				increment(string("weightflow_emu_") + to_string(multisel), weight);
+				increment(string("weightflow_up_emu_") + to_string(multisel), weight_up);
+				increment(string("weightflow_down_emu_") + to_string(multisel), weight_down);
 				if (passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
 					increment( string("weightflow_weight_passed_doubleemu_selection"), weight );
 				}
