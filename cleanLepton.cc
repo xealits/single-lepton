@@ -469,25 +469,41 @@ struct JobDef
 // TODO: and the multiselect weight-flow?
 
 //std::map<string, TH1D*> th1d_distr_control;
-std::map<string, TH1D> th1d_distr_control;
-std::map<string, TH1I> th1i_distr_control;
-std::map<string, double> weight_flow_control;
+
+string mc_decay("");
+// Some MC datasets are inclusive, but analysis needs info on separate channels from them
+// thus the events are traversed and the channel is found
+// currently it is done only for TTbar channel (isTTbarMC)
+//
+// the sub-channel of MC is paired together with the distr_name string into the key of control distrs
+// it is then printed out with dtag
+
+
+std::map<std::pair <string,string>, TH1D> th1d_distr_control;
+std::map<std::pair <string,string>, TH1I> th1i_distr_control;
+std::map<std::pair <string,string>, double> weight_flow_control;
+
+//std::map<string, TH1D> th1d_distr_control;
+//std::map<string, TH1I> th1i_distr_control;
+//std::map<string, double> weight_flow_control;
 
 
 int fill_n(string control_point_name, unsigned int value, double weight)
 	{
-	// check if control point has been initialized
-	if (th1i_distr_control.find(control_point_name) == th1i_distr_control.end() )
+	// check if the key (mc_decay, control point) has been initialized
+	std::pair <string,string> key (mc_decay, control_point_name);
+
+	if (th1i_distr_control.find(key) == th1i_distr_control.end() )
 		{
 		// the control point distr has not been created/initialized
 		// create it:
 		//th1i_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
-		th1i_distr_control[control_point_name] = TH1I(control_point_name.c_str(), ";;N", 100, 0., 100.);
+		th1i_distr_control[key] = TH1I(control_point_name.c_str(), ";;N", 100, 0., 100.);
 		//cout << "creating " << control_point_name << endl;
 		}
 
 	// fill the distribution:
-	th1i_distr_control[control_point_name].Fill(value, weight);
+	th1i_distr_control[key].Fill(value, weight);
 	//cout << "filled " << control_point_name << endl;
 	//cout << th1i_distr_control[control_point_name].Integral() << endl;
 
@@ -497,18 +513,20 @@ int fill_n(string control_point_name, unsigned int value, double weight)
 
 int fill_pu(string control_point_name, double value, double weight)
 	{
-	// check if control point has been initialized
-	if (th1d_distr_control.find(control_point_name) == th1d_distr_control.end() )
+	// check if the key (mc_decay, control point) has been initialized
+	std::pair <string,string> key (mc_decay, control_point_name);
+
+	if (th1d_distr_control.find(key) == th1d_distr_control.end() )
 		{
 		// the control point distr has not been created/initialized
 		// create it:
 		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
-		th1d_distr_control[control_point_name] = TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 100, 0., 100.);
+		th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 100, 0., 100.);
 		//cout << "creating " << control_point_name << endl;
 		}
 
 	// fill the distribution:
-	th1d_distr_control[control_point_name].Fill(value, weight);
+	th1d_distr_control[key].Fill(value, weight);
 	//cout << "filled " << control_point_name << endl;
 	//cout << th1d_distr_control[control_point_name].Integral() << endl;
 
@@ -520,17 +538,19 @@ int fill_pu(string control_point_name, double value, double weight)
 int fill_pt_e(string control_point_name, double value, double weight)
 	{
 	// check if control point has been initialized
-	if (th1d_distr_control.find(control_point_name) == th1d_distr_control.end() )
+	std::pair <string,string> key (mc_decay, control_point_name);
+
+	if (th1d_distr_control.find(key) == th1d_distr_control.end() )
 		{
 		// the control point distr has not been created/initialized
 		// create it:
 		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
-		th1d_distr_control[control_point_name] = TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
+		th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
 		//cout << "creating " << control_point_name << endl;
 		}
 
 	// fill the distribution:
-	th1d_distr_control[control_point_name].Fill(value, weight);
+	th1d_distr_control[key].Fill(value, weight);
 	//cout << "filled " << control_point_name << endl;
 	//cout << th1d_distr_control[control_point_name].Integral() << endl;
 
@@ -542,16 +562,18 @@ int fill_pt_e(string control_point_name, double value, double weight)
 int fill_eta(string control_point_name, double value, double weight)
 	{
 	// check if control point has been initialized
-	if (th1d_distr_control.find(control_point_name) == th1d_distr_control.end() )
+	std::pair <string,string> key (mc_decay, control_point_name);
+
+	if (th1d_distr_control.find(key) == th1d_distr_control.end() )
 		{
 		// the control point distr has not been created/initialized
 		// create it:
 		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.);
-		th1d_distr_control[control_point_name] = TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.);
+		th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.);
 		}
 
 	// fill the distribution:
-	th1d_distr_control[control_point_name].Fill(value, weight);
+	th1d_distr_control[key].Fill(value, weight);
 
 	// return success:
 	return 0;
@@ -564,15 +586,17 @@ int fill_eta(string control_point_name, double value, double weight)
 int increment(string control_point_name, double weight)
 	{
 	// check if control point has been initialized
-	if (weight_flow_control.find(control_point_name) == weight_flow_control.end() )
+	std::pair <string,string> key (mc_decay, control_point_name);
+
+	if (weight_flow_control.find(key) == weight_flow_control.end() )
 		{
 		// the control point distr has not been created/initialized
 		// create it:
-		weight_flow_control[control_point_name] = 0.;
+		weight_flow_control[key] = 0.;
 		}
 
 	// fill the distribution:
-	weight_flow_control[control_point_name] += weight;
+	weight_flow_control[key] += weight;
 
 	// return success:
 	return 0;
@@ -588,21 +612,24 @@ int printout_distrs(FILE * out, JobDef JD)
 	//th1d_distr_control
 	fprintf(out, "distr_header:distr_name:header/content,data_type,dtag,job_num,distr_values\n");
 
-	for(std::map<string, TH1D>::iterator it = th1d_distr_control.begin(); it != th1d_distr_control.end(); ++it)
+	for(std::map<std::pair <string,string>, TH1D>::iterator it = th1d_distr_control.begin(); it != th1d_distr_control.end(); ++it)
 		{
 		// iterator->first = key
 		// iterator->second = value
 
-		string name = it->first;
+		const std::pair <string,string> *key = &it->first;
+		string mc_decay_suffix = key->first;
+		string name = key->second;
+
 		TH1D * distr = & it->second;
 
 		// // Header:
-		fprintf(out, "%s:header, %s,%s,%s", name.c_str(), JD.type.c_str(), JD.dtag.c_str(), JD.job_num.c_str());
+		fprintf(out, "%s:header, %s,%s,%s", name.c_str(), JD.type.c_str(), (JD.dtag + mc_decay_suffix).c_str(), JD.job_num.c_str());
 		for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinCenter(i));
 		fprintf(out, "\n");
 
 		// // Content:
-		fprintf(out, "%s:content, %s,%s,%s", name.c_str(), JD.type.c_str(), JD.dtag.c_str(), JD.job_num.c_str());
+		fprintf(out, "%s:content, %s,%s,%s", name.c_str(), JD.type.c_str(), (JD.dtag + mc_decay_suffix).c_str(), JD.job_num.c_str());
 		for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinContent(i));
 		fprintf(out, "\n");
 
@@ -617,21 +644,24 @@ int printout_distrs(FILE * out, JobDef JD)
 		//fprintf(out, "\n");
 		}
 
-	for(std::map<string, TH1I>::iterator it = th1i_distr_control.begin(); it != th1i_distr_control.end(); ++it)
+	for(std::map<std::pair <string,string>, TH1I>::iterator it = th1i_distr_control.begin(); it != th1i_distr_control.end(); ++it)
 		{
 		// iterator->first = key
 		// iterator->second = value
 
-		string name = it->first;
+		const std::pair <string,string> *key = &it->first;
+		string mc_decay_suffix = key->first;
+		string name = key->second;
+
 		TH1I * distr = & it->second;
 
 		// // Header:
-		fprintf(out, "%s:header, %s,%s,%s", name.c_str(), JD.type.c_str(), JD.dtag.c_str(), JD.job_num.c_str());
+		fprintf(out, "%s:header, %s,%s,%s", name.c_str(), JD.type.c_str(), (JD.dtag + mc_decay_suffix).c_str(), JD.job_num.c_str());
 		for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinCenter(i));
 		fprintf(out, "\n");
 
 		// // Content:
-		fprintf(out, "%s:content, %s,%s,%s", name.c_str(), JD.type.c_str(), JD.dtag.c_str(), JD.job_num.c_str());
+		fprintf(out, "%s:content, %s,%s,%s", name.c_str(), JD.type.c_str(), (JD.dtag + mc_decay_suffix).c_str(), JD.job_num.c_str());
 		for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinContent(i));
 		fprintf(out, "\n");
 
@@ -663,11 +693,14 @@ int printout_counters(FILE * out, JobDef JD)
 	// fprintf(out, "weight_flow_header:%s,%s,%s\n", JD.type.c_str(), JD.dtag.c_str(), JD.job_num.c_str());
 	fprintf(out, "counter_header:val_name,data_type,dtag,job_num,value\n");
 
-	for(std::map<string, double>::iterator it = weight_flow_control.begin(); it != weight_flow_control.end(); ++it)
+	for(std::map<std::pair <string,string>, double>::iterator it = weight_flow_control.begin(); it != weight_flow_control.end(); ++it)
 		{
-		string name = it->first;
+		const std::pair <string,string> *key = &it->first;
+		string mc_decay_suffix = key->first;
+		string name = key->second;
+
 		double weight_sum = it->second;
-		fprintf(out, "%s,%s,%s,%s,%g\n", name.c_str(), JD.type.c_str(), JD.dtag.c_str(), JD.job_num.c_str(), weight_sum);
+		fprintf(out, "%s,%s,%s,%s,%g\n", name.c_str(), JD.type.c_str(), (JD.dtag + mc_decay_suffix).c_str(), JD.job_num.c_str(), weight_sum);
 		}
 	fprintf(out, "weight_flow end\n");
 
@@ -709,9 +742,6 @@ int mctruthmode      = runProcess.getParameter<int>   ("mctruthmode");
 TString dtag         = runProcess.getParameter<std::string>("dtag");
 string dtag_s        = runProcess.getParameter<std::string>("dtag");
 string job_num       = runProcess.getParameter<std::string>("job_num");
-string mc_decay(""); // Some MC datasets are inclusive, but analysis needs info on separate channels from them
-// thus the events are traversed and the channel is found
-// currently it is done only for TTbar channel (isTTbarMC)
 
 JobDef job_def = {string(isMC ? "MC": "Data"), dtag_s, job_num};
 
@@ -1127,7 +1157,109 @@ for(size_t f=0; f<urls.size();++f)
 		{
 		mc_decay = string("");
 
-		if(debug && iev == 10){
+		reco::GenParticleCollection gen;
+		fwlite::Handle<reco::GenParticleCollection> genHandle;
+		genHandle.getByLabel(ev, "prunedGenParticles");
+		if(genHandle.isValid() ) gen = *genHandle;
+
+		// -------------------------- trying to extract what decay was generated here
+		// iEvent.getByLabel("genParticles", genParticles);
+		// for(size_t i = 0; i < genParticles->size(); ++ i) {
+		// }
+		// listings of particles' mother-daughters  show
+		// W status 44 can turn into the same W status 44 several times
+		// W status 62 decays into leton-neutrino
+		//
+		// otozh
+		// there are numerous ways to do it:
+		//  - find motherless particles (protons in our case) and move from them
+		//  - just check out two first particles in the collection -- it seems these are the mothers always
+		//  - find t-quarks among particles and transverse their branches,
+		//    hoping that t and tbar cannot happen in not a ttbar pair
+		//
+		// let's do the naive 3 version
+		// targeting:
+		//   find decay vertex t-W
+		//   follow along W and find decay vertex to leptons or quarks
+		// -- thus recursion is needed
+
+		// traversing separate t quarks
+		//if (debug) {
+		if (isTTbarMC && genHandle.isValid()) {
+			//string mc_decay(""); // move to all job parameters
+			// every found t-quark decay branch will be added as a substring to this string (el, mu, tau, q)
+			// TODO: what to do if there are > t-decays than 1 ttbar pair in an event? (naive traverse approach also doesn't work?)
+			for(size_t i = 0; i < gen.size(); ++ i) {
+				const reco::GenParticle & p = gen[i];
+				int id = p.pdgId();
+				int st = p.status(); // TODO: check what is status in decat simulation (pythia for our TTbar set)
+
+				if (id == 6) { // if it is a t quark
+					// looking for W+ and its' leptonic decay
+					// without checks, just checking 2 daughters
+					int n = p.numberOfDaughters();
+					if (n == 2) { // it is a decay vertes of t to something
+						int d0_id = p.daughter(0)->pdgId();
+						int d1_id = p.daughter(1)->pdgId();
+						int W_num = d0_id == 24 ? 0 : (d1_id == 24 ? 1 : -1) ;
+						if (W_num < 0) continue;
+						const reco::Candidate * W = p.daughter( W_num );
+						mc_decay += find_W_decay(W);
+					}
+				}
+
+				if (id == -6) { // if it is a tbar quark
+					// looking for W- and its' leptonic decay
+					int n = p.numberOfDaughters();
+					if (n == 2) { // it is a decay vertes of t to something
+						int d0_id = p.daughter(0)->pdgId();
+						int d1_id = p.daughter(1)->pdgId();
+						int W_num = d0_id == -24 ? 0 : (d1_id == -24 ? 1 : -1) ;
+						if (W_num < 0) continue;
+						const reco::Candidate * W = p.daughter( W_num );
+						mc_decay += find_W_decay(W);
+						mc_decay += string("bar");
+					}
+				}
+			}
+			// so, mc_decay will be populated with strings matching t decays
+			// hopefully, in TTbar sample only ttbar decays are present and it is not ambigous
+		}
+
+		if (debug) {
+			cout << "MC suffix " << mc_decay << " is found\n";
+		}
+
+		if (!mc_decay.empty()) mc_decay = string("_") + mc_decay;
+
+		//* List of mother-daughters for all particles
+		//* TODO: make it into a separate function
+
+		if (debug) {
+			for(size_t i = 0; i < gen.size(); ++ i) {
+				const reco::GenParticle & p = gen[i];
+				int id = p.pdgId();
+				int st = p.status();
+				int n = p.numberOfDaughters();
+				cout << i << ": " << id << " " << st;
+				if (p.numberOfMothers() != 0) cout << " <- " ;
+				for (int j = 0 ; j < p.numberOfMothers(); ++j) {
+					const reco::Candidate * mom = p.mother(j);
+					cout << " " << mom->pdgId() << " " << mom->status() << ";";
+				}
+				cout << "\n";
+				if (n>0) {
+					cout << "\t|-> " ;
+					for (int j = 0; j < n; ++j) {
+						const reco::Candidate * d = p.daughter( j );
+						cout << d->pdgId() << " " << d->status() << "; " ;
+					}
+					cout << "\n";
+				}
+			}
+		}
+
+		if(debug && iev == 1000){
 			cout << "Finished processing the " << iev << " event in the file, exiting" << endl;
 			//return 0;
 			break;
@@ -1472,108 +1604,7 @@ for(size_t f=0; f<urls.size();++f)
 		fwlite::Handle<double> rhoHandle;
 		rhoHandle.getByLabel(ev, "fixedGridRhoFastjetAll");
 		if(rhoHandle.isValid() ) rho = *rhoHandle;
-		
-		reco::GenParticleCollection gen;
-		fwlite::Handle<reco::GenParticleCollection> genHandle;
-		genHandle.getByLabel(ev, "prunedGenParticles");
-		if(genHandle.isValid() ) gen = *genHandle;
 
-
-		// -------------------------- trying to extract what decay was generated here
-		// iEvent.getByLabel("genParticles", genParticles);
-		// for(size_t i = 0; i < genParticles->size(); ++ i) {
-		// }
-		// listings of particles' mother-daughters  show
-		// W status 44 can turn into the same W status 44 several times
-		// W status 62 decays into leton-neutrino
-		//
-		// otozh
-		// there are numerous ways to do it:
-		//  - find motherless particles (protons in our case) and move from them
-		//  - just check out two first particles in the collection -- it seems these are the mothers always
-		//  - find t-quarks among particles and transverse their branches,
-		//    hoping that t and tbar cannot happen in not a ttbar pair
-		//
-		// let's do the naive 3 version
-		// targeting:
-		//   find decay vertex t-W
-		//   follow along W and find decay vertex to leptons or quarks
-		// -- thus recursion is needed
-
-		// traversing separate t quarks
-		//if (debug) {
-		if (isTTbarMC) {
-			//string mc_decay(""); // move to all job parameters
-			// every found t-quark decay branch will be added as a substring to this string (el, mu, tau, q)
-			// TODO: what to do if there are > t-decays than 1 ttbar pair in an event? (naive traverse approach also doesn't work?)
-			for(size_t i = 0; i < gen.size(); ++ i) {
-				const reco::GenParticle & p = gen[i];
-				int id = p.pdgId();
-				int st = p.status(); // TODO: check what is status in decat simulation (pythia for our TTbar set)
-
-				if (id == 6) { // if it is a t quark
-					// looking for W+ and its' leptonic decay
-					// without checks, just checking 2 daughters
-					int n = p.numberOfDaughters();
-					if (n == 2) { // it is a decay vertes of t to something
-						int d0_id = p.daughter(0)->pdgId();
-						int d1_id = p.daughter(1)->pdgId();
-						int W_num = d0_id == 24 ? 0 : (d1_id == 24 ? 1 : -1) ;
-						if (W_num < 0) continue;
-						const reco::Candidate * W = p.daughter( W_num );
-						mc_decay += find_W_decay(W);
-					}
-				}
-
-				if (id == -6) { // if it is a tbar quark
-					// looking for W- and its' leptonic decay
-					int n = p.numberOfDaughters();
-					if (n == 2) { // it is a decay vertes of t to something
-						int d0_id = p.daughter(0)->pdgId();
-						int d1_id = p.daughter(1)->pdgId();
-						int W_num = d0_id == -24 ? 0 : (d1_id == -24 ? 1 : -1) ;
-						if (W_num < 0) continue;
-						const reco::Candidate * W = p.daughter( W_num );
-						mc_decay += find_W_decay(W);
-						mc_decay += string("bar");
-					}
-				}
-			}
-			// so, mc_decay will be populated with strings matching t decays
-			// hopefully, in TTbar sample only ttbar decays are present and it is not ambigous
-		}
-
-		if (debug) {
-			cout << "MC suffix " << mc_decay << " is found\n";
-		}
-
-
-		//* List of mother-daughters for all particles
-		//* TODO: make it into a separate function
-
-		if (debug) {
-			for(size_t i = 0; i < gen.size(); ++ i) {
-				const reco::GenParticle & p = gen[i];
-				int id = p.pdgId();
-				int st = p.status();
-				int n = p.numberOfDaughters();
-				cout << i << ": " << id << " " << st;
-				if (p.numberOfMothers() != 0) cout << " <- " ;
-				for (int j = 0 ; j < p.numberOfMothers(); ++j) {
-					const reco::Candidate * mom = p.mother(j);
-					cout << " " << mom->pdgId() << " " << mom->status() << ";";
-				}
-				cout << "\n";
-				if (n>0) {
-					cout << "\t|-> " ;
-					for (int j = 0; j < n; ++j) {
-						const reco::Candidate * d = p.daughter( j );
-						cout << d->pdgId() << " " << d->status() << "; " ;
-					}
-					cout << "\n";
-				}
-			}
-		}
 
 
 
