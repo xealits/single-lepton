@@ -1630,6 +1630,8 @@ for(size_t f=0; f<urls.size();++f)
 
 		// ------------------------------------------------- Apply MET filters
 		//if( !isMC && !metFiler.passMetFilter( ev, isPromptReco)) continue;
+		// New passMetFilter procedure from patUtils:
+		if( !isMC && !metFiler.passMetFilter( ev )) continue;
 		
 
 		if(debug)
