@@ -1593,6 +1593,11 @@ for(size_t f=0; f<urls.size();++f)
 		}
 
 		// TODO: ----------------------------- HLT efficiency scale factors
+		// https://twiki.cern.ch/twiki/bin/view/CMS/MuonReferenceEffsRun2#Muon_reconstruction_identificati
+		// -- SingleMu Triggers
+		// ??? https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDRecipesRun2#Efficiencies_and_scale_factors
+		// ??? -- Triggering electrons MVA-based WPs, scale factors for 76X
+		//
 		// in principle, one needs the electron/muon which triggered the HLT
 		// and according to its' pt, eta the scale factor is extracted
 		//
