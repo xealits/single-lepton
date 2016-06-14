@@ -1301,6 +1301,8 @@ for(size_t f=0; f<urls.size();++f)
 		// rawWeight is everything but Pile-Up
 		double rawWeight        (1.0);
 
+		double HLT_efficiency_sf = 1.0;
+
 		// final weight of the event
 		double weight           (1.0);
 		double weight_up        (1.0);
@@ -1589,6 +1591,19 @@ for(size_t f=0; f<urls.size();++f)
 		
 			if (!(eTrigger || muTrigger)) continue;   //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
 		}
+
+		// TODO: ----------------------------- HLT efficiency scale factors
+		// in principle, one needs the electron/muon which triggered the HLT
+		// and according to its' pt, eta the scale factor is extracted
+		//
+		// then, how should one proceed?
+		// if there are both HLTs on, should both factors be applied?
+
+		// double HLT_efficiency_sf = 1.0;
+
+		//HLT_efficiency_sf *= eTrigger  ? eHLT_sf[] : 1 ;
+		//HLT_efficiency_sf *= muTrigger ? muHLT_SF[] : 1 ;
+
 
 		sum_weights_passtrig_raw += rawWeight;
 		sum_weights_passtrig += weight;
@@ -1910,13 +1925,6 @@ for(size_t f=0; f<urls.size();++f)
 			passIso     = patUtils::passIso(electron, patUtils::llvvElecIso::Tight);
 			passVetoIso = patUtils::passIso(electron, patUtils::llvvElecIso::Loose);
 
-			if (passId && passIso)
-				{
-				fill_pt_e( string("all_electrons_idiso_pt"), electron.pt(), weight);
-				if (count_idiso_electrons < 2) fill_pt_e( string("top2pt_electrons_idiso_pt"), electron.pt(), weight);
-				count_idiso_electrons += 1;
-				}
-
 
 			// ---------------------------- kinematics
 			//double leta(fabs(lid==11 ? lepton.el.superCluster()->eta() : lepton.eta()));
@@ -1938,6 +1946,37 @@ for(size_t f=0; f<urls.size();++f)
 
 			if     (passKin     && passId     && passIso)     selElectrons.push_back(electron);
 			else if(passVetoKin && passVetoId && passVetoIso) nVetoE++;
+
+			// TODO: ------------ ID/Iso scale factors:
+			// https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDRecipesRun2#Efficiencies_and_scale_factors
+			// if it is MC and ID tight electron is found -- multiply weight by factor,
+			// corresponding to its' tight scale factor distr
+			// if loose -- loose scale factor
+
+			/* TODO: add ID/Iso and run
+			if (isMC) {
+				if (passId) {
+					// NOTE: scale factors are given for absolute eta
+					weight *= eID_Tight_sf.GetBinContent( eID_Tight_sf.FindBin(fabs(leta), electron.pt()) );
+				} else if (passVetoId) {
+					weight *= eID_Loose_sf.GetBinContent( eID_Loose_sf.FindBin(fabs(leta), electron.pt()) );
+				}
+				if (passIso) {
+					// NOTE: scale factors are given for absolute eta
+					weight *= eIso_Tight_sf.GetBinContent( eIso_Tight_sf.FindBin(fabs(leta), electron.pt()) );
+				} else if (passVetoIso) {
+					weight *= eIso_Loose_sf.GetBinContent( eIso_Loose_sf.FindBin(fabs(leta), electron.pt()) );
+				}
+			}
+			*/
+
+
+			if (passId && passIso)
+				{
+				fill_pt_e( string("all_electrons_idiso_pt"), electron.pt(), weight);
+				if (count_idiso_electrons < 2) fill_pt_e( string("top2pt_electrons_idiso_pt"), electron.pt(), weight);
+				count_idiso_electrons += 1;
+				}
 			}
 
 		// TODO: there should be no need to sort selected electrons here again -- they are in order of Pt
@@ -2048,6 +2087,29 @@ for(size_t f=0; f<urls.size();++f)
 
 			if     (passKin     && passId     && passIso)     selMuons.push_back(muon);
 			else if(passVetoKin && passVetoId && passVetoIso) nVetoMu++;
+
+			// TODO: ------------ ID/Iso scale factors:
+			// https://twiki.cern.ch/twiki/bin/view/CMS/MuonReferenceEffsRun2#Muon_reconstruction_identificati
+			// if it is MC and ID tight muon is found -- multiply weight by factor,
+			// corresponding to its' tight scale factor distr
+			// if loose -- loose scale factor
+
+			/* TODO: add ID/Iso and run
+			if (isMC) {
+				if (passId) {
+					// NOTE: scale factors are given for absolute eta
+					weight *= muID_Tight_sf.GetBinContent( muID_Tight_sf.FindBin(leta, muon.pt()) );
+				} else if (passVetoId) {
+					weight *= muID_Loose_sf.GetBinContent( muID_Loose_sf.FindBin(leta, muon.pt()) );
+				}
+				if (passIso) {
+					// NOTE: scale factors are given for absolute eta
+					weight *= muIso_Tight_sf.GetBinContent( muIso_Tight_sf.FindBin(leta, muon.pt()) );
+				} else if (passVetoIso) {
+					weight *= muIso_Loose_sf.GetBinContent( muIso_Loose_sf.FindBin(leta, muon.pt()) );
+				}
+			}
+			*/
 			}
 
 
