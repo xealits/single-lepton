@@ -157,21 +157,27 @@ channel selection & selection steps.
 The steps of Pietro's code with changes.
 
 * MC shaping to data properties
-  + NLO -1 weights -> **0 leave as is**
+  + NLO -1 weights for powheg and amcatnlo datasets -> **0 leave as is**
   + *removed* merging-stitching of LO and NLO sets (via HT/phat binning)
   + count N good verteces (used as pile-up in data?)
   + Apply pileup reweighting -> **manual reweight**
+  + (TODO) HLT trigger efficiency
+  + (TODO) lepton ID/Iso efficiencies
+  + B-tag efficiency (needs to be checked and updated according to \url{twiki/bin/viewauth/CMS/BtagRecommendation76X})
+  + (TODO?) PDF weights from \url{https://twiki.cern.ch/twiki/bin/viewauth/CMS/LHEReaderCMSSW#How_to_use_weights}
   + save distributions of weights -> **1**
 * basic event selection
   + remove Run2015B[Orthogonalize Run2015B PromptReco+17Jul15 mix] **0**
   + Skip bad lumi -> **check for lumicert for new datasets 1**
-    using: `Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt`
-    latest: `Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_v2.txt`
+    using: `Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_v2.txt`
+    (old: `Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt`)
   + apply trigger -> **new triggers**
     muons --- `HLT_IsoMu20` or `HLT_IsoTkMu20` for data and MC
     (to update to `HLT_IsoMu18)
     electrons --- `HLT_Ele23_WPLoose_Gsf` for data and MC
+    The dilepton HLTs are not used --- should consider adding them (people regard this option as efficiency improvement \url{https://hypernews.cern.ch/HyperNews/CMS/get/top-trigger/180.html})
   + *Apply MET filters* -> **bug in metFilter, disabled**
+    (TODO: check) https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#ETmiss_filters
 * load all the objects we will need to access
 * "TODO: what is this??" thing -> **0 commented out**
    (it should be the electron-muon split)
@@ -186,7 +192,10 @@ The steps of Pietro's code with changes.
 * leptons selection
   + muon corrections are applied with rochester correction procedure
     implemented in https://github.com/cms2l2v/2l2v_fwk/blob/master/interface/rochcor2015.h
-  + electron corrections applied with CMSSW `EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibratorRun2.h`
+  + electron corrections applied with CMSSW
+    `EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibratorRun2.h`
+    https://github.com/cms-sw/cmssw/blob/CMSSW_8_1_X/EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibratorRun2.h
+    according to https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer
   + kinematics, good and veto, lepton IDs and isolation -> **new isolation**
     - muons:
       good: P_T > 26, eta < 2.4, tight muon
@@ -218,6 +227,7 @@ The steps of Pietro's code with changes.
     - electrons:
       good: P_T > 30, eta < 2.4,
       veto: P_T > 15, eta < 2.5,
+      both have window at leta > 1.4442 && leta < 1.5660
       IDs and isolation are done with cut-based procedure according to
       https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_25ns
       (Isolation twiki requested)
@@ -227,7 +237,8 @@ The steps of Pietro's code with changes.
     decayModeFinding > 0.5
     byMediumCombinedIsolationDeltaBetaCorr3Hits > 0.5
     againstMuonTight3 > 0.5
-    againstElectronMediumMVA6 > 0.5
+    (old againstElectronMediumMVA6 > 0.5)
+    againstElectronTightMVA6 > 0.5
   + pixel hits cut (*"should be available out of the mox in new MINIAOD"* --- ?):
     basically now we check if tau.signalChargedHadrCands
     have at least 1 element with numberOfPixelHits > 0
@@ -247,13 +258,34 @@ The steps of Pietro's code with changes.
   + dphijmet = fabs( deltaPhi(curr_jet, met) ) -- and save the min
   + cross-clean of leptons and taus with deltaR > 0.4
 * b-jets via "pfCombinedInclusiveSecondaryVertexV2BJetTags" > 0.89 (medium working point)
+  from https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation74X
+  (move to https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation76X)
 
 * MET
   + MET 0 from slimmedMETs is used (TODO: confirm correction type)
+    https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#ETmiss
   + (disabled new procedure due to large mismatch) propagate lepton corrections to MET
   + propagate jet and lepton corrections to MET with getMETvariations
     (TODO: check getMETvariations -- there is some electron-muon difference)
+    (it seems getMETvariations does not propagate the jet corrections,
+     it only variates the MET for systematics)
 * ASSIGN CHANNEL
+  + single lepton:
+    only 1 good lepton, no veto, number of good PV > 0
+    2 or more jets
+    MET $p_T > 40 GeV$
+    1 or more b-taged jets
+    Only 1 tau
+    Oposite electric charge of tau and lepton
+
+  + double lepton:
+    Only 2 good leptons, no veto, number of good PV > 0
+    Mass of dilepton system $> 12 GeV$ and Z-window of $15 GeV$ for $ee$, $\mu\mu$ around $91 GeV$
+    2 or more jets
+    MET $p_T > 40 GeV$
+    Oposite sign of leptons
+    1 or more b-jets
+
 * Single lepton full analysis
   + *Clean jet collection from selected taus* moved it up to common selection
   + only selections and filling histograms
@@ -264,10 +296,10 @@ The steps of Pietro's code with changes.
 Other Mara's steps:
 
 * MC normalization
-  + MC weights twiki/bin/viewauth/CMS/LHEReaderCMSSW#How_to_use_weights
+  + MC weights twiki/bin/viewauth/CMS/LHEReaderCMSSW#How_to_use_weights (PDF and others?)
   + pile-up weighting -- **the same now**
-  + Muon eff, isolation, ID, trigger (??)
-  + b-tagging efficiencies twiki/bin/viewauth/CMS/BtagRecommendation76X
+  + Muon eff, isolation, ID, trigger (TODO)
+  + b-tagging efficiencies twiki/bin/viewauth/CMS/BtagRecommendation76X (TO UPDATE)
 * different datasets (**using them now**)
 
 What about trigger efficiency? Do data and MC really match above the threshold?

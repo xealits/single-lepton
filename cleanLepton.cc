@@ -47,7 +47,7 @@
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 
-#include "EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibratorRun2.h"  
+#include "EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibratorRun2.h"
 #include "EgammaAnalysis/ElectronTools/interface/PhotonEnergyCalibratorRun2.h" 
 //#include "EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibrator.h"  
 //#include "EgammaAnalysis/ElectronTools/interface/PhotonEnergyCalibrator.h" 
@@ -912,6 +912,7 @@ LeptonEfficiencySF lepEff;
 // merge those tagging procedures and eliminated the variable?
 
 // Prescriptions taken from: https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation74X
+// TODO: update to https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation76X
 
 // b-tagging working points for 50ns 
 //   (pfC|c)ombinedInclusiveSecondaryVertexV2BJetTags
