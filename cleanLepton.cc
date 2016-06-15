@@ -1636,7 +1636,7 @@ for(size_t f=0; f<urls.size();++f)
 
 		if(debug)
 			{
-			cout << "met filters are commented out here" << endl;
+			cout << "met filters applied here" << endl;
 			}
 
 
