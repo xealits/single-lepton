@@ -170,14 +170,16 @@ The steps of Pietro's code with changes.
   + remove Run2015B[Orthogonalize Run2015B PromptReco+17Jul15 mix] **0**
   + Skip bad lumi -> **check for lumicert for new datasets 1**
     using: `Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_v2.txt`
+    (RunD is about 2160.8 pb^-1 RunC ~ 17.2 pb^-1)
     (old: `Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt`)
   + apply trigger -> **new triggers**
     muons --- `HLT_IsoMu20` or `HLT_IsoTkMu20` for data and MC
     (to update to `HLT_IsoMu18)
     electrons --- `HLT_Ele23_WPLoose_Gsf` for data and MC
     The dilepton HLTs are not used --- should consider adding them (people regard this option as efficiency improvement \url{https://hypernews.cern.ch/HyperNews/CMS/get/top-trigger/180.html})
-  + *Apply MET filters* -> **bug in metFilter, disabled**
-    (TODO: check) https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#ETmiss_filters
+  + *Apply MET filters*
+    using now DoubleEG_csc2015.txt, MuonEG_csc2015.txt etc
+    TODO: check "MET-filter triggers" for 76X in https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#ETmiss_filters
 * load all the objects we will need to access
 * "TODO: what is this??" thing -> **0 commented out**
    (it should be the electron-muon split)

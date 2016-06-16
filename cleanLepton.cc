@@ -953,6 +953,8 @@ std::vector<double> direct_pileup_reweight_down = runProcess.getParameter < std:
 gROOT->cd ();                 //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
 
 // --------------------------------------- hardcoded MET filter
+// trying met-filters in HLT paths (76X MINIAODs should have it)
+/*
 patUtils::MetFilter metFiler;
 if(!isMC)
 	{
@@ -963,7 +965,7 @@ if(!isMC)
 	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_csc2015.txt");
 	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt");
 	}
-
+*/
 
 // ----------------------------
 // So here we got all the parameters from the config
@@ -1567,8 +1569,8 @@ for(size_t f=0; f<urls.size();++f)
 
 		if(debug){
 			cout << "Printing trigger list is commented out here" << endl;
-			//for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
-			//cout << *trnames << endl;
+			for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
+				cout << *trnames << endl;
 			cout << "----------- End of trigger list ----------" << endl;
 			//return 0;
 		}
@@ -1632,7 +1634,21 @@ for(size_t f=0; f<urls.size();++f)
 		// ------------------------------------------------- Apply MET filters
 		//if( !isMC && !metFiler.passMetFilter( ev, isPromptReco)) continue;
 		// New passMetFilter procedure from patUtils:
-		if( !isMC && !metFiler.passMetFilter( ev )) continue;
+		//if( !isMC && !metFiler.passMetFilter( ev )) continue;
+		// trying the HLTs path for metfilters:
+		// https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#ETmiss_filters
+		// https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#MiniAOD_76X_v2_produced_with_the
+		// recommendations (6-2016):
+		// Flag_HBHENoiseFilter TO BE USED
+		// Flag_HBHENoiseIsoFilter TO BE USED
+		// Flag_CSCTightHalo2015Filter TO BE USED
+		// Flag_EcalDeadCellTriggerPrimitiveFilter TO BE USED
+		// Flag_goodVertices TO BE USED
+		// Flag_eeBadScFilter TO BE USED 
+		if (! isMC) {
+			std::vector<std::string>& patterns("Flag_HBHENoiseFilter", "Flag_HBHENoiseIsoFilter", "Flag_CSCTightHalo2015Filter", "Flag_EcalDeadCellTriggerPrimitiveFilter", "Flag_goodVertices", "Flag_eeBadScFilter");
+			if (!(utils::passTriggerPatterns(tr, patterns)) ) continue;
+		}
 		
 
 		if(debug)
