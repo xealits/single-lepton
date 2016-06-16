@@ -1646,8 +1646,10 @@ for(size_t f=0; f<urls.size();++f)
 		// Flag_goodVertices TO BE USED
 		// Flag_eeBadScFilter TO BE USED 
 		if (! isMC) {
-			std::vector<std::string>& patterns("Flag_HBHENoiseFilter", "Flag_HBHENoiseIsoFilter", "Flag_CSCTightHalo2015Filter", "Flag_EcalDeadCellTriggerPrimitiveFilter", "Flag_goodVertices", "Flag_eeBadScFilter");
-			if (!(utils::passTriggerPatterns(tr, patterns)) ) continue;
+			//std::vector<std::string>& patterns("Flag_HBHENoiseFilter", "Flag_HBHENoiseIsoFilter", "Flag_CSCTightHalo2015Filter", "Flag_EcalDeadCellTriggerPrimitiveFilter", "Flag_goodVertices", "Flag_eeBadScFilter");
+			if (utils::passTriggerPatterns(tr, "Flag_HBHENoiseFilter*", "Flag_HBHENoiseIsoFilter*", "Flag_CSCTightHalo2015Filter*", "Flag_EcalDeadCellTriggerPrimitiveFilter*"))  continue;
+			if (utils::passTriggerPatterns(tr, "Flag_goodVertices")) continue;
+			if (utils::passTriggerPatterns(tr, "Flag_eeBadScFilter")) continue;
 		}
 		
 
