@@ -1568,7 +1568,7 @@ for(size_t f=0; f<urls.size();++f)
 			}
 
 		if(debug){
-			cout << "Printing trigger list is commented out here" << endl;
+			cout << "Printing HLT trigger list" << endl;
 			for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
 				cout << *trnames << endl;
 			cout << "----------- End of trigger list ----------" << endl;
@@ -1645,11 +1645,25 @@ for(size_t f=0; f<urls.size();++f)
 		// Flag_EcalDeadCellTriggerPrimitiveFilter TO BE USED
 		// Flag_goodVertices TO BE USED
 		// Flag_eeBadScFilter TO BE USED 
-		if (! isMC) {
+		edm::TriggerResultsByName metFilters = ev.triggerResultsByName("PAT");   //is present only if PAT (and miniAOD) is not run simultaniously with RECO
+		if(!metFilters.isValid()){metFilters = ev.triggerResultsByName("RECO");} //if not present, then it's part of RECO
+		if(!metFilters.isValid()){       
+			printf("TriggerResultsByName for MET filters is not found in the process, as a consequence the MET filter is disabled for this event\n");    
+		}
+
+		if (! isMC && metFilters.isValid()) {
+			if(debug){
+				cout << "Printing PAT/RECO trigger list for MET filters here" << endl;
+				for(edm::TriggerNames::Strings::const_iterator trnames = metFilters.triggerNames().begin(); trnames!=metFilters.triggerNames().end(); ++trnames)
+					cout << *trnames << endl;
+				cout << "----------- End of trigger list ----------" << endl;
+				//return 0;
+			}
 			//std::vector<std::string>& patterns("Flag_HBHENoiseFilter", "Flag_HBHENoiseIsoFilter", "Flag_CSCTightHalo2015Filter", "Flag_EcalDeadCellTriggerPrimitiveFilter", "Flag_goodVertices", "Flag_eeBadScFilter");
-			if (utils::passTriggerPatterns(tr, "Flag_HBHENoiseFilter*", "Flag_HBHENoiseIsoFilter*", "Flag_CSCTightHalo2015Filter*", "Flag_EcalDeadCellTriggerPrimitiveFilter*"))  continue;
-			if (utils::passTriggerPatterns(tr, "Flag_goodVertices")) continue;
-			if (utils::passTriggerPatterns(tr, "Flag_eeBadScFilter")) continue;
+			if (!utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter*", "Flag_HBHENoiseIsoFilter*", "Flag_CSCTightHalo2015Filter*", "Flag_EcalDeadCellTriggerPrimitiveFilter*"))
+				continue;
+			if (!utils::passTriggerPatterns(metFilters, "Flag_goodVertices")) continue;
+			if (!utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter")) continue;
 		}
 		
 
