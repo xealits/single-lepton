@@ -487,7 +487,9 @@ string mc_decay("");
 
 
 std::map<std::pair <string,string>, TH1D> th1d_distr_control;
+std::map<string, TH1D> th1d_distr_control_headers;
 std::map<std::pair <string,string>, TH1I> th1i_distr_control;
+std::map<string, TH1I> th1i_distr_control_headers;
 std::map<std::pair <string,string>, double> weight_flow_control;
 
 //std::map<string, TH1D> th1d_distr_control;
@@ -514,6 +516,11 @@ int fill_n(string control_point_name, unsigned int value, double weight)
 	//cout << "filled " << control_point_name << endl;
 	//cout << th1i_distr_control[control_point_name].Integral() << endl;
 
+	if (th1i_distr_control_headers.find(string("n")) == th1i_distr_control_headers.end() )
+		{
+		th1i_distr_control_headers[string("n")] = TH1I("Header of particle counter distributions", ";;N", 100, 0., 100.);
+		}
+
 	// return success:
 	return 0;
 	}
@@ -528,7 +535,7 @@ int fill_pu(string control_point_name, double value, double weight)
 		// the control point distr has not been created/initialized
 		// create it:
 		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
-		th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 100, 0., 100.);
+		th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;nVtx", 100, 0., 100.);
 		//cout << "creating " << control_point_name << endl;
 		}
 
@@ -536,6 +543,11 @@ int fill_pu(string control_point_name, double value, double weight)
 	th1d_distr_control[key].Fill(value, weight);
 	//cout << "filled " << control_point_name << endl;
 	//cout << th1d_distr_control[control_point_name].Integral() << endl;
+
+	if (th1d_distr_control_headers.find(string("pu")) == th1d_distr_control_headers.end() )
+		{
+		th1d_distr_control_headers[string("pu")] = TH1D("Header of pile up distributions", ";;nVtx", 100, 0., 100.);
+		}
 
 	// return success:
 	return 0;
@@ -561,6 +573,11 @@ int fill_pt_e(string control_point_name, double value, double weight)
 	//cout << "filled " << control_point_name << endl;
 	//cout << th1d_distr_control[control_point_name].Integral() << endl;
 
+	if (th1d_distr_control_headers.find(string("pt_e")) == th1d_distr_control_headers.end() )
+		{
+		th1d_distr_control_headers[string("pt_e")] = TH1D("Header of Pt/E distributions", ";;Pt/E(GeV)", 400, 0., 200.);
+		}
+
 	// return success:
 	return 0;
 	}
@@ -581,6 +598,11 @@ int fill_eta(string control_point_name, double value, double weight)
 
 	// fill the distribution:
 	th1d_distr_control[key].Fill(value, weight);
+
+	if (th1d_distr_control_headers.find(string("eta")) == th1d_distr_control_headers.end() )
+		{
+		th1d_distr_control_headers[string("eta")] = TH1D("Header of Eta distributions", ";;Eta", 200, -4., 4.);
+		}
 
 	// return success:
 	return 0;
@@ -618,6 +640,28 @@ int printout_distrs(FILE * out, JobDef JD)
 	{
 	//th1d_distr_control
 	fprintf(out, "distr_header:distr_name:header/content,data_type,dtag,job_num,distr_values\n");
+	//th1d_distr_control_headers
+	//th1i_distr_control_headers
+
+	for(std::map<string, TH1D>::iterator it = th1d_distr_control_headers.begin(); it != th1d_distr_control_headers.end(); ++it)
+		{
+		string name = it->first;
+		TH1D * header_distr = & it->second;
+		// Header:
+		fprintf(out, "header,%s", name.c_str());
+		for (int i=0; i < header_distr->GetSize(); i++) fprintf(out, ",%g", header_distr->GetBinCenter(i));
+		fprintf(out, "\n");
+		}
+
+	for(std::map<string, TH1I>::iterator it = th1i_distr_control_headers.begin(); it != th1i_distr_control_headers.end(); ++it)
+		{
+		string name = it->first;
+		TH1I * header_distr = & it->second;
+		// Header:
+		fprintf(out, "header,%s", name.c_str());
+		for (int i=0; i < header_distr->GetSize(); i++) fprintf(out, ",%g", header_distr->GetBinCenter(i));
+		fprintf(out, "\n");
+		}
 
 	for(std::map<std::pair <string,string>, TH1D>::iterator it = th1d_distr_control.begin(); it != th1d_distr_control.end(); ++it)
 		{
@@ -629,11 +673,6 @@ int printout_distrs(FILE * out, JobDef JD)
 		string name = key->second;
 
 		TH1D * distr = & it->second;
-
-		// // Header:
-		fprintf(out, "%s:header, %s,%s,%s", name.c_str(), JD.type.c_str(), (JD.dtag + mc_decay_suffix).c_str(), JD.job_num.c_str());
-		for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinCenter(i));
-		fprintf(out, "\n");
 
 		// // Content:
 		fprintf(out, "%s:content, %s,%s,%s", name.c_str(), JD.type.c_str(), (JD.dtag + mc_decay_suffix).c_str(), JD.job_num.c_str());
@@ -661,11 +700,6 @@ int printout_distrs(FILE * out, JobDef JD)
 		string name = key->second;
 
 		TH1I * distr = & it->second;
-
-		// // Header:
-		fprintf(out, "%s:header, %s,%s,%s", name.c_str(), JD.type.c_str(), (JD.dtag + mc_decay_suffix).c_str(), JD.job_num.c_str());
-		for (int i=0; i < distr->GetSize(); i++) fprintf(out, ",%g", distr->GetBinCenter(i));
-		fprintf(out, "\n");
 
 		// // Content:
 		fprintf(out, "%s:content, %s,%s,%s", name.c_str(), JD.type.c_str(), (JD.dtag + mc_decay_suffix).c_str(), JD.job_num.c_str());
