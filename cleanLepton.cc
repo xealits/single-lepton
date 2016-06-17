@@ -45,6 +45,7 @@
 #include "UserCode/llvv_fwk/interface/PDFInfo.h"
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
+#include "UserCode/llvv_fwk/interface/BTagCalibrationStandalone.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 
 #include "EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibratorRun2.h"
@@ -933,9 +934,21 @@ double beff(0.68), sfb(0.99), sfbunc(0.015);
 double leff(0.13), sfl(1.05), sflunc(0.12);
 
 // Btag SF and eff from https://indico.cern.ch/event/437675/#preview:1629681
-sfb = 0.861;
+sfb = 0.861; // SF is not used --- BTagCalibrationReader btagCal instead
 // sbbunc =;
 beff = 0.559;
+
+// Setup calibration readers
+BTagCalibration btagCalib("CSVv2", string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/btagSF_CSVv2.csv");
+// TODO: update btag CSVv2
+// https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation76X#Data_MC_Scale_Factors
+BTagCalibrationReader btagCal   (&btagCalib, BTagEntry::OP_LOOSE, "mujets", "central");  // calibration instance, operating point, measurement type, systematics type
+BTagCalibrationReader btagCalUp (&btagCalib, BTagEntry::OP_LOOSE, "mujets", "up"     );  // sys up
+BTagCalibrationReader btagCalDn (&btagCalib, BTagEntry::OP_LOOSE, "mujets", "down"   );  // sys down
+BTagCalibrationReader btagCalL  (&btagCalib, BTagEntry::OP_LOOSE, "comb", "central");  // calibration instance, operating point, measurement type, systematics type
+BTagCalibrationReader btagCalLUp(&btagCalib, BTagEntry::OP_LOOSE, "comb", "up"     );  // sys up
+BTagCalibrationReader btagCalLDn(&btagCalib, BTagEntry::OP_LOOSE, "comb", "down"   );  // sys down
+
 
 
 // ------------------------------ electron IDs
@@ -2897,15 +2910,36 @@ for(size_t f=0; f<urls.size();++f)
 			bool hasCSVtag_BTagUp(false), hasCSVtag_BTagDown(false);
 
 			//update according to the SF measured by BTV
+			// TODO: new fency procedure with CSV files
+			if(isMC){
+				int flavId=jet.partonFlavour();  double eta=jet.eta();
+				if (abs(flavId)==5) {
+					btsfutil.modifyBTagsWithSF(hasCSVtag, btagCal.eval(BTagEntry::FLAV_B   , eta, jet.pt()), beff);
+					// btsfutil.modifyBTagsWithSF(hasCSVtagUp  , btagCalUp .eval(BTagEntry::FLAV_B   , eta, jet.pt()), beff);
+					// btsfutil.modifyBTagsWithSF(hasCSVtagDown, btagCalDn .eval(BTagEntry::FLAV_B   , eta, jet.pt()), beff);
+				} else if(abs(flavId)==4) {
+					btsfutil.modifyBTagsWithSF(hasCSVtag, btagCal.eval(BTagEntry::FLAV_C   , eta, jet.pt()), beff);
+					// btsfutil.modifyBTagsWithSF(hasCSVtagUp  , btagCalUp .eval(BTagEntry::FLAV_C   , eta, jet.pt()), beff);
+					// btsfutil.modifyBTagsWithSF(hasCSVtagDown, btagCalDn .eval(BTagEntry::FLAV_C   , eta, jet.pt()), beff);
+				} else {
+					btsfutil.modifyBTagsWithSF(hasCSVtag, btagCalL.eval(BTagEntry::FLAV_UDSG, eta, jet.pt()), leff);
+					// btsfutil.modifyBTagsWithSF(hasCSVtagUp  , btagCalLUp.eval(BTagEntry::FLAV_UDSG, eta, jet.pt()), leff);
+					// btsfutil.modifyBTagsWithSF(hasCSVtagDown, btagCalLDn.eval(BTagEntry::FLAV_UDSG, eta, jet.pt()), leff);
+				}
+			}
+
+			/*
+			//update according to the SF measured by BTV
 			if (isMC)
 				{
-				int flavId = jet.partonFlavour();
-				if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
-				else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
-				else                     btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
+				// test:
+				//int flavId = jet.partonFlavour();
+				//if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
+				//else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
+				//else                     btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
 
 				// TODO: also Pietro now has a more complex modifyBTagsWithSF:
-				//      btsfutil.modifyBTagsWithSF(hasCSVtagDown, btagCalDn .eval(BTagEntry::FLAV_B   , eta, jet.pt()), beff);
+				//      btsfutil.modifyBTagsWithSF(hasCSVtagDown, btagCalDn.eval(BTagEntry::FLAV_B   , eta, jet.pt()), beff);
 				//  --- etc
 
 				/* TODO: for later
@@ -2916,8 +2950,8 @@ for(size_t f=0; f<urls.size();++f)
 				if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag_BTagDown, sfb - sfbunc,   beff);
 				else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag_BTagDown, sfb/5 - 2*sfbunc, beff);
 				else                     btsfutil.modifyBTagsWithSF(hasCSVtag_BTagDown, sfl - sfbunc,   leff);
-				*/
 				}
+			*/
 
 			if(hasCSVtag || hasCSVtag_BTagUp || hasCSVtag_BTagDown)
 				{
