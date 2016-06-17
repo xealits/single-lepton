@@ -46,6 +46,12 @@
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
 #include "UserCode/llvv_fwk/interface/BTagCalibrationStandalone.h"
+
+// TODO: try cmssw Btag
+//#include "CondFormats/BTauObjects/interface/BTagCalibration.h"
+//#include "CondFormats/BTauObjects/interface/BTagCalibrationReader.h"
+// this one is for 80X -> #include "CondTools/BTau/interface/BTagCalibrationReader.h"
+
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 
 #include "EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibratorRun2.h"
@@ -938,8 +944,22 @@ sfb = 0.861; // SF is not used --- BTagCalibrationReader btagCal instead
 // sbbunc =;
 beff = 0.559;
 
+// new btag calibration
+// TODO: check callibration readers in https://twiki.cern.ch/twiki/bin/view/CMS/BTagCalibration
+// and latest standalone callibrator:
+// https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_X/CondTools/BTau/test/BTagCalibrationStandalone.h
 // Setup calibration readers
 BTagCalibration btagCalib("CSVv2", string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/btagSF_CSVv2.csv");
+// TODO: try new llvv_fwk/data/weights/CSVv2_76X.csv
+// and there:
+//The name of the measurements is
+//
+//  * "incl" for light jets,
+//  * "mujets" for b and c jets for what concerns the pT/eta dependence for the different WP for JP and CSVv2 and
+//  * "ttbar" for b and c jets for what concerns the pT/eta dependence for the different WP for cMVAv2, but only to be used for jets with a pT spectrum similar to that in ttbar.
+//  * The measurement "iterativefit" provides the SF as a function of the discriminator shape. 
+// --- so "incl" instead of "comb" for light-quarks
+
 // TODO: update btag CSVv2
 // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation76X#Data_MC_Scale_Factors
 BTagCalibrationReader btagCal   (&btagCalib, BTagEntry::OP_LOOSE, "mujets", "central");  // calibration instance, operating point, measurement type, systematics type
@@ -949,7 +969,59 @@ BTagCalibrationReader btagCalL  (&btagCalib, BTagEntry::OP_LOOSE, "comb", "centr
 BTagCalibrationReader btagCalLUp(&btagCalib, BTagEntry::OP_LOOSE, "comb", "up"     );  // sys up
 BTagCalibrationReader btagCalLDn(&btagCalib, BTagEntry::OP_LOOSE, "comb", "down"   );  // sys down
 
+/* TODO: CMSSW calibration:
+The twiki https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation76X#Supported_Algorithms_and_Operati says
 
+The name of the measurements is
+ * "incl" for light jets,
+ * "mujets" for b and c jets for what concerns the pT/eta dependence for the different WP for JP and CSVv2 and 
+ * "ttbar" for b and c jets for what concerns the pT/eta dependence for the different WP for cMVAv2, but only to be used for jets with a pT spectrum similar to that in ttbar.
+ * The measurement "iterativefit" provides the SF as a function of the discriminator shape. 
+
+// seems like all this is for 80X, everything is like above (Loic/Pietro's version) for 76X
+The name of the measurements is
+  * "incl" for light jets,
+  * "mujets" for b and c jets for what concerns the pT/eta dependence for the different WP for JP and CSVv2 and
+  * "ttbar" for b and c jets for what concerns the pT/eta dependence for the different WP for cMVAv2, but only to be used for jets with a pT spectrum similar to that in ttbar.
+  * The measurement "iterativefit" provides the SF as a function of the discriminator shape. 
+
+BTagCalibration calib("csvv2", string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/CSVv2_76X.csv");
+//BTagCalibrationReader reader(BTagEntry::OP_LOOSE,  // operating point
+BTagCalibrationReader reader(BTagEntry::OP_MEDIUM,  // operating point
+                             "central"             // central sys type
+                             {"up", "down"});      // other sys types
+
+reader.load(calib,                // calibration instance
+            BTagEntry::FLAV_B,    // btag flavour
+            "comb")               // measurement type
+
+// reader.load(...)     // for FLAV_C
+// reader.load(...)     // for FLAV_UDSG
+
+
+reader.load(calib,              // calibration instance
+            BTagEntry::FLAV_C,  // btag flavour
+            "comb")             // measurement type
+
+reader.load(calib,                 // calibration instance
+            BTagEntry::FLAV_UDSG,  // btag flavour
+            "comb")                // measurement type
+
+// Usage:
+
+// Note: this is for b jets, for c jets (light jets) use FLAV_C (FLAV_UDSG)
+double jet_scalefactor    = reader.eval_auto_bounds(
+	"central", 
+	BTagEntry::FLAV_B, 
+	b_jet.eta(), 
+	b_jet.pt()
+	); 
+
+double jet_scalefactor_up = reader_up.eval_auto_bounds("up", BTagEntry::FLAV_B, b_jet.eta(), b_jet.pt());
+double jet_scalefactor_do = reader_do.eval_auto_bounds("down", BTagEntry::FLAV_B, b_jet.eta(), b_jet.pt());
+
+
+*/
 
 // ------------------------------ electron IDs
 // does not appear anywhere in the code at all
