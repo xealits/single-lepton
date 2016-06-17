@@ -3065,14 +3065,29 @@ for(size_t f=0; f<urls.size();++f)
 
 				weights_in_mu_channel[multisel] += weight;
 				increment(string("weightflow_mu_") + to_string(multisel), weight);
-				increment(string("weightflow_up_mu_") + to_string(multisel), weight_up);
-				increment(string("weightflow_down_mu_") + to_string(multisel), weight_down);
+				// increment(string("weightflow_up_mu_") + to_string(multisel), weight_up);
+				// increment(string("weightflow_down_mu_") + to_string(multisel), weight_down);
 				fill_pt_e( string("top1pt_muons_pt_individual"), selLeptons[0].pt(), weight);
 				fill_pt_e( string("top1pt_muons_pt_individual_up"), selLeptons[0].pt(), weight_up);
 				fill_pt_e( string("top1pt_muons_pt_individual_down"), selLeptons[0].pt(), weight_down);
 
 				if (passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
+					{
 					increment( string("weightflow_weight_passed_singlemu_selection"), weight );
+					increment( string("weightflow_weight_up_passed_singlemu_selection"), weight_up );
+					increment( string("weightflow_weight_down_passed_singlemu_selection"), weight_down );
+
+					fill_n( string("singlemu_selection_n_jets"), n_jets, weight);
+					fill_n( string("singlemu_selection_n_bjets"), n_bjets, weight);
+					fill_n( string("singlemu_selection_n_taus"), n_taus, weight);
+
+					fill_pt_e( string("singlemu_selection_muon_pt"), selLeptons[0].pt(), weight);
+					fill_pt_e( string("singlemu_selection_tau_pt"), selTausNoLep[0].pt(), weight);
+					fill_pt_e( string("singlemu_selection_jet1_pt"), selJetsNoLepNoTau[0].pt(), weight);
+					fill_pt_e( string("singlemu_selection_jet2_pt"), selJetsNoLepNoTau[1].pt(), weight);
+					fill_pt_e( string("singlemu_selection_bjet_pt"), selBJets[0].pt(), weight);
+					fill_pt_e( string("singlemu_selection_met_pt"), n_met.pt(), weight);
+					}
 				}
 
 			if (isSingleE)
@@ -3083,26 +3098,41 @@ for(size_t f=0; f<urls.size();++f)
 
 				weights_in_el_channel[multisel] += weight;
 				increment(string("weightflow_e_") + to_string(multisel), weight);
-				increment(string("weightflow_up_e_") + to_string(multisel), weight_up);
-				increment(string("weightflow_down_e_") + to_string(multisel), weight_down);
+				// increment(string("weightflow_up_e_") + to_string(multisel), weight_up);
+				// increment(string("weightflow_down_e_") + to_string(multisel), weight_down);
 				fill_pt_e( string("top1pt_electrons_pt_individual"), selLeptons[0].pt(), weight);
 				fill_pt_e( string("top1pt_electrons_pt_individual_up"), selLeptons[0].pt(), weight_up);
 				fill_pt_e( string("top1pt_electrons_pt_individual_down"), selLeptons[0].pt(), weight_down);
 
 				if (passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
+					{
 					increment( string("weightflow_weight_passed_singleel_selection"), weight );
+					increment( string("weightflow_weight_up_passed_singleel_selection"), weight_up );
+					increment( string("weightflow_weight_down_passed_singleel_selection"), weight_down );
+
+					fill_n( string("singleel_selection_n_jets"), n_jets, weight);
+					fill_n( string("singleel_selection_n_bjets"), n_bjets, weight);
+					fill_n( string("singleel_selection_n_taus"), n_taus, weight);
+
+					fill_pt_e( string("singleel_selection_electron_pt"), selLeptons[0].pt(), weight);
+					fill_pt_e( string("singleel_selection_tau_pt"), selTausNoLep[0].pt(), weight);
+					fill_pt_e( string("singleel_selection_jet1_pt"), selJetsNoLepNoTau[0].pt(), weight);
+					fill_pt_e( string("singleel_selection_jet2_pt"), selJetsNoLepNoTau[1].pt(), weight);
+					fill_pt_e( string("singleel_selection_bjet_pt"), selBJets[0].pt(), weight);
+					fill_pt_e( string("singleel_selection_met_pt"), n_met.pt(), weight);
+					}
 				}
 
-			if(passJetSelection && passBtagsSelection) // 2 jets, 1 b jet, 1 isolated lepton
-				{
-				/* now these histograms are dissabled -- use counters to substitute them
-				if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
-				else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
-				*/
-				crossel_sum_weights_raw += rawWeight;
-				crossel_sum_weights += weight;
-				}
+			// if(passJetSelection && passBtagsSelection) // 2 jets, 1 b jet, 1 isolated lepton
+			// 	{
+			// 	 now these histograms are dissabled -- use counters to substitute them
+			// 	if(isSingleMu) singlelep_ttbar_selected_mu_events->Fill(1);
+			// 	else if (isSingleE) singlelep_ttbar_selected_el_events->Fill(1);
+			// 	crossel_sum_weights_raw += rawWeight;
+			// 	crossel_sum_weights += weight;
+			// 	}
 
+			/*
 			if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS )
 				{
 				// TODO: try saving the whole event
@@ -3143,6 +3173,7 @@ for(size_t f=0; f<urls.size();++f)
 				fprintf(csv_out, "%g,%g,%g,%g\n", selJetsNoLepNoTau[1].px(), selJetsNoLepNoTau[1].py(), selJetsNoLepNoTau[1].pz(), selJetsNoLepNoTau[1].pt() );
 
 				}
+				*/
 			}
 
 		// inline control functions usage:
@@ -3194,30 +3225,72 @@ for(size_t f=0; f<urls.size();++f)
 			if (isDoubleE)
 				{
 				increment(string("weightflow_ee_") + to_string(multisel), weight);
-				increment(string("weightflow_up_ee_") + to_string(multisel), weight_up);
-				increment(string("weightflow_down_ee_") + to_string(multisel), weight_down);
+				// increment(string("weightflow_up_ee_") + to_string(multisel), weight_up);
+				// increment(string("weightflow_down_ee_") + to_string(multisel), weight_down);
 
 				if( passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
+					{
 					increment( string("weightflow_weight_passed_doubleel_selection"), weight );
+
+					fill_n( string("elel_selection_n_jets"), n_jets, weight);
+					fill_n( string("elel_selection_n_bjets"), n_bjets, weight);
+					fill_n( string("elel_selection_n_taus"), n_taus, weight);
+
+					fill_pt_e( string("elel_selection_el1_pt"), selElectrons[0].pt(), weight);
+					fill_pt_e( string("elel_selection_el2_pt"), selElectrons[1].pt(), weight);
+					// fill_pt_e( string("elel_selection_tau_pt"), selTausNoLep[0].pt(), weight);
+					fill_pt_e( string("elel_selection_jet1_pt"), selJetsNoLepNoTau[0].pt(), weight);
+					fill_pt_e( string("elel_selection_jet2_pt"), selJetsNoLepNoTau[1].pt(), weight);
+					fill_pt_e( string("elel_selection_bjet_pt"), selBJets[0].pt(), weight);
+					fill_pt_e( string("elel_selection_met_pt"), n_met.pt(), weight);
+					}
 				}
 
 			if (isDoubleMu)
 				{
 				increment(string("weightflow_mumu_") + to_string(multisel), weight);
-				increment(string("weightflow_up_mumu_") + to_string(multisel), weight_up);
-				increment(string("weightflow_down_mumu_") + to_string(multisel), weight_down);
+				// increment(string("weightflow_up_mumu_") + to_string(multisel), weight_up);
+				// increment(string("weightflow_down_mumu_") + to_string(multisel), weight_down);
 
 				if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
+					{
 					increment( string("weightflow_weight_passed_doublemu_selection"), weight );
+
+					fill_n( string("mumu_selection_n_jets"), n_jets, weight);
+					fill_n( string("mumu_selection_n_bjets"), n_bjets, weight);
+					fill_n( string("mumu_selection_n_taus"), n_taus, weight);
+
+					fill_pt_e( string("mumu_selection_mu1_pt"), selMuons[0].pt(), weight);
+					fill_pt_e( string("mumu_selection_mu2_pt"), selMuons[1].pt(), weight);
+					// fill_pt_e( string("mumu_selection_tau_pt"), selTausNoLep[0].pt(), weight);
+					fill_pt_e( string("mumu_selection_jet1_pt"), selJetsNoLepNoTau[0].pt(), weight);
+					fill_pt_e( string("mumu_selection_jet2_pt"), selJetsNoLepNoTau[1].pt(), weight);
+					fill_pt_e( string("mumu_selection_bjet_pt"), selBJets[0].pt(), weight);
+					fill_pt_e( string("mumu_selection_met_pt"), n_met.pt(), weight);
+					}
 				}
 
 			if (isEMu)
 				{
 				increment(string("weightflow_emu_") + to_string(multisel), weight);
-				increment(string("weightflow_up_emu_") + to_string(multisel), weight_up);
-				increment(string("weightflow_down_emu_") + to_string(multisel), weight_down);
+				// increment(string("weightflow_up_emu_") + to_string(multisel), weight_up);
+				// increment(string("weightflow_down_emu_") + to_string(multisel), weight_down);
 				if (passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
+					{
 					increment( string("weightflow_weight_passed_doubleemu_selection"), weight );
+
+					fill_n( string("elmu_selection_n_jets"), n_jets, weight);
+					fill_n( string("elmu_selection_n_bjets"), n_bjets, weight);
+					fill_n( string("elmu_selection_n_taus"), n_taus, weight);
+
+					fill_pt_e( string("elmu_selection_el_pt"), selElectrons[0].pt(), weight);
+					fill_pt_e( string("elmu_selection_mu_pt"), selMuons[0].pt(), weight);
+					// fill_pt_e( string("elmu_selection_tau_pt"), selTausNoLep[0].pt(), weight);
+					fill_pt_e( string("elmu_selection_jet1_pt"), selJetsNoLepNoTau[0].pt(), weight);
+					fill_pt_e( string("elmu_selection_jet2_pt"), selJetsNoLepNoTau[1].pt(), weight);
+					fill_pt_e( string("elmu_selection_bjet_pt"), selBJets[0].pt(), weight);
+					fill_pt_e( string("elmu_selection_met_pt"), n_met.pt(), weight);
+					}
 				}
 			}
 
