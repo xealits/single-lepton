@@ -1618,10 +1618,10 @@ for(size_t f=0; f<urls.size();++f)
 		fill_pu( string("pileup_rawweight_perrawvtxsize"), vtx.size(), rawWeight);
 		fill_pu( string("pileup_weight_perrawvtxsize"), vtx.size(), weight_pu_test);
 
-		fill_pu( string("pileup_rawweight_pergoodpv"), nGoodPV, rawWeight);
-		fill_pu( string("pileup_weight_pergoodpv"), nGoodPV, weight);
-		fill_pu( string("pileup_weight_up_pergoodpv"), nGoodPV, weight_up);
-		fill_pu( string("pileup_weight_down_pergoodpv"), nGoodPV, weight_down);
+		fill_pu( string("pileup_ini_rawweight_pergoodpv"), nGoodPV, rawWeight);
+		fill_pu( string("pileup_ini_weight_pergoodpv"), nGoodPV, weight);
+		fill_pu( string("pileup_ini_weight_up_pergoodpv"), nGoodPV, weight_up);
+		fill_pu( string("pileup_ini_weight_down_pergoodpv"), nGoodPV, weight_down);
 
 		fill_pu( string("pileup_rawweight_pernuminters"), num_inters, rawWeight);
 		fill_pu( string("pileup_weight_pernuminters"), num_inters, weight);
@@ -1753,6 +1753,12 @@ for(size_t f=0; f<urls.size();++f)
 			{
 			cout << "Set triggers" << endl;
 			}
+
+		fill_pu( string("pileup_passtrig_rawweight_pergoodpv"), nGoodPV, rawWeight);
+		fill_pu( string("pileup_passtrig_weight_pergoodpv"), nGoodPV, weight);
+		fill_pu( string("pileup_passtrig_weight_up_pergoodpv"), nGoodPV, weight_up);
+		fill_pu( string("pileup_passtrig_weight_down_pergoodpv"), nGoodPV, weight_down);
+
 
 		// ------------------------------------------------- Apply MET filters
 		//if( !isMC && !metFiler.passMetFilter( ev, isPromptReco)) continue;
@@ -2438,6 +2444,13 @@ for(size_t f=0; f<urls.size();++f)
 				fill_pt_e( string("leptons_emu_2leptons_pt"), selLeptons[0].pt(), weight);
 				fill_pt_e( string("leptons_emu_2leptons_pt"), selLeptons[1].pt(), weight);
 				}
+			}
+
+		if (isSingleE || isSingleMu || isDoubleMu || isDoubleE || isEMu ){
+			fill_pu( string("pileup_inachannel_rawweight_pergoodpv"), nGoodPV, rawWeight);
+			fill_pu( string("pileup_inachannel_weight_pergoodpv"), nGoodPV, weight);
+			fill_pu( string("pileup_inachannel_weight_up_pergoodpv"), nGoodPV, weight_up);
+			fill_pu( string("pileup_inachannel_weight_down_pergoodpv"), nGoodPV, weight_down);
 			}
 
 		/* old lepton selection, left for reference
@@ -3232,6 +3245,12 @@ for(size_t f=0; f<urls.size();++f)
 					fill_pt_e( string("singlemu_selection_jet2_pt"), selJetsNoLepNoTau[1].pt(), weight);
 					fill_pt_e( string("singlemu_selection_bjet_pt"), selBJets[0].pt(), weight);
 					fill_pt_e( string("singlemu_selection_met_pt"), n_met.pt(), weight);
+
+					fill_pu( string("pileup_muselection_rawweight_pergoodpv"), nGoodPV, rawWeight);
+					fill_pu( string("pileup_muselection_weight_pergoodpv"), nGoodPV, weight);
+					fill_pu( string("pileup_muselection_weight_up_pergoodpv"), nGoodPV, weight_up);
+					fill_pu( string("pileup_muselection_weight_down_pergoodpv"), nGoodPV, weight_down);
+
 					}
 				}
 
@@ -3265,6 +3284,11 @@ for(size_t f=0; f<urls.size();++f)
 					fill_pt_e( string("singleel_selection_jet2_pt"), selJetsNoLepNoTau[1].pt(), weight);
 					fill_pt_e( string("singleel_selection_bjet_pt"), selBJets[0].pt(), weight);
 					fill_pt_e( string("singleel_selection_met_pt"), n_met.pt(), weight);
+
+					fill_pu( string("pileup_elselection_rawweight_pergoodpv"), nGoodPV, rawWeight);
+					fill_pu( string("pileup_elselection_weight_pergoodpv"), nGoodPV, weight);
+					fill_pu( string("pileup_elselection_weight_up_pergoodpv"), nGoodPV, weight_up);
+					fill_pu( string("pileup_elselection_weight_down_pergoodpv"), nGoodPV, weight_down);
 					}
 				}
 
@@ -3388,6 +3412,11 @@ for(size_t f=0; f<urls.size();++f)
 					fill_pt_e( string("elel_selection_jet2_pt"), selJetsNoLepNoTau[1].pt(), weight);
 					fill_pt_e( string("elel_selection_bjet_pt"), selBJets[0].pt(), weight);
 					fill_pt_e( string("elel_selection_met_pt"), n_met.pt(), weight);
+
+					fill_pu( string("pileup_elelselection_rawweight_pergoodpv"), nGoodPV, rawWeight);
+					fill_pu( string("pileup_elelselection_weight_pergoodpv"), nGoodPV, weight);
+					fill_pu( string("pileup_elelselection_weight_up_pergoodpv"), nGoodPV, weight_up);
+					fill_pu( string("pileup_elelselection_weight_down_pergoodpv"), nGoodPV, weight_down);
 					}
 				}
 
@@ -3412,6 +3441,11 @@ for(size_t f=0; f<urls.size();++f)
 					fill_pt_e( string("mumu_selection_jet2_pt"), selJetsNoLepNoTau[1].pt(), weight);
 					fill_pt_e( string("mumu_selection_bjet_pt"), selBJets[0].pt(), weight);
 					fill_pt_e( string("mumu_selection_met_pt"), n_met.pt(), weight);
+
+					fill_pu( string("pileup_mumuselection_rawweight_pergoodpv"), nGoodPV, rawWeight);
+					fill_pu( string("pileup_mumuselection_weight_pergoodpv"), nGoodPV, weight);
+					fill_pu( string("pileup_mumuselection_weight_up_pergoodpv"), nGoodPV, weight_up);
+					fill_pu( string("pileup_mumuselection_weight_down_pergoodpv"), nGoodPV, weight_down);
 					}
 				}
 
@@ -3435,6 +3469,11 @@ for(size_t f=0; f<urls.size();++f)
 					fill_pt_e( string("elmu_selection_jet2_pt"), selJetsNoLepNoTau[1].pt(), weight);
 					fill_pt_e( string("elmu_selection_bjet_pt"), selBJets[0].pt(), weight);
 					fill_pt_e( string("elmu_selection_met_pt"), n_met.pt(), weight);
+
+					fill_pu( string("pileup_elmuselection_rawweight_pergoodpv"), nGoodPV, rawWeight);
+					fill_pu( string("pileup_elmuselection_weight_pergoodpv"), nGoodPV, weight);
+					fill_pu( string("pileup_elmuselection_weight_up_pergoodpv"), nGoodPV, weight_up);
+					fill_pu( string("pileup_elmuselection_weight_down_pergoodpv"), nGoodPV, weight_down);
 					}
 				}
 			}
