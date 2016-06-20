@@ -962,7 +962,8 @@ LeptonEfficiencySF lepEff;
 //      v2CSVv2T 0.970
 double
 	btagLoose(0.605), // not used anywhere in the code
-	btagMedium(0.890), // used twice in the code
+	//btagMedium(0.890), // used twice in the code
+	btagMedium(0.8), // new medium working point
 	btagTight(0.970); // not used anywhere in the code
 
 //b-tagging: scale factors
@@ -999,15 +1000,15 @@ BTagCalibration btagCalib("CSVv2", string(std::getenv("CMSSW_BASE"))+"/src/UserC
 // TODO: update btag CSVv2
 // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation76X#Data_MC_Scale_Factors
 // OP_MEDIUM instead of OP_LOOSE?
-BTagCalibrationReader btagCal   (&btagCalib, BTagEntry::OP_LOOSE, "mujets", "central");  // calibration instance, operating point, measurement type, systematics type
-BTagCalibrationReader btagCalUp (&btagCalib, BTagEntry::OP_LOOSE, "mujets", "up"     );  // sys up
-BTagCalibrationReader btagCalDn (&btagCalib, BTagEntry::OP_LOOSE, "mujets", "down"   );  // sys down
+BTagCalibrationReader btagCal   (&btagCalib, BTagEntry::OP_MEDIUM, "mujets", "central");  // calibration instance, operating point, measurement type, systematics type
+BTagCalibrationReader btagCalUp (&btagCalib, BTagEntry::OP_MEDIUM, "mujets", "up"     );  // sys up
+BTagCalibrationReader btagCalDn (&btagCalib, BTagEntry::OP_MEDIUM, "mujets", "down"   );  // sys down
 //BTagCalibrationReader btagCalL  (&btagCalib, BTagEntry::OP_LOOSE, "comb", "central");  // calibration instance, operating point, measurement type, systematics type
 //BTagCalibrationReader btagCalLUp(&btagCalib, BTagEntry::OP_LOOSE, "comb", "up"     );  // sys up
 //BTagCalibrationReader btagCalLDn(&btagCalib, BTagEntry::OP_LOOSE, "comb", "down"   );  // sys down
-BTagCalibrationReader btagCalL  (&btagCalib, BTagEntry::OP_LOOSE, "incl", "central");  // calibration instance, operating point, measurement type, systematics type
-BTagCalibrationReader btagCalLUp(&btagCalib, BTagEntry::OP_LOOSE, "incl", "up"     );  // sys up
-BTagCalibrationReader btagCalLDn(&btagCalib, BTagEntry::OP_LOOSE, "incl", "down"   );  // sys down
+BTagCalibrationReader btagCalL  (&btagCalib, BTagEntry::OP_MEDIUM, "incl", "central");  // calibration instance, operating point, measurement type, systematics type
+BTagCalibrationReader btagCalLUp(&btagCalib, BTagEntry::OP_MEDIUM, "incl", "up"     );  // sys up
+BTagCalibrationReader btagCalLDn(&btagCalib, BTagEntry::OP_MEDIUM, "incl", "down"   );  // sys down
 
 
 
