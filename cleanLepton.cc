@@ -1647,8 +1647,8 @@ for(size_t f=0; f<urls.size();++f)
 		else
 			{
 			increment( string("positive_events"), 1 );
-			fill_pt_e( string("pileup_positive_weight_pernuminters"), num_inters, weight);
-			fill_pt_e( string("pileup_positive_rawweight_pernuminters"), num_inters, rawWeight);
+			fill_pu( string("pileup_positive_weight_pernuminters"), num_inters, weight);
+			fill_pu( string("pileup_positive_rawweight_pernuminters"), num_inters, rawWeight);
 			positive_event_nvtx[num_inters] += 1;
 			positive_event_pernvtx_weight[num_inters] += weight;
 			positive_event_pergoodpv_weight[nGoodPV] += weight;
