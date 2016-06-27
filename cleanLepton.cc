@@ -2716,12 +2716,12 @@ for(size_t f=0; f<urls.size();++f)
 
 		if(debug) cout << "jet eta pt e, e x y z" << endl;
 
-		TLorentzVector jet_corr(0., 0., 0., 0.);
+		LorentzVector jet_corr(0., 0., 0., 0.);
 		for(size_t ijet=0; ijet<jets.size(); ijet++)
 			{
 			// TODO: so does this mean "in place"?
 			pat::Jet& jet = jets[ijet];
-			TLorentzVector jet_initial_momentum = jet.p4();
+			LorentzVector jet_initial_momentum = jet.p4();
 
 			if(debug) cout << jet.eta() << " " << jet.pt() << " " << jet.energy() << endl;
 			//correct JES
