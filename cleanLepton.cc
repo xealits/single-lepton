@@ -3064,7 +3064,9 @@ for(size_t f=0; f<urls.size();++f)
 			//update according to the SF measured by BTV
 			// TODO: new fency procedure with CSV files
 			if(isMC){
-				int flavId=jet.partonFlavour();  double eta=jet.eta();
+				// int flavId=jet.partonFlavour();
+				int flavId=jet.hadronFlavour();
+				double eta=jet.eta();
 				if (abs(flavId)==5) {
 					btsfutil.modifyBTagsWithSF(hasCSVtag, btagCal.eval(BTagEntry::FLAV_B   , eta, jet.pt()), beff);
 					// btsfutil.modifyBTagsWithSF(hasCSVtagUp  , btagCalUp .eval(BTagEntry::FLAV_B   , eta, jet.pt()), beff);
