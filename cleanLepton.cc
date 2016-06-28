@@ -99,11 +99,12 @@ namespace utils
 			jetCorFiles.push_back((baseDir+"/"+pf+"_L1FastJet_AK4PFchs.txt").Data());
 			jetCorFiles.push_back((baseDir+"/"+pf+"_L2Relative_AK4PFchs.txt").Data());
 			jetCorFiles.push_back((baseDir+"/"+pf+"_L3Absolute_AK4PFchs.txt").Data());
-			//if(!isMC) jetCorFiles.push_back((baseDir+"/"+pf+"_L2L3Residual_AK4PFchs.txt").Data());
+			if(!isMC) jetCorFiles.push_back((baseDir+"/"+pf+"_L2L3Residual_AK4PFchs.txt").Data());
 			// now there is a practically empty file Fall15_25nsV2_MC_L2L3Residual_AK4PFchs.txt
 			// adding the run on it anyway
-			jetCorFiles.push_back((baseDir+"/"+pf+"_L2L3Residual_AK4PFchs.txt").Data());
-			
+			// jetCorFiles.push_back((baseDir+"/"+pf+"_L2L3Residual_AK4PFchs.txt").Data());
+			// nope, it is empty for MC and apparently is a dummy file there -- it is not used
+
 			//init the parameters for correction
 			std::vector<JetCorrectorParameters> corSteps;
 			for(size_t i=0; i<jetCorFiles.size(); i++) corSteps.push_back(JetCorrectorParameters(jetCorFiles[i]));
@@ -931,13 +932,14 @@ FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector (jecDir, isMC);
 //JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/" + (isMC ? "MC" : "DATA") + "_Uncertainty_AK4PFchs.txt").Data ());
 JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/Fall15_25nsV2_" + (isMC ? "MC" : "DATA") + "_Uncertainty_AK4PFchs.txt").Data ());
 // JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK4PFchs.txt").Data ());
-	
+
 // ------------------------------------- muon energy scale and uncertainties
 // MuScleFitCorrector *muCor = NULL;
 // FIXME: MuScle fit corrections for 13 TeV not available yet (more Zs are needed) getMuonCorrector (jecDir, dtag);
 // TString muscleDir = runProcess.getParameter<std::string>("muscleDir");
 // gSystem->ExpandPathName(muscleDir);
 rochcor2015* muCor = new rochcor2015(); // This replaces the old MusScleFitCorrector that was used at RunI
+// seems to be comming from: https://github.com/cms-tau-pog/jetToTauFakeRate/blob/master/src/rochcor2015.cc
 
 // Electron energy scale, based on https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer and adapted to this framework
 string EGammaEnergyCorrectionFile = "EgammaAnalysis/ElectronTools/data/76X_16DecRereco_2015";
@@ -949,7 +951,7 @@ ElectronEnCorrector.initPrivateRng(new TRandom(1234));
 
 // --------------------------------------- lepton efficiencies
 LeptonEfficiencySF lepEff;
-	
+
 // --------------------------------------- b-tagging 
 // TODO: move all these numbers to where they are applied??
 // btagMedium is used twice in the code
