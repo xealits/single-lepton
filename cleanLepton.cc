@@ -2803,7 +2803,8 @@ for(size_t f=0; f<urls.size();++f)
 			//jets[ijet].setVal("torawsf",1./(newJECSF*newJERSF));
 
 			// Add the jet momentum correction:
-			jet_corr += jet.p4() - jet_initial_momentum;
+			// no jet_cor in 13.2
+			//jet_corr += jet.p4() - jet_initial_momentum;
 
 			if(debug)
 				{
@@ -3220,7 +3221,8 @@ for(size_t f=0; f<urls.size();++f)
 			//bool passBtagsSelection(selSingleLepBJets.size()>0); // 1 b jet // 2^2
 			//bool passBtagsSelection(selBJets.size()>0); // 1 b jet // 2^2
 			bool passBtagsSelection(n_bjets>0); // 1 b jet // 2^2
-			bool passTauSelection(n_taus==1); // only 1 tau // 2^1
+			//bool passTauSelection(n_taus==1); // only 1 tau // 2^1
+			bool passTauSelection(n_taus>0); // >= 1 tau in 13.2
 			bool passOS( n_taus>0 && n_leptons>0 ? selLeptons[0].pdgId() * selTausNoLep[0].pdgId() < 0 : 0); // Oposite sign // 2^0
 
 
