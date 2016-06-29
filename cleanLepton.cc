@@ -99,11 +99,13 @@ namespace utils
 			jetCorFiles.push_back((baseDir+"/"+pf+"_L1FastJet_AK4PFchs.txt").Data());
 			jetCorFiles.push_back((baseDir+"/"+pf+"_L2Relative_AK4PFchs.txt").Data());
 			jetCorFiles.push_back((baseDir+"/"+pf+"_L3Absolute_AK4PFchs.txt").Data());
-			if(!isMC) jetCorFiles.push_back((baseDir+"/"+pf+"_L2L3Residual_AK4PFchs.txt").Data());
+			// if(!isMC) jetCorFiles.push_back((baseDir+"/"+pf+"_L2L3Residual_AK4PFchs.txt").Data());
 			// now there is a practically empty file Fall15_25nsV2_MC_L2L3Residual_AK4PFchs.txt
 			// adding the run on it anyway
-			// jetCorFiles.push_back((baseDir+"/"+pf+"_L2L3Residual_AK4PFchs.txt").Data());
-			// nope, it is empty for MC and apparently is a dummy file there -- it is not used
+			jetCorFiles.push_back((baseDir+"/"+pf+"_L2L3Residual_AK4PFchs.txt").Data());
+			// it is dummy/empty file for MC and apparently is is not used
+			// but in v13.1 it seemed to influence selection a bit
+			// adding it for v13.4 -- will test later without it
 
 			//init the parameters for correction
 			std::vector<JetCorrectorParameters> corSteps;
@@ -2815,8 +2817,8 @@ for(size_t f=0; f<urls.size();++f)
 			//jets[ijet].setVal("torawsf",1./(newJECSF*newJERSF));
 
 			// Add the jet momentum correction:
-			// no jet_cor in 13.2
-			//jet_corr += jet.p4() - jet_initial_momentum;
+			// jet_cor propagation is on in 13.4
+			jet_corr += jet.p4() - jet_initial_momentum;
 
 			if(debug)
 				{
