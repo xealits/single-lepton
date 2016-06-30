@@ -513,23 +513,66 @@ int fill_n(string control_point_name, unsigned int value, double weight)
 		// the control point distr has not been created/initialized
 		// create it:
 		//th1i_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
-		th1i_distr_control[key] = TH1I(control_point_name.c_str(), ";;N", 100, 0., 100.);
+		//th1i_distr_control[key] = TH1I(control_point_name.c_str(), ";;N", 100, 0., 100.);
+		// particle counters are broken here
+		// trying TH1D for v13.5
+		th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;N", 100, 0., 100.);
 		//cout << "creating " << control_point_name << endl;
 		}
 
 	// fill the distribution:
-	th1i_distr_control[key].Fill(value, weight);
+	// th1i_distr_control[key].Fill(value, weight);
+	th1d_distr_control[key].Fill(value, weight);
 	//cout << "filled " << control_point_name << endl;
 	//cout << th1i_distr_control[control_point_name].Integral() << endl;
 
-	if (th1i_distr_control_headers.find(string("n")) == th1i_distr_control_headers.end() )
+	//if (th1i_distr_control_headers.find(string("n")) == th1i_distr_control_headers.end() )
+	//	{
+	//	th1i_distr_control_headers[string("n")] = TH1I("Header of particle counter distributions", ";;N", 100, 0., 100.);
+	//	}
+	if (th1d_distr_control_headers.find(string("n")) == th1d_distr_control_headers.end() )
 		{
-		th1i_distr_control_headers[string("n")] = TH1I("Header of particle counter distributions", ";;N", 100, 0., 100.);
+		th1d_distr_control_headers[string("n")] = TH1D("Header of particle counter distributions", ";;N", 100, 0., 100.);
 		}
 
 	// return success:
 	return 0;
 	}
+
+
+int fill_particle_ids(string control_point_name, unsigned int value, double weight)
+	{
+	// for tau (and other) fake-rates
+	// check if the key (mc_decay, control point) has been initialized
+	std::pair <string,string> key (mc_decay, control_point_name);
+
+	if (th1i_distr_control.find(key) == th1i_distr_control.end() )
+		{
+		// the control point distr has not been created/initialized
+		// create it:
+		//th1i_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
+		//th1i_distr_control[key] = TH1I(control_point_name.c_str(), ";;N", 100, 0., 100.);
+		// particle counters are broken here
+		// trying TH1D for v13.5
+		th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;ID", 600, -300., 300.);
+		//cout << "creating " << control_point_name << endl;
+		}
+
+	// fill the distribution:
+	// th1i_distr_control[key].Fill(value, weight);
+	th1d_distr_control[key].Fill(value, weight);
+	//cout << "filled " << control_point_name << endl;
+	//cout << th1i_distr_control[control_point_name].Integral() << endl;
+
+	if (th1d_distr_control_headers.find(string("p_id")) == th1d_distr_control_headers.end() )
+		{
+		th1d_distr_control_headers[string("p_id")] = TH1D("Header of particle ID distributions", ";;ID", 600, -300., 300.);
+		}
+
+	// return success:
+	return 0;
+	}
+
 
 int fill_pu(string control_point_name, double value, double weight)
 	{
@@ -776,7 +819,10 @@ if (argc < 2)
 // load framework libraries
 gSystem->Load ("libFWCoreFWLite");
 AutoLibraryLoader::enable ();
-	
+
+// random numbers for corrections & uncertainties
+TRandom *r3 = new TRandom3();
+
 // configure the process
 const edm::ParameterSet & runProcess = edm::readPSetsFrom (argv[1])->getParameter < edm::ParameterSet > ("runProcess");
 
@@ -2677,6 +2723,7 @@ for(size_t f=0; f<urls.size();++f)
 		// ------------------------------------------ select the taus cleaned from leptons
 
 		pat::TauCollection selTausNoLep;
+		int closest_totaunolep_particle_id = 0; // wonder what is 0 particle
 		for (size_t itau = 0; itau < selTaus.size(); ++itau)
 			{
 			pat::Tau& tau = selTaus[itau];
@@ -2691,7 +2738,77 @@ for(size_t f=0; f<urls.size();++f)
 			if (overlapWithLepton) continue;
 
 			selTausNoLep.push_back(tau);
+			// so these are the final taus we use in the selection
+
+			// for the fake-rate counts (in MC)
+			// let's save how many taus we find:
+			increment(string("number_of_tausnolep_found"), 1);
+
+			// for MC find the generated candidate closest to the tau
+			// to get the fakeness
+			if (isMC)
+				{
+				double min_deltaR = 99999.9;
+				for(size_t i = 0; i < gen.size(); ++ i)
+					{
+					const reco::GenParticle & p = gen[i];
+					double deltaR_to_p = reco::deltaR(tau, p);
+					if (deltaR_to_p < min_deltaR)
+						{
+						min_deltaR = deltaR_to_p;
+						closest_totaunolep_particle_id = p.pdgId();
+						}
+					//int id = p.pdgId();
+					//int st = p.status();
+					//int n = p.numberOfDaughters();
+					//cout << i << ": " << id << " " << st;
+					//if (p.numberOfMothers() != 0) cout << " <- " ;
+					//for (int j = 0 ; j < p.numberOfMothers(); ++j)
+					//	{
+					//	const reco::Candidate * mom = p.mother(j);
+					//	cout << " " << mom->pdgId() << " " << mom->status() << ";";
+					//	}
+					//cout << "\n";
+					//if (n>0)
+					//	{
+					//	cout << "\t|-> " ;
+					//	for (int j = 0; j < n; ++j)
+					//		{
+					//		const reco::Candidate * d = p.daughter( j );
+					//		cout << d->pdgId() << " " << d->status() << "; " ;
+					//		}
+					//	cout << "\n";
+					//	}
+					}
+				fill_particle_ids(string("nearest_particle_around_taunolep"), double(closest_totaunolep_particle_id));
+				// electron-tau fake-rate scale factor
+				if (fabs(closest_totaunolep_particle_id)==11)
+					{
+					increment(string("number_of_tausnolep_from_electron_found"), 1);
+					// apply the data/MC fake rate scale factor
+					// (from https://twiki.cern.ch/twiki/bin/viewauth/CMS/TauIDRecommendation13TeV#Electron_to_tau_fake_rate)
+					// for tight working points it is 1.80 +- 0.23 in barrel (eta < 1.460)
+					// and 1.3 +- 0.42 in endcaps (eta > 1.558)
+					if (fabs(tau.eta()) < 1.460)
+						{
+						weight *= 1.8 + r3->Gauss(0, 0.2);  // gaussian +- 0.2
+						}
+					else if (fabs(tau.eta()) > 1.558)
+						{
+						weight *= 1.3 + r3->Gauss(0, 0.42); // gaussian +- 0.42
+						}
+					// TODO: and then I need to renormalize the MC integral??
+					}
+
+				if (fabs(closest_totaunolep_particle_id)==13)
+					{
+					increment(string("number_of_tausnolep_from_muon_found"), 1);
+					// TODO: add muon-tau fake rate?
+					}
+				}
 			}
+
+		increment(string("weightflow_weight_after_tausnolep_fakerates_sf"), weight);
 
 		// Control values for processed taus cleaned of leptons:
 		for(size_t n=0; n<selTausNoLep.size(); ++n)
@@ -3274,8 +3391,29 @@ for(size_t f=0; f<urls.size();++f)
 				fill_pt_e( string("top1pt_muons_pt_individual_up"), selLeptons[0].pt(), weight_up);
 				fill_pt_e( string("top1pt_muons_pt_individual_down"), selLeptons[0].pt(), weight_down);
 
+				fill_particle_ids(string("nearest_particle_around_tau_singlemu"), double(closest_totaunolep_particle_id));
+				if (fabs(closest_totaunolep_particle_id) == 13)
+					{
+					increment(string("number_of_tausnolep_from_muon_found_in_singlemu"), 1);
+					}
+
+				if (passJetSelection)
+					{
+					fill_particle_ids(string("nearest_particle_around_tau_singlemu_jetselection"), double(closest_totaunolep_particle_id));
+					if (fabs(closest_totaunolep_particle_id) == 13)
+						{
+						increment(string("number_of_tausnolep_from_muon_found_in_singlemu_jetselection"), 1);
+						}
+					}
+
 				if (passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
 					{
+					fill_particle_ids(string("nearest_particle_around_tau_singlemu_fullselection"), double(closest_totaunolep_particle_id));
+					if (fabs(closest_totaunolep_particle_id) == 13)
+						{
+						increment(string("number_of_tausnolep_from_muon_found_in_singlemu_fullselection"), 1);
+						}
+
 					increment( string("weightflow_weight_passed_singlemu_selection"), weight );
 					increment( string("weightflow_weight_up_passed_singlemu_selection"), weight_up );
 					increment( string("weightflow_weight_down_passed_singlemu_selection"), weight_down );
@@ -3333,8 +3471,30 @@ for(size_t f=0; f<urls.size();++f)
 				fill_pt_e( string("top1pt_electrons_pt_individual_up"), selLeptons[0].pt(), weight_up);
 				fill_pt_e( string("top1pt_electrons_pt_individual_down"), selLeptons[0].pt(), weight_down);
 
+				fill_particle_ids(string("nearest_particle_around_tau_singleel"), double(closest_totaunolep_particle_id));
+				if (fabs(closest_totaunolep_particle_id) == 11)
+					{
+					increment(string("number_of_tausnolep_from_electron_found_in_singleel"), 1);
+					}
+
+				if (passJetSelection)
+					{
+					fill_particle_ids(string("nearest_particle_around_tau_singleel_jetselection"), double(closest_totaunolep_particle_id));
+					if (fabs(closest_totaunolep_particle_id) == 11)
+						{
+						increment(string("number_of_tausnolep_from_electron_found_in_singleel_jetselection"), 1);
+						}
+					}
+
+
 				if (passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
 					{
+					fill_particle_ids(string("nearest_particle_around_tau_singleel_fullselection"), double(closest_totaunolep_particle_id));
+					if (fabs(closest_totaunolep_particle_id) == 11)
+						{
+						increment(string("number_of_tausnolep_from_electron_found_in_singleel_fullselection"), 1);
+						}
+
 					increment( string("weightflow_weight_passed_singleel_selection"), weight );
 					increment( string("weightflow_weight_up_passed_singleel_selection"), weight_up );
 					increment( string("weightflow_weight_down_passed_singleel_selection"), weight_down );
