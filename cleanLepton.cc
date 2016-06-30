@@ -540,7 +540,7 @@ int fill_n(string control_point_name, unsigned int value, double weight)
 	}
 
 
-int fill_particle_ids(string control_point_name, unsigned int value, double weight)
+int fill_particle_ids(string control_point_name, int value, double weight)
 	{
 	// for tau (and other) fake-rates
 	// check if the key (mc_decay, control point) has been initialized
@@ -2780,7 +2780,7 @@ for(size_t f=0; f<urls.size();++f)
 					//	cout << "\n";
 					//	}
 					}
-				fill_particle_ids(string("nearest_particle_around_taunolep"), double(closest_totaunolep_particle_id));
+				fill_particle_ids(string("nearest_particle_around_taunolep"), closest_totaunolep_particle_id, weight);
 				// electron-tau fake-rate scale factor
 				if (fabs(closest_totaunolep_particle_id)==11)
 					{
@@ -3391,7 +3391,7 @@ for(size_t f=0; f<urls.size();++f)
 				fill_pt_e( string("top1pt_muons_pt_individual_up"), selLeptons[0].pt(), weight_up);
 				fill_pt_e( string("top1pt_muons_pt_individual_down"), selLeptons[0].pt(), weight_down);
 
-				fill_particle_ids(string("nearest_particle_around_tau_singlemu"), double(closest_totaunolep_particle_id));
+				fill_particle_ids(string("nearest_particle_around_tau_singlemu"), closest_totaunolep_particle_id, weight);
 				if (fabs(closest_totaunolep_particle_id) == 13)
 					{
 					increment(string("number_of_tausnolep_from_muon_found_in_singlemu"), 1);
@@ -3399,7 +3399,7 @@ for(size_t f=0; f<urls.size();++f)
 
 				if (passJetSelection)
 					{
-					fill_particle_ids(string("nearest_particle_around_tau_singlemu_jetselection"), double(closest_totaunolep_particle_id));
+					fill_particle_ids(string("nearest_particle_around_tau_singlemu_jetselection"), closest_totaunolep_particle_id, weight);
 					if (fabs(closest_totaunolep_particle_id) == 13)
 						{
 						increment(string("number_of_tausnolep_from_muon_found_in_singlemu_jetselection"), 1);
@@ -3408,7 +3408,7 @@ for(size_t f=0; f<urls.size();++f)
 
 				if (passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
 					{
-					fill_particle_ids(string("nearest_particle_around_tau_singlemu_fullselection"), double(closest_totaunolep_particle_id));
+					fill_particle_ids(string("nearest_particle_around_tau_singlemu_fullselection"), closest_totaunolep_particle_id, weight);
 					if (fabs(closest_totaunolep_particle_id) == 13)
 						{
 						increment(string("number_of_tausnolep_from_muon_found_in_singlemu_fullselection"), 1);
@@ -3471,7 +3471,7 @@ for(size_t f=0; f<urls.size();++f)
 				fill_pt_e( string("top1pt_electrons_pt_individual_up"), selLeptons[0].pt(), weight_up);
 				fill_pt_e( string("top1pt_electrons_pt_individual_down"), selLeptons[0].pt(), weight_down);
 
-				fill_particle_ids(string("nearest_particle_around_tau_singleel"), double(closest_totaunolep_particle_id));
+				fill_particle_ids(string("nearest_particle_around_tau_singleel"), closest_totaunolep_particle_id, weight);
 				if (fabs(closest_totaunolep_particle_id) == 11)
 					{
 					increment(string("number_of_tausnolep_from_electron_found_in_singleel"), 1);
@@ -3479,7 +3479,7 @@ for(size_t f=0; f<urls.size();++f)
 
 				if (passJetSelection)
 					{
-					fill_particle_ids(string("nearest_particle_around_tau_singleel_jetselection"), double(closest_totaunolep_particle_id));
+					fill_particle_ids(string("nearest_particle_around_tau_singleel_jetselection"), closest_totaunolep_particle_id, weight);
 					if (fabs(closest_totaunolep_particle_id) == 11)
 						{
 						increment(string("number_of_tausnolep_from_electron_found_in_singleel_jetselection"), 1);
@@ -3489,7 +3489,7 @@ for(size_t f=0; f<urls.size();++f)
 
 				if (passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
 					{
-					fill_particle_ids(string("nearest_particle_around_tau_singleel_fullselection"), double(closest_totaunolep_particle_id));
+					fill_particle_ids(string("nearest_particle_around_tau_singleel_fullselection"), closest_totaunolep_particle_id, weight);
 					if (fabs(closest_totaunolep_particle_id) == 11)
 						{
 						increment(string("number_of_tausnolep_from_electron_found_in_singleel_fullselection"), 1);
