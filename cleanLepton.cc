@@ -2791,11 +2791,11 @@ for(size_t f=0; f<urls.size();++f)
 					// and 1.3 +- 0.42 in endcaps (eta > 1.558)
 					if (fabs(tau.eta()) < 1.460)
 						{
-						weight *= 1.8 + r3->Gauss(0, 0.2);  // gaussian +- 0.2
+						weight *= 1.8 + r3->Gaus(0, 0.2);  // gaussian +- 0.2
 						}
 					else if (fabs(tau.eta()) > 1.558)
 						{
-						weight *= 1.3 + r3->Gauss(0, 0.42); // gaussian +- 0.42
+						weight *= 1.3 + r3->Gaus(0, 0.42); // gaussian +- 0.42
 						}
 					// TODO: and then I need to renormalize the MC integral??
 					}
