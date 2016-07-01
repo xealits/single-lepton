@@ -508,7 +508,7 @@ int fill_n(string control_point_name, unsigned int value, double weight)
 	// check if the key (mc_decay, control point) has been initialized
 	std::pair <string,string> key (mc_decay, control_point_name);
 
-	if (th1i_distr_control.find(key) == th1i_distr_control.end() )
+	if (th1d_distr_control.find(key) == th1d_distr_control.end() )
 		{
 		// the control point distr has not been created/initialized
 		// create it:
@@ -546,7 +546,7 @@ int fill_particle_ids(string control_point_name, int value, double weight)
 	// check if the key (mc_decay, control point) has been initialized
 	std::pair <string,string> key (mc_decay, control_point_name);
 
-	if (th1i_distr_control.find(key) == th1i_distr_control.end() )
+	if (th1d_distr_control.find(key) == th1d_distr_control.end() )
 		{
 		// the control point distr has not been created/initialized
 		// create it:
