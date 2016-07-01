@@ -987,7 +987,10 @@ JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + 
 // TString muscleDir = runProcess.getParameter<std::string>("muscleDir");
 // gSystem->ExpandPathName(muscleDir);
 rochcor2015* muCor = new rochcor2015(); // This replaces the old MusScleFitCorrector that was used at RunI
-// seems to be comming from: https://github.com/cms-tau-pog/jetToTauFakeRate/blob/master/src/rochcor2015.cc
+// comes from:
+// https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon
+// last muon POG talk:
+// https://indico.cern.ch/event/533054/contributions/2171540/attachments/1274536/1891597/rochcor_run2_MuonPOG_051716.pdf
 
 // Electron energy scale, based on https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer and adapted to this framework
 string EGammaEnergyCorrectionFile = "EgammaAnalysis/ElectronTools/data/76X_16DecRereco_2015";
