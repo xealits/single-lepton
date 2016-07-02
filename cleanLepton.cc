@@ -2792,6 +2792,7 @@ for(size_t f=0; f<urls.size();++f)
 					// (from https://twiki.cern.ch/twiki/bin/viewauth/CMS/TauIDRecommendation13TeV#Electron_to_tau_fake_rate)
 					// for tight working points it is 1.80 +- 0.23 in barrel (eta < 1.460)
 					// and 1.3 +- 0.42 in endcaps (eta > 1.558)
+					/* repeating 13.4, no electron-to-tau sf
 					if (fabs(tau.eta()) < 1.460)
 						{
 						weight *= 1.8 + r3->Gaus(0, 0.2);  // gaussian +- 0.2
@@ -2800,6 +2801,7 @@ for(size_t f=0; f<urls.size();++f)
 						{
 						weight *= 1.3 + r3->Gaus(0, 0.42); // gaussian +- 0.42
 						}
+					*/
 					// TODO: and then I need to renormalize the MC integral??
 					}
 
