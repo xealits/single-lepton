@@ -3646,6 +3646,10 @@ for(size_t f=0; f<urls.size();++f)
 				// increment(string("weightflow_up_ee_") + to_string(multisel), weight_up);
 				// increment(string("weightflow_down_ee_") + to_string(multisel), weight_down);
 
+				fill_n( string("elel_channel_n_jets"), n_jets, weight);
+				fill_n( string("elel_channel_n_bjets"), n_bjets, weight);
+				fill_n( string("elel_channel_n_taus"), n_taus, weight);
+
 				if( passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
 					{
 					increment( string("weightflow_weight_passed_doubleel_selection"), weight );
@@ -3696,6 +3700,10 @@ for(size_t f=0; f<urls.size();++f)
 				// increment(string("weightflow_up_mumu_") + to_string(multisel), weight_up);
 				// increment(string("weightflow_down_mumu_") + to_string(multisel), weight_down);
 
+				fill_n( string("mumu_channel_n_jets"), n_jets, weight);
+				fill_n( string("mumu_channel_n_bjets"), n_bjets, weight);
+				fill_n( string("mumu_channel_n_taus"), n_taus, weight);
+
 				if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
 					{
 					increment( string("weightflow_weight_passed_doublemu_selection"), weight );
@@ -3745,6 +3753,11 @@ for(size_t f=0; f<urls.size();++f)
 				increment(string("weightflow_emu_") + to_string(multisel), weight);
 				// increment(string("weightflow_up_emu_") + to_string(multisel), weight_up);
 				// increment(string("weightflow_down_emu_") + to_string(multisel), weight_down);
+
+				fill_n( string("elmu_channel_n_jets"), n_jets, weight);
+				fill_n( string("elmu_channel_n_bjets"), n_bjets, weight);
+				fill_n( string("elmu_channel_n_taus"), n_taus, weight);
+
 				if (passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
 					{
 					increment( string("weightflow_weight_passed_doubleemu_selection"), weight );
