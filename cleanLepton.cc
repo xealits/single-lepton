@@ -2120,6 +2120,7 @@ for(size_t f=0; f<urls.size();++f)
 			int lid(electron.pdgId()); // should always be 11
 
 			//apply electron corrections
+			/* no lepcorrs in 13.6
 			if(abs(lid)==11)
 				{
 				elDiff -= electron.p4();
@@ -2127,6 +2128,7 @@ for(size_t f=0; f<urls.size();++f)
 				//electron = patUtils::GenericLepton(electron.el); //recreate the generic electron to be sure that the p4 is ok
 				elDiff += electron.p4();
 				}
+			*/
 
 			fill_pt_e( string("all_electrons_corrected_pt"), electron.pt(), weight);
 			if (n < 2)
@@ -2252,6 +2254,7 @@ for(size_t f=0; f<urls.size();++f)
 			int lid(muon.pdgId()); // should always be 13
 
 			//apply muon corrections
+			/* no lepcorrs in 13.6
 			if(abs(lid) == 13 && muCor)
 				{
 				float qter;
@@ -2266,6 +2269,7 @@ for(size_t f=0; f<urls.size();++f)
 				muon.setP4(LorentzVector(p4.Px(), p4.Py(), p4.Pz(), p4.E()));
 				muDiff += muon.p4();
 				}
+			*/
 
 			fill_pt_e( string("all_muons_corrected_pt"), muon.pt(), weight);
 			if (n < 2)
