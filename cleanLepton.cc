@@ -1577,6 +1577,8 @@ for(size_t f=0; f<urls.size();++f)
 		*/
 
 		weight *= weightGen;
+		weight_up *= weightGen;
+		weight_down *= weightGen;
 		rawWeight *=weightGen;
 				
 		// ------------------------------- count N good verteces
