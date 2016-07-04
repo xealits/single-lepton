@@ -99,13 +99,14 @@ namespace utils
 			jetCorFiles.push_back((baseDir+"/"+pf+"_L1FastJet_AK4PFchs.txt").Data());
 			jetCorFiles.push_back((baseDir+"/"+pf+"_L2Relative_AK4PFchs.txt").Data());
 			jetCorFiles.push_back((baseDir+"/"+pf+"_L3Absolute_AK4PFchs.txt").Data());
-			// if(!isMC) jetCorFiles.push_back((baseDir+"/"+pf+"_L2L3Residual_AK4PFchs.txt").Data());
+			if(!isMC) jetCorFiles.push_back((baseDir+"/"+pf+"_L2L3Residual_AK4PFchs.txt").Data());
 			// now there is a practically empty file Fall15_25nsV2_MC_L2L3Residual_AK4PFchs.txt
 			// adding the run on it anyway
-			jetCorFiles.push_back((baseDir+"/"+pf+"_L2L3Residual_AK4PFchs.txt").Data());
+			//jetCorFiles.push_back((baseDir+"/"+pf+"_L2L3Residual_AK4PFchs.txt").Data());
 			// it is dummy/empty file for MC and apparently is is not used
 			// but in v13.1 it seemed to influence selection a bit
 			// adding it for v13.4 -- will test later without it
+			// and removing in 13.7 test -- compare with 13.4 & 13.4_repeat
 
 			//init the parameters for correction
 			std::vector<JetCorrectorParameters> corSteps;
