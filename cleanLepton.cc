@@ -2525,6 +2525,7 @@ for(size_t f=0; f<urls.size();++f)
 
 			fill_pu( string("pileup_inachannel_rawweight_perrawvtxsize"), vtx.size(), rawWeight);
 			fill_pu( string("pileup_inachannel_weight_perrawvtxsize"), vtx.size(), weight_pu_test);
+
 			fill_pu( string("pileup_inachannel_rawweight_pernuminters"), num_inters, rawWeight);
 			fill_pu( string("pileup_inachannel_weight_pernuminters"), num_inters, weight);
 			}
@@ -3466,6 +3467,8 @@ for(size_t f=0; f<urls.size();++f)
 					fill_pu( string("pileup_muselection_weight_up_pergoodpv"), nGoodPV, weight_up);
 					fill_pu( string("pileup_muselection_weight_down_pergoodpv"), nGoodPV, weight_down);
 
+					fill_pu( string("pileup_muselection_rawweight_pernuminters"), num_inters, rawWeight);
+					fill_pu( string("pileup_muselection_weight_pernuminters"), num_inters, weight);
 					}
 				}
 
@@ -3545,6 +3548,9 @@ for(size_t f=0; f<urls.size();++f)
 					fill_pu( string("pileup_elselection_weight_pergoodpv"), nGoodPV, weight);
 					fill_pu( string("pileup_elselection_weight_up_pergoodpv"), nGoodPV, weight_up);
 					fill_pu( string("pileup_elselection_weight_down_pergoodpv"), nGoodPV, weight_down);
+
+					fill_pu( string("pileup_elselection_rawweight_pernuminters"), num_inters, rawWeight);
+					fill_pu( string("pileup_elselection_weight_pernuminters"), num_inters, weight);
 					}
 				}
 
@@ -3698,6 +3704,9 @@ for(size_t f=0; f<urls.size();++f)
 					fill_pu( string("pileup_elelselection_weight_pergoodpv"), nGoodPV, weight);
 					fill_pu( string("pileup_elelselection_weight_up_pergoodpv"), nGoodPV, weight_up);
 					fill_pu( string("pileup_elelselection_weight_down_pergoodpv"), nGoodPV, weight_down);
+
+					fill_pu( string("pileup_elelselection_rawweight_pernuminters"), num_inters, rawWeight);
+					fill_pu( string("pileup_elelselection_weight_pernuminters"), num_inters, weight);
 					}
 				}
 
@@ -3752,6 +3761,9 @@ for(size_t f=0; f<urls.size();++f)
 					fill_pu( string("pileup_mumuselection_weight_pergoodpv"), nGoodPV, weight);
 					fill_pu( string("pileup_mumuselection_weight_up_pergoodpv"), nGoodPV, weight_up);
 					fill_pu( string("pileup_mumuselection_weight_down_pergoodpv"), nGoodPV, weight_down);
+
+					fill_pu( string("pileup_mumuselection_rawweight_pernuminters"), num_inters, rawWeight);
+					fill_pu( string("pileup_mumuselection_weight_pernuminters"), num_inters, weight);
 					}
 				}
 
@@ -3806,6 +3818,9 @@ for(size_t f=0; f<urls.size();++f)
 					fill_pu( string("pileup_elmuselection_weight_pergoodpv"), nGoodPV, weight);
 					fill_pu( string("pileup_elmuselection_weight_up_pergoodpv"), nGoodPV, weight_up);
 					fill_pu( string("pileup_elmuselection_weight_down_pergoodpv"), nGoodPV, weight_down);
+
+					fill_pu( string("pileup_elmuselection_rawweight_pernuminters"), num_inters, rawWeight);
+					fill_pu( string("pileup_elmuselection_weight_pernuminters"), num_inters, weight);
 					}
 				}
 			}
