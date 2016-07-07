@@ -200,13 +200,17 @@ The steps of Pietro's code with changes.
     according to https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer
   + kinematics, good and veto, lepton IDs and isolation -> **new isolation**
     - muons:
-      good: P_T > 26, eta < 2.4, tight muon
-      veto: P_T > 10, eta < 2.5, loose muon
+      * corrected with Rochester Corrector
+        https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon
+        https://indico.cern.ch/event/533054/contributions/2171540/attachments/1274536/1891597/rochcor_run2_MuonPOG_051716.pdf
 
-      IDs are according to
-      https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2
-      These IDs are assigned to muons in data for CMSSW_7_4_2 and above.
-      They are combinations of selectiors:
+      * good: P_T > 26, eta < 2.4, tight muon
+        veto: P_T > 10, eta < 2.5, loose muon
+
+      * IDs are according to
+        https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2
+        These IDs are assigned to muons in data for CMSSW_7_4_2 and above.
+        They are combinations of selectiors:
         - loose muon:
           recoMu.isPFMuon() & (recoMu.isGlobalMuon() || recoMu.isTrackerMuon())
         - tight muon:
@@ -221,18 +225,21 @@ The steps of Pietro's code with changes.
           recoMu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0
           recoMu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5
 
-      Muons isolation is done according to
-      https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2#Muon_Isolation
-      by the scheme called
-      "PF-based combined relative isolation with deltaBeta correction."
+        Muons isolation is done according to
+        https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2#Muon_Isolation
+        by the scheme called
+        "PF-based combined relative isolation with deltaBeta correction."
 
     - electrons:
-      good: P_T > 30, eta < 2.4,
-      veto: P_T > 15, eta < 2.5,
-      both have window at leta > 1.4442 && leta < 1.5660
-      IDs and isolation are done with cut-based procedure according to
-      https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_25ns
-      (Isolation twiki requested)
+      * Corrected with `ElectronEnergyCalibratorRun2` from
+        `#include "EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibratorRun2.h"`
+        https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer
+      * good: P_T > 30, eta < 2.4,
+        veto: P_T > 15, eta < 2.5,
+      * both have window at leta > 1.4442 && leta < 1.5660
+        IDs and isolation are done with cut-based procedure according to
+        https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_25ns
+        (Isolation twiki requested)
 
 * select the taus -> **0 leave as is**
   + 4 tau ID discriminators (**check if up to date**) from https://twiki.cern.ch/twiki/bin/viewauth/CMS/TauIDRecommendation13TeV:
@@ -246,6 +253,8 @@ The steps of Pietro's code with changes.
     have at least 1 element with numberOfPixelHits > 0
   + tau pt > 20, eta < 2.3
   + overlap with selLeptons $\delta R > 0.4 $
+  + check closeness to an electron at gen level
+    -- multiply event weight with the fake-rate scale factor
 * jets
   + corrections `Fall15_25nsV2_*`
     - uncorrect with `jet.correctedP4("Uncorrected")`

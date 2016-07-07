@@ -614,7 +614,7 @@ int fill_pt_e(string control_point_name, double value, double weight)
 		// the control point distr has not been created/initialized
 		// create it:
 		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
-		th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
+		th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 400.);
 		//cout << "creating " << control_point_name << endl;
 		}
 
@@ -625,7 +625,7 @@ int fill_pt_e(string control_point_name, double value, double weight)
 
 	if (th1d_distr_control_headers.find(string("pt_e")) == th1d_distr_control_headers.end() )
 		{
-		th1d_distr_control_headers[string("pt_e")] = TH1D("Header of Pt/E distributions", ";;Pt/E(GeV)", 400, 0., 200.);
+		th1d_distr_control_headers[string("pt_e")] = TH1D("Header of Pt/E distributions", ";;Pt/E(GeV)", 400, 0., 400.);
 		}
 
 	// return success:
