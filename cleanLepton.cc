@@ -2887,12 +2887,14 @@ for(size_t f=0; f<urls.size();++f)
 
 			//double toRawSF=jet.correctedJet("Uncorrected").pt()/jet.pt();
 			//LorentzVector rawJet(jet*toRawSF);
+			/* 13.8 trying no jet corrections
 			jesCor->setJetEta(rawJet.eta());
 			jesCor->setJetPt(rawJet.pt());
 			jesCor->setJetA(jet.jetArea());
 			jesCor->setRho(rho);
 			jesCor->setNPV(nGoodPV);
 			jet.setP4(rawJet*jesCor->getCorrection());
+			*/
 
 			// here is the correct2 jet correction point
 
@@ -2907,6 +2909,7 @@ for(size_t f=0; f<urls.size();++f)
 
 			//smear JER
 			//double newJERSF(1.0);
+			/* 13.8 trying no jet corrections
 			if(isMC)
 				{
 				const reco::GenJet* genJet=jet.genJet();
@@ -2942,6 +2945,7 @@ for(size_t f=0; f<urls.size();++f)
 				jet.addUserFloat("_scale_jup",    ptUnc[0] );
 				jet.addUserFloat("_scale_jdown",  ptUnc[1] );
 				}
+			*/
 
 			// FIXME: this is not to be re-set. Check that this is a desired non-feature.
 			// i.e. check that the uncorrectedJet remains the same even when the corrected momentum is changed by this routine.
@@ -2958,6 +2962,7 @@ for(size_t f=0; f<urls.size();++f)
 				cout << "-" << jet_initial_momentum.eta() << " " << jet_initial_momentum.pt() << " " << jet_initial_momentum.energy() << endl;
 				}
 			}
+
 
 		std::sort (jets.begin(),  jets.end(),  utils::sort_CandidatesByPt);
 		// ----------------------------------- here is the correctF jet correction point

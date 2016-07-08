@@ -161,9 +161,13 @@ The steps of Pietro's code with changes.
   + *removed* merging-stitching of LO and NLO sets (via HT/phat binning)
   + count N good verteces (used as pile-up in data?)
   + Apply pileup reweighting -> **manual reweight**
+    https://twiki.cern.ch/twiki/bin/view/CMS/PileupJSONFileforData#Pileup_JSON_Files_For_Run_II
+    pileup_latest.txt -> pileup_JSON_11-19-2015.txt
+    
   + (TODO) HLT trigger efficiency
   + (TODO) lepton ID/Iso efficiencies
   + B-tag efficiency (needs to be checked and updated according to \url{twiki/bin/viewauth/CMS/BtagRecommendation76X})
+  + B-tag scale factors: \url{https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation76X#Data_MC_Scale_Factors}
   + (TODO?) PDF weights from \url{https://twiki.cern.ch/twiki/bin/viewauth/CMS/LHEReaderCMSSW#How_to_use_weights}
   + save distributions of weights -> **1**
 * basic event selection
@@ -177,9 +181,12 @@ The steps of Pietro's code with changes.
     (to update to `HLT_IsoMu18)
     electrons --- `HLT_Ele23_WPLoose_Gsf` for data and MC
     The dilepton HLTs are not used --- should consider adding them (people regard this option as efficiency improvement \url{https://hypernews.cern.ch/HyperNews/CMS/get/top-trigger/180.html})
-  + *Apply MET filters*
-    using now DoubleEG_csc2015.txt, MuonEG_csc2015.txt etc
-    TODO: check "MET-filter triggers" for 76X in https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#ETmiss_filters
+  + Apply MET filters via HLT paths according to
+    url{https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#MiniAOD_76X_v2_produced_with_the}
+    #using now DoubleEG_csc2015.txt, MuonEG_csc2015.txt etc
+    #TODO: check "MET-filter triggers" for 76X in
+    #https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#ETmiss_filters
+    #https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#MiniAOD_76X_v2_produced_with_the
 * load all the objects we will need to access
 * "TODO: what is this??" thing -> **0 commented out**
    (it should be the electron-muon split)
