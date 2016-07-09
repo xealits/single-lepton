@@ -315,27 +315,45 @@ namespace utils
 
 bool passPFJetID(std::string label, pat::Jet jet)
 	{
+	// Set of cuts from the POG group: https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
+
 	bool passID(false); 
 
-	float rawJetEn(jet.correctedJet("Uncorrected").energy() );
+	// float rawJetEn(jet.correctedJet("Uncorrected").energy() );
 
 	double eta=jet.eta();
  
-	float nhf( (jet.neutralHadronEnergy() + jet.HFHadronEnergy())/rawJetEn );
-	float nef( jet.neutralEmEnergy()/rawJetEn );
-	float cef( jet.chargedEmEnergy()/rawJetEn );
-	float chf( jet.chargedHadronEnergy()/rawJetEn );
-	float nch    = jet.chargedMultiplicity();
-	float nconst = jet.chargedMultiplicity()+jet.neutralMultiplicity();
-	float muf(jet.muonEnergy()/rawJetEn); 
+ 	// from the twiki:
+	float NHF = pfjet->neutralHadronEnergyFraction();
+	float NEMF = pfjet->neutralEmEnergyFraction();
+	float CHF = pfjet->chargedHadronEnergyFraction();
+	float MUF = pfjet->muonEnergyFraction();
+	float CEMF = pfjet->chargedEmEnergyFraction();
+	float NumConst = pfjet->chargedMultiplicity()+pfjet->neutralMultiplicity();
+	float NumNeutralParticles =pfjet->neutralMultiplicity();
+	float CHM = pfjet->chargedMultiplicity(); 
+	// TODO: check if these change corresponding to jet corrections? Or apply corrections after passing the selection?
 
-	// Set of cuts from the POG group: https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
+	// float nhf( (jet.neutralHadronEnergy() + jet.HFHadronEnergy())/rawJetEn );
+	// float nef( jet.neutralEmEnergy()/rawJetEn );
+	// float cef( jet.chargedEmEnergy()/rawJetEn );
+	// float chf( jet.chargedHadronEnergy()/rawJetEn );
+	// float nch    = jet.chargedMultiplicity();
+	// float nconst = jet.chargedMultiplicity()+jet.neutralMultiplicity();
+	// float muf(jet.muonEnergy()/rawJetEn); 
+
 	if (label=="Loose")
-		passID = ( ((nhf<0.99 && nef<0.99 && nconst>1) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.99) || abs(eta)>2.4)) && abs(eta)<=3.0 );
+		// passID = ( ((nhf<0.99 && nef<0.99 && nconst>1) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.99) || abs(eta)>2.4)) && abs(eta)<=3.0 );
+		// the same, just with new names:
+		passID = (NHF<0.99 && NEMF<0.99 && NumConst>1) && ((abs(eta)<=2.4 && CHF>0 && CHM>0 && CEMF<0.99) || abs(eta)>2.4) && abs(eta)<=3.0 ;
 	if (label=="Tight")
-		passID = ( ((nhf<0.90 && nef<0.90 && nconst>1) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.90) || abs(eta)>2.4)) && abs(eta) <=3.0);
+		// passID = ( ((nhf<0.90 && nef<0.90 && nconst>1) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.90) || abs(eta)>2.4)) && abs(eta) <=3.0);
+		passID = (NHF<0.90 && NEMF<0.90 && NumConst>1) && ((abs(eta)<=2.4 && CHF>0 && CHM>0 && CEMF<0.99) || abs(eta)>2.4) && abs(eta)<=3.0 ;
 
-	// Should be added the abs(eta)>3.0 part, but we never consider such jets, so... Meh!
+	// there is also:
+	//tightLepVetoJetID = (NHF<0.90 && NEMF<0.90 && NumConst>1 && MUF<0.8) && ((abs(eta)<=2.4 && CHF>0 && CHM>0 && CEMF<0.90) || abs(eta)>2.4) && abs(eta)<=3.0
+
+	// And the abs(eta)>3.0 part, but we never consider such jets, so... Meh!
 
 	return passID; 
 	}
@@ -2887,14 +2905,13 @@ for(size_t f=0; f<urls.size();++f)
 
 			//double toRawSF=jet.correctedJet("Uncorrected").pt()/jet.pt();
 			//LorentzVector rawJet(jet*toRawSF);
-			/* 13.8 trying no jet corrections
+			// 13.8_2 trying all jet corrections + new (if it is new) jetID procedure
 			jesCor->setJetEta(rawJet.eta());
 			jesCor->setJetPt(rawJet.pt());
 			jesCor->setJetA(jet.jetArea());
 			jesCor->setRho(rho);
 			jesCor->setNPV(nGoodPV);
 			jet.setP4(rawJet*jesCor->getCorrection());
-			*/
 
 			// here is the correct2 jet correction point
 
@@ -2909,7 +2926,7 @@ for(size_t f=0; f<urls.size();++f)
 
 			//smear JER
 			//double newJERSF(1.0);
-			// 13.8_1 trying only the smearJER jet corrections
+			// 13.8_2 trying all jet corrections + new (if it is new) jetID procedure
 			if(isMC)
 				{
 				const reco::GenJet* genJet=jet.genJet();
