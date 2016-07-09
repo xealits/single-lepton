@@ -3425,6 +3425,13 @@ for(size_t f=0; f<urls.size();++f)
 						}
 					}
 
+				if (passJetSelection && passMetSelection)
+					{
+					fill_n( string("singlemu_prebselpoint_n_jets"), n_jets, weight);
+					fill_n( string("singlemu_prebselpoint_n_bjets"), n_bjets, weight);
+					fill_n( string("singlemu_prebselpoint_n_taus"), n_taus, weight);
+					}
+
 				if (passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
 					{
 					fill_particle_ids(string("nearest_particle_around_tau_singlemu_fullselection"), closest_totaunolep_particle_id, weight);
@@ -3509,6 +3516,12 @@ for(size_t f=0; f<urls.size();++f)
 						}
 					}
 
+				if (passJetSelection && passMetSelection)
+					{
+					fill_n( string("singleel_prebselpoint_n_jets"), n_jets, weight);
+					fill_n( string("singleel_prebselpoint_n_bjets"), n_bjets, weight);
+					fill_n( string("singleel_prebselpoint_n_taus"), n_taus, weight);
+					}
 
 				if (passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS)
 					{
@@ -3673,6 +3686,13 @@ for(size_t f=0; f<urls.size();++f)
 				fill_n( string("elel_channel_n_bjets"), n_bjets, weight);
 				fill_n( string("elel_channel_n_taus"), n_taus, weight);
 
+				if( passMllVeto && passJetSelection && passMetSelection && passOS)
+					{
+					fill_n( string("elel_prebselpoint_n_jets"), n_jets, weight);
+					fill_n( string("elel_prebselpoint_n_bjets"), n_bjets, weight);
+					fill_n( string("elel_prebselpoint_n_taus"), n_taus, weight);
+					}
+
 				if( passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
 					{
 					increment( string("weightflow_weight_passed_doubleel_selection"), weight );
@@ -3732,6 +3752,13 @@ for(size_t f=0; f<urls.size();++f)
 				fill_n( string("mumu_channel_n_bjets"), n_bjets, weight);
 				fill_n( string("mumu_channel_n_taus"), n_taus, weight);
 
+				if(passMllVeto && passJetSelection && passMetSelection && passOS)
+					{
+					fill_n( string("mumu_prebselpoint_n_jets"), n_jets, weight);
+					fill_n( string("mumu_prebselpoint_n_bjets"), n_bjets, weight);
+					fill_n( string("mumu_prebselpoint_n_taus"), n_taus, weight);
+					}
+
 				if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
 					{
 					increment( string("weightflow_weight_passed_doublemu_selection"), weight );
@@ -3790,6 +3817,13 @@ for(size_t f=0; f<urls.size();++f)
 				fill_n( string("elmu_channel_n_jets"), n_jets, weight);
 				fill_n( string("elmu_channel_n_bjets"), n_bjets, weight);
 				fill_n( string("elmu_channel_n_taus"), n_taus, weight);
+
+				if (passMllVeto && passJetSelection && passMetSelection && passOS)
+					{
+					fill_n( string("elmu_prebselpoint_n_jets"), n_jets, weight);
+					fill_n( string("elmu_prebselpoint_n_bjets"), n_bjets, weight);
+					fill_n( string("elmu_prebselpoint_n_taus"), n_taus, weight);
+					}
 
 				if (passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
 					{
