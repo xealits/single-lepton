@@ -324,14 +324,14 @@ bool passPFJetID(std::string label, pat::Jet jet)
 	double eta=jet.eta();
  
  	// from the twiki:
-	float NHF = jet->neutralHadronEnergyFraction();
-	float NEMF = jet->neutralEmEnergyFraction();
-	float CHF = jet->chargedHadronEnergyFraction();
-	float MUF = jet->muonEnergyFraction();
-	float CEMF = jet->chargedEmEnergyFraction();
-	float NumConst = jet->chargedMultiplicity()+jet->neutralMultiplicity();
-	float NumNeutralParticles =jet->neutralMultiplicity();
-	float CHM = jet->chargedMultiplicity(); 
+	float NHF = jet.neutralHadronEnergyFraction();
+	float NEMF = jet.neutralEmEnergyFraction();
+	float CHF = jet.chargedHadronEnergyFraction();
+	float MUF = jet.muonEnergyFraction();
+	float CEMF = jet.chargedEmEnergyFraction();
+	float NumConst = jet.chargedMultiplicity()+jet.neutralMultiplicity();
+	float NumNeutralParticles =jet.neutralMultiplicity();
+	float CHM = jet.chargedMultiplicity(); 
 	// TODO: check if these change corresponding to jet corrections? Or apply corrections after passing the selection?
 
 	// float nhf( (jet.neutralHadronEnergy() + jet.HFHadronEnergy())/rawJetEn );
