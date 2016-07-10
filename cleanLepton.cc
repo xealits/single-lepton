@@ -3061,7 +3061,9 @@ for(size_t f=0; f<urls.size();++f)
 			// TODO: this mctruth for jets it is never used in the code
 
 			//jet id
-			bool passPFloose = passPFJetID("Loose", jet); 
+			//bool passPFloose = passPFJetID("Loose", jet); 
+			bool passPFloose = passPFJetID("Tight", jet); 
+			//if (label=="Tight")
 			// FIXME: check when pileup ID will come out
 
 			if (passPFloose)
