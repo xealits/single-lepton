@@ -3409,17 +3409,38 @@ for(size_t f=0; f<urls.size();++f)
 			multisel += (passTauSelection ? 8 : 0);
 			multisel += (passOS ? 16 : 0);
 
+			fill_pt_e( string("singlelep_channel_met_pt"), met.pt(), weight);
+			if (passJetSelection)
+				{
+				fill_pt_e( string("singlelep_jetsel_met_pt"), met.pt(), weight);
+				}
+			if (passJetSelection && passBtagsSelection && passTauSelection && passOS)
+				{
+				fill_pt_e( string("singlelep_allbutmetsel_met_pt"), met.pt(), weight);
+				}
+
+
 			if (passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS) {
 				increment( string("weightflow_weight_passed_singlelep_selection"), weight );
 				increment( string("weightflow_weight_up_passed_singlelep_selection"), weight_up );
 				increment( string("weightflow_weight_down_passed_singlelep_selection"), weight_down );
-			}
+				}
 
 			if (isSingleMu)
 				{
 				fill_n( string("n_jets_singlemu"), n_jets, weight);
 				fill_n( string("n_bjets_singlemu"), n_bjets, weight);
 				fill_n( string("n_taus_singlemu"), n_taus, weight);
+
+				fill_pt_e( string("singlemu_channel_met_pt"), met.pt(), weight);
+				if (passJetSelection)
+					{
+					fill_pt_e( string("singlemu_jetsel_met_pt"), met.pt(), weight);
+					}
+				if (passJetSelection && passBtagsSelection && passTauSelection && passOS)
+					{
+					fill_pt_e( string("singlemu_allbutmetsel_met_pt"), met.pt(), weight);
+					}
 
 				weights_in_mu_channel[multisel] += weight;
 				increment(string("weightflow_mu_") + to_string(multisel), weight);
@@ -3511,6 +3532,16 @@ for(size_t f=0; f<urls.size();++f)
 				fill_n( string("n_jets_singleel"), n_jets, weight);
 				fill_n( string("n_bjets_singleel"), n_bjets, weight);
 				fill_n( string("n_taus_singleel"), n_taus, weight);
+
+				fill_pt_e( string("singleel_channel_met_pt"), met.pt(), weight);
+				if (passJetSelection)
+					{
+					fill_pt_e( string("singleel_jetsel_met_pt"), met.pt(), weight);
+					}
+				if (passJetSelection && passBtagsSelection && passTauSelection && passOS)
+					{
+					fill_pt_e( string("singleel_allbutmetsel_met_pt"), met.pt(), weight);
+					}
 
 				weights_in_el_channel[multisel] += weight;
 				increment(string("weightflow_e_") + to_string(multisel), weight);
@@ -3689,17 +3720,38 @@ for(size_t f=0; f<urls.size();++f)
 			multisel += (passOS ? 8 : 0);
 			multisel += (passBtagsSelection ? 16 : 0);
 
-			if (passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection) {
+			fill_pt_e( string("doublelep_channel_met_pt"), met.pt(), weight);
+			if (passMllVeto && passJetSelection)
+				{
+				fill_pt_e( string("doublelep_jetsel_met_pt"), met.pt(), weight);
+				}
+			if (passMllVeto && passJetSelection && passOS && passBtagsSelection)
+				{
+				fill_pt_e( string("doublelep_allbutmetsel_met_pt"), met.pt(), weight);
+				}
+
+			if (passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
+				{
 				increment( string("weightflow_weight_passed_doublelep_selection"), weight );
 				increment( string("weightflow_weight_up_passed_doublelep_selection"), weight_up );
 				increment( string("weightflow_weight_down_passed_doublelep_selection"), weight_down );
-			}
-		
+				}
+
 			if (isDoubleE)
 				{
 				increment(string("weightflow_ee_") + to_string(multisel), weight);
 				// increment(string("weightflow_up_ee_") + to_string(multisel), weight_up);
 				// increment(string("weightflow_down_ee_") + to_string(multisel), weight_down);
+
+				fill_pt_e( string("doubleel_channel_met_pt"), met.pt(), weight);
+				if (passMllVeto && passJetSelection)
+					{
+					fill_pt_e( string("doubleel_jetsel_met_pt"), met.pt(), weight);
+					}
+				if (passMllVeto && passJetSelection && passOS && passBtagsSelection)
+					{
+					fill_pt_e( string("doubleel_allbutmetsel_met_pt"), met.pt(), weight);
+					}
 
 				fill_n( string("elel_channel_n_jets"), n_jets, weight);
 				fill_n( string("elel_channel_n_bjets"), n_bjets, weight);
@@ -3767,6 +3819,16 @@ for(size_t f=0; f<urls.size();++f)
 				// increment(string("weightflow_up_mumu_") + to_string(multisel), weight_up);
 				// increment(string("weightflow_down_mumu_") + to_string(multisel), weight_down);
 
+				fill_pt_e( string("doublemu_channel_met_pt"), met.pt(), weight);
+				if (passMllVeto && passJetSelection)
+					{
+					fill_pt_e( string("doublemu_jetsel_met_pt"), met.pt(), weight);
+					}
+				if (passMllVeto && passJetSelection && passOS && passBtagsSelection)
+					{
+					fill_pt_e( string("doublemu_allbutmetsel_met_pt"), met.pt(), weight);
+					}
+
 				fill_n( string("mumu_channel_n_jets"), n_jets, weight);
 				fill_n( string("mumu_channel_n_bjets"), n_bjets, weight);
 				fill_n( string("mumu_channel_n_taus"), n_taus, weight);
@@ -3832,6 +3894,16 @@ for(size_t f=0; f<urls.size();++f)
 				increment(string("weightflow_emu_") + to_string(multisel), weight);
 				// increment(string("weightflow_up_emu_") + to_string(multisel), weight_up);
 				// increment(string("weightflow_down_emu_") + to_string(multisel), weight_down);
+
+				fill_pt_e( string("doubleelmu_channel_met_pt"), met.pt(), weight);
+				if (passMllVeto && passJetSelection)
+					{
+					fill_pt_e( string("doubleelmu_jetsel_met_pt"), met.pt(), weight);
+					}
+				if (passMllVeto && passJetSelection && passOS && passBtagsSelection)
+					{
+					fill_pt_e( string("doubleelmu_allbutmetsel_met_pt"), met.pt(), weight);
+					}
 
 				fill_n( string("elmu_channel_n_jets"), n_jets, weight);
 				fill_n( string("elmu_channel_n_bjets"), n_bjets, weight);
