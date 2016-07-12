@@ -899,8 +899,7 @@ bool isV0JetsMC   (isMC && (dtag.Contains ("DYJetsToLL") || dtag.Contains ("WJet
 // adding W1Jets, W2Jets, W3Jets, W4Jets
 // thus, the events with 1, 2, 3, 4 of WJets whould be excluded
 // (what are the x-sections for each of these?)
-bool isWJetsSet   (isMC && (dtag.Contains ("WJets")));
-bool runningWNJets = runProcess.getParameter<bool> ("runningWNJets");
+bool isW0JetsSet   (isMC && (dtag.Contains ("W0Jets")));
 // so, WJets provides only W0Jets events
 // all the rest is in WNJets (W4Jets = W>=4Jets)
 // the cross-section should probably be = WJets - sum(WNJets)
@@ -1375,7 +1374,7 @@ for(size_t f=0; f<urls.size();++f)
 
 	for (ev.toBegin(); !ev.atEnd(); ++ev)
 		{
-		if(debug && iev == 1000){
+		if(debug && iev == 2){
 			cout << "Finished processing the " << iev << " event in the file, exiting" << endl;
 			//return 0;
 			break;
@@ -1400,7 +1399,7 @@ for(size_t f=0; f<urls.size();++f)
 			}
 
 		// take only W0Jets events from WJets set: (W0Jets have NUP == 5)
-		if (runningWNJets && isWJetsSet && (lheEPHandle->hepeup().NUP != 5))
+		if (isW0JetsSet && (lheEPHandle->hepeup().NUP != 5))
 			continue;
 
 		// -------------------------- trying to extract what decay was generated here
@@ -1803,9 +1802,9 @@ for(size_t f=0; f<urls.size();++f)
 
 		if(debug){
 			cout << "Printing HLT trigger list" << endl;
-			cout << "-- Commented out --" << endl;
-			//for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
-				//cout << *trnames << endl;
+			//cout << "-- Commented out --" << endl;
+			for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
+				cout << *trnames << endl;
 			cout << "----------- End of trigger list ----------" << endl;
 			//return 0;
 		}
