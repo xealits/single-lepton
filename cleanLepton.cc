@@ -890,11 +890,26 @@ if (!isMC)
 	if (dtag.Contains ("SingleEle"))  filterOnlySINGLEE  = true;
 	}
 
+// it is not used now
 bool isV0JetsMC   (isMC && (dtag.Contains ("DYJetsToLL") || dtag.Contains ("WJets")));
 // Reactivate for diboson shapes  
 // bool isMC_ZZ      (isMC && (string (dtag.Data ()).find ("TeV_ZZ") != string::npos));
 // bool isMC_WZ      (isMC && (string (dtag.Data ()).find ("TeV_WZ") != string::npos));
-	
+
+// adding W1Jets, W2Jets, W3Jets, W4Jets
+// thus, the events with 1, 2, 3, 4 of WJets whould be excluded
+// (what are the x-sections for each of these?)
+bool isWJetsSet   (isMC && (dtag.Contains ("WJets")));
+bool runningWNJets = runProcess.getParameter<bool> ("runningWNJets");
+// so, WJets provides only W0Jets events
+// all the rest is in WNJets (W4Jets = W>=4Jets)
+// the cross-section should probably be = WJets - sum(WNJets)
+// and how to do it:
+// < LHEEventProduct > lheEPHandle; lheEPHandle->hepeup().NUP  <-- this parameter
+// it = 6 for W1Jets, 7 for W2Jets, 8 for W3Jets, 9 for W4Jets (why not >=9?)
+// WJets have NUP = all those numbers
+// for W0Jets one takes NUP = 5
+
 bool isTTbarMC    (isMC && (dtag.Contains("TTJets") || dtag.Contains("_TT_") )); // Is this still useful?
 bool isPromptReco (!isMC && dtag.Contains("PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
 bool isRun2015B   (!isMC && dtag.Contains("Run2015B"));
@@ -1373,15 +1388,20 @@ for(size_t f=0; f<urls.size();++f)
 		genHandle.getByLabel(ev, "prunedGenParticles");
 		if(genHandle.isValid() ) gen = *genHandle;
 
+		fwlite::Handle < LHEEventProduct > lheEPHandle;
+		lheEPHandle.getByLabel (ev, "externalLHEProducer");
+
 		if (debug)
 			{
 			cout << "number of gen particles = " << gen.size() << "\n";
 
-			fwlite::Handle < LHEEventProduct > lheEPHandle;
-			lheEPHandle.getByLabel (ev, "externalLHEProducer");
 			//mon.fillHisto ("nup", "", lheEPHandle->hepeup ().NUP, 1);
 			cout << "nup = " << lheEPHandle->hepeup().NUP << "\n";
 			}
+
+		// take only W0Jets events from WJets set: (W0Jets have NUP == 5)
+		if (runningWNJets && isWJetsSet && (lheEPHandle->hepeup().NUP != 5))
+			continue;
 
 		// -------------------------- trying to extract what decay was generated here
 		// iEvent.getByLabel("genParticles", genParticles);
