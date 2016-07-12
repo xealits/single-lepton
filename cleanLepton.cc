@@ -1283,6 +1283,7 @@ fprintf(csv_out, "\n");
 for(size_t f=0; f<urls.size();++f)
 	{
 	fprintf(csv_out, "Processing file: %s\n", urls[f].c_str());
+	cout << "Processing file: " << urls[f].c_str() << "\n";
 	TFile* file = TFile::Open(urls[f].c_str());
 	fwlite::Event ev(file);
 	printf ("Scanning the ntuple %2lu/%2lu :",f+1, urls.size());
@@ -1359,12 +1360,28 @@ for(size_t f=0; f<urls.size();++f)
 
 	for (ev.toBegin(); !ev.atEnd(); ++ev)
 		{
+		if(debug && iev == 1000){
+			cout << "Finished processing the " << iev << " event in the file, exiting" << endl;
+			//return 0;
+			break;
+			}
+
 		mc_decay = string("");
 
 		reco::GenParticleCollection gen;
 		fwlite::Handle<reco::GenParticleCollection> genHandle;
 		genHandle.getByLabel(ev, "prunedGenParticles");
 		if(genHandle.isValid() ) gen = *genHandle;
+
+		if (debug)
+			{
+			cout << "number of gen particles = " << gen.size() << "\n";
+
+			fwlite::Handle < LHEEventProduct > lheEPHandle;
+			lheEPHandle.getByLabel (ev, "externalLHEProducer");
+			//mon.fillHisto ("nup", "", lheEPHandle->hepeup ().NUP, 1);
+			cout << "nup = " << lheEPHandle->hepeup().NUP << "\n";
+			}
 
 		// -------------------------- trying to extract what decay was generated here
 		// iEvent.getByLabel("genParticles", genParticles);
@@ -1432,13 +1449,14 @@ for(size_t f=0; f<urls.size();++f)
 
 		if (debug) {
 			cout << "MC suffix " << mc_decay << " is found\n";
-		}
+			}
 
 		if (!mc_decay.empty()) mc_decay = string("_") + mc_decay;
 
 		//* List of mother-daughters for all particles
 		//* TODO: make it into a separate function
 
+		/*
 		if (debug) {
 			for(size_t i = 0; i < gen.size(); ++ i) {
 				const reco::GenParticle & p = gen[i];
@@ -1450,24 +1468,19 @@ for(size_t f=0; f<urls.size();++f)
 				for (int j = 0 ; j < p.numberOfMothers(); ++j) {
 					const reco::Candidate * mom = p.mother(j);
 					cout << " " << mom->pdgId() << " " << mom->status() << ";";
-				}
+					}
 				cout << "\n";
 				if (n>0) {
 					cout << "\t|-> " ;
 					for (int j = 0; j < n; ++j) {
 						const reco::Candidate * d = p.daughter( j );
 						cout << d->pdgId() << " " << d->status() << "; " ;
-					}
+						}
 					cout << "\n";
+					}
 				}
 			}
-		}
-
-		if(debug && iev == 1000){
-			cout << "Finished processing the " << iev << " event in the file, exiting" << endl;
-			//return 0;
-			break;
-			}
+		*/
 
 		// inline control functions usage:
 		//   fill_pt_e( "control_point_name", value, weight)
@@ -1770,8 +1783,9 @@ for(size_t f=0; f<urls.size();++f)
 
 		if(debug){
 			cout << "Printing HLT trigger list" << endl;
-			for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
-				cout << *trnames << endl;
+			cout << "-- Commented out --" << endl;
+			//for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
+				//cout << *trnames << endl;
 			cout << "----------- End of trigger list ----------" << endl;
 			//return 0;
 		}
@@ -2021,6 +2035,11 @@ for(size_t f=0; f<urls.size();++f)
 		fwlite::Handle<pat::JetCollection>jetsHandle;
 		jetsHandle.getByLabel(ev, "slimmedJets");
 		if(jetsHandle.isValid() ) jets = *jetsHandle;
+
+		// testing WNJets
+		if(debug){
+			cout << "N Jets:" << jets.size() << "\n";
+			}
 
 		pat::PhotonCollection photons;
 		fwlite::Handle<pat::PhotonCollection> photonsHandle;
