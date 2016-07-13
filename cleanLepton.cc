@@ -1814,7 +1814,8 @@ for(size_t f=0; f<urls.size();++f)
 		//                  HLT_IsoMu20 or HLT_IsoTkMu20 for muons
 		bool eTrigger    ( utils::passTriggerPatterns(tr, "HLT_Ele23_WPLoose_Gsf*") );
 		bool muTrigger   (
-			utils::passTriggerPatterns (tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*")
+			// utils::passTriggerPatterns (tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*")
+			utils::passTriggerPatterns (tr, "HLT_IsoMu18_v*", "HLT_IsoTkMu18_v*")
 			);
 		
 		//if(filterOnlySINGLEMU) {                    eTrigger = false; }
