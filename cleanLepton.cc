@@ -1211,6 +1211,7 @@ TString muon_HLTeff_filename = runProcess.getParameter < std::string > ("analysi
 // c_str as well?
 TFile* muon_HLTeff_file = TFile::Open(muon_HLTeff_filename.Data());
 TH2F* muon_HLTeff_TH2F = muon_HLTeff_file->Get("runD_IsoMu20_OR_IsoTkMu20_HLTv4p3_PtEtaBins/abseta_pt_ratio");
+// I do access the muon_HLTeff_TH2F histo with muon_HLTeff_TH2F->GetBin(eta, pt)
 
 // To USE:
 /*
@@ -2511,14 +2512,26 @@ for(size_t f=0; f<urls.size();++f)
 			fill_pt_e( string("singleel_electrons_pt"), selElectrons[0].pt(), weight);
 			fill_pt_e( string("met0_singleel_slimmed_pt"), met.pt(), weight);
 			// TODO: no HLT efficiency SF for electron HLT yet:
-			weight *= 1;
+			float el_eta = fabs(selElectrons[0].eta());
+			float el_pt  = fabs(selElectrons[0].pt());
+
+			// Double_t muon_HLTeff_SF1 = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(l1_eta, l1_pt) );
+			// Double_t muon_HLTeff_SF2 = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(l2_eta, l2_pt) );
+			Double_t electron_HLTeff_SF = 1;
+
+			weight *= electron_HLTeff_SF;
 			}
 		if (isSingleMu)
 			{
 			fill_pt_e( string("singlemu_muons_pt"),     selMuons[0].pt(), weight);
 			fill_pt_e( string("met0_singlemu_slimmed_pt"), met.pt(), weight);
 			// muon_HLTeff_TH2F->FindBin
-			Double_t muon_HLTeff_SF = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(fabs(leta), electron.pt()) );
+			float mu_eta = fabs(selMuons[0].eta());
+			float mu_pt  = fabs(selMuons[0].pt());
+
+			// Double_t muon_HLTeff_SF1 = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(l1_eta, l1_pt) );
+			// Double_t muon_HLTeff_SF2 = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(l2_eta, l2_pt) );
+			Double_t muon_HLTeff_SF = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(mu_eta, mu_pt) );
 			weight *= muon_HLTeff_SF;
 			}
 
@@ -2616,9 +2629,17 @@ for(size_t f=0; f<urls.size();++f)
 				fill_pt_e( string("leptons_doublee_2leptons_pt"), selLeptons[0].pt(), weight);
 				fill_pt_e( string("leptons_doublee_2leptons_pt"), selLeptons[1].pt(), weight);
 
-				Double_t electron_HLTeff_SF = 1;
+				// float l1_eta = fabs(selElectrons[0].eta());
+				// float l1_pt  = fabs(selElectrons[0].pt());
+				// float l2_eta = fabs(selElectrons[1].eta());
+				// float l2_pt  = fabs(selElectrons[1].pt());
 
-				weight *= 1 - (1 - electron_HLTeff_SF)*(1 - electron_HLTeff_SF);
+				// Double_t muon_HLTeff_SF1 = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(l1_eta, l1_pt) );
+				// Double_t muon_HLTeff_SF2 = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(l2_eta, l2_pt) );
+				Double_t electron_HLTeff_SF1 = 1;
+				Double_t electron_HLTeff_SF2 = 1;
+
+				weight *= 1 - (1 - electron_HLTeff_SF1)*(1 - electron_HLTeff_SF2);
 				}
 			else if (fabs(dilep_ids) == 169 )
 				{
@@ -2627,8 +2648,14 @@ for(size_t f=0; f<urls.size();++f)
 				fill_pt_e( string("leptons_doublemu_2leptons_pt"), selLeptons[1].pt(), weight);
 
 				// Double_t electron_HLTeff_SF = 1;
-				Double_t muon_HLTeff_SF = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(fabs(leta), electron.pt()) );
-				weight *= 1 - (1 - muon_HLTeff_SF)*(1 - muon_HLTeff_SF);
+				float l1_eta = fabs(selMuons[0].eta());
+				float l1_pt  = fabs(selMuons[0].pt());
+				float l2_eta = fabs(selMuons[1].eta());
+				float l2_pt  = fabs(selMuons[1].pt());
+
+				Double_t muon_HLTeff_SF1 = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(l1_eta, l1_pt) );
+				Double_t muon_HLTeff_SF2 = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(l2_eta, l2_pt) );
+				weight *= 1 - (1 - muon_HLTeff_SF1)*(1 - muon_HLTeff_SF2);
 				}
 			else
 				{
@@ -2636,8 +2663,13 @@ for(size_t f=0; f<urls.size();++f)
 				fill_pt_e( string("leptons_emu_2leptons_pt"), selLeptons[0].pt(), weight);
 				fill_pt_e( string("leptons_emu_2leptons_pt"), selLeptons[1].pt(), weight);
 
+				float mu_eta = fabs(selMuons[0].eta());
+				float mu_pt  = fabs(selMuons[0].pt());
+				//float el_eta = fabs(selElectrons[0].eta());
+				//float el_pt  = fabs(selElectrons[0].pt());
+
 				Double_t electron_HLTeff_SF = 1;
-				Double_t muon_HLTeff_SF = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(fabs(leta), electron.pt()) );
+				Double_t muon_HLTeff_SF = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(mu_eta, mu_pt) );
 				weight *= 1 - (1 - electron_HLTeff_SF)*(1 - muon_HLTeff_SF);
 				}
 			}
