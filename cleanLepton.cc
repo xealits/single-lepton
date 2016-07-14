@@ -1210,7 +1210,7 @@ TString muon_HLTeff_filename(string(std::getenv("CMSSW_BASE")) + "analysis/hlt-t
 // .Data() returns char *
 // c_str as well?
 TFile* muon_HLTeff_file = TFile::Open(muon_HLTeff_filename.Data());
-TH2F* muon_HLTeff_TH2F = muon_HLTeff_file->Get("runD_IsoMu20_OR_IsoTkMu20_HLTv4p3_PtEtaBins/abseta_pt_ratio");
+TH2F* muon_HLTeff_TH2F = (TH2F*) muon_HLTeff_file->Get("runD_IsoMu20_OR_IsoTkMu20_HLTv4p3_PtEtaBins/abseta_pt_ratio");
 // I do access the muon_HLTeff_TH2F histo with muon_HLTeff_TH2F->GetBin(eta, pt)
 
 // To USE:
