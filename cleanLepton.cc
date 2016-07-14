@@ -3619,6 +3619,8 @@ for(size_t f=0; f<urls.size();++f)
 						increment(string("number_of_tausnolep_from_muon_found_in_singlemu_fullselection"), 1);
 						}
 
+					increment( string("weightflow_events_passed_singlemu_selection"), 1 );
+
 					increment( string("weightflow_weight_passed_singlemu_selection"), weight );
 					increment( string("weightflow_weight_up_passed_singlemu_selection"), weight_up );
 					increment( string("weightflow_weight_down_passed_singlemu_selection"), weight_down );
@@ -3719,6 +3721,8 @@ for(size_t f=0; f<urls.size();++f)
 						{
 						increment(string("number_of_tausnolep_from_electron_found_in_singleel_fullselection"), 1);
 						}
+
+					increment( string("weightflow_events_passed_singleel_selection"), 1 );
 
 					increment( string("weightflow_weight_passed_singleel_selection"), weight );
 					increment( string("weightflow_weight_up_passed_singleel_selection"), weight_up );
@@ -3905,6 +3909,8 @@ for(size_t f=0; f<urls.size();++f)
 
 				if( passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
 					{
+					increment( string("weightflow_events_passed_doubleel_selection"), 1 );
+
 					increment( string("weightflow_weight_passed_doubleel_selection"), weight );
 
 					fill_n( string("elel_selection_n_jets"), n_jets, weight);
@@ -3981,6 +3987,8 @@ for(size_t f=0; f<urls.size();++f)
 
 				if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
 					{
+					increment( string("weightflow_events_passed_doublemu_selection"), 1 );
+
 					increment( string("weightflow_weight_passed_doublemu_selection"), weight );
 
 					fill_n( string("mumu_selection_n_jets"), n_jets, weight);
@@ -4057,6 +4065,8 @@ for(size_t f=0; f<urls.size();++f)
 
 				if (passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection)
 					{
+					increment( string("weightflow_events_passed_doubleemu_selection"), 1 );
+
 					increment( string("weightflow_weight_passed_doubleemu_selection"), weight );
 
 					fill_n( string("elmu_selection_n_jets"), n_jets, weight);
