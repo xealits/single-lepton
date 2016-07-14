@@ -1180,8 +1180,60 @@ if(!isMC)
 	}
 */
 
+// ---------------------------------------- HLT trigger efficiencies
+// https://twiki.cern.ch/twiki/bin/view/CMS/MuonReferenceEffsRun2#Muon_reconstruction_identificati
+// -- SingleMu Triggers
+// ??? https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDRecipesRun2#Efficiencies_and_scale_factors
+// ??? -- Triggering electrons MVA-based WPs, scale factors for 76X
+//
+// in principle, one needs the electron/muon which triggered the HLT
+// and according to its' pt, eta the scale factor is extracted
+// TODO: procedure of getting the fired lepton
+//
+// only single-lepton HLTs are used, and their scale factors are taken accordingly
+// though events with both HLTs on are also considered
+// how to deal with them having only single-lepton SF?
+//
+// the formula can be such:
+// e = 1 - (1 - e_mu)(1 - e_el)
+// --- e_mu and e_el are trigger eff-s for single lepton
+// the formula is taken from TOP-16-017
+// https://indico.cern.ch/event/546389/contributions/2218845/attachments/1299941/1940277/khvastunov_28Jun_2016_TopPAG.pdf
+//
+// the study measures the efficiencies themselves
+// I use the values provided by POGs
+// muon POG only has efficiency SF for IsoMu20_OR_IsoTkMu20 yet
+// (runD_IsoMu20_OR_IsoTkMu20_HLTv4p3_PtEtaBins)
+// EGamma doesn't have any, thus there will be 1 on its' place
+
+TString muon_HLTeff_filename = runProcess.getParameter < std::string > ("analysis/hlt-triggers/SingleMuonTrigger_Z_RunCD_Reco76X_Feb15.root");
+// .Data() returns char *
+// c_str as well?
+TFile* muon_HLTeff_file = TFile::Open(muon_HLTeff_filename.Data());
+TH2F* muon_HLTeff_TH2F = muon_HLTeff_file->Get("runD_IsoMu20_OR_IsoTkMu20_HLTv4p3_PtEtaBins/abseta_pt_ratio");
+
+// To USE:
+/*
+muon_HLTeff_TH2F->FindBin
+Double_t weight *= muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(fabs(leta), electron.pt()) );
+
+-- and it should return the scale factor for the HLT
+*/
+
+
+
 // ----------------------------
 // So here we got all the parameters from the config
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1814,8 +1866,9 @@ for(size_t f=0; f<urls.size();++f)
 		//                  HLT_IsoMu20 or HLT_IsoTkMu20 for muons
 		bool eTrigger    ( utils::passTriggerPatterns(tr, "HLT_Ele23_WPLoose_Gsf*") );
 		bool muTrigger   (
-			// utils::passTriggerPatterns (tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*")
-			utils::passTriggerPatterns (tr, "HLT_IsoMu18_v*", "HLT_IsoTkMu18_v*")
+			utils::passTriggerPatterns (tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*") // the efficiency scale factor are available for these only
+			// utils::passTriggerPatterns (tr, "HLT_IsoMu18_v*", "HLT_IsoTkMu18_v*")
+			// utils::passTriggerPatterns (tr, "HLT_IsoMu18_v*")
 			);
 		
 		//if(filterOnlySINGLEMU) {                    eTrigger = false; }
@@ -1831,16 +1884,9 @@ for(size_t f=0; f<urls.size();++f)
 		}
 
 		// TODO: ----------------------------- HLT efficiency scale factors
-		// https://twiki.cern.ch/twiki/bin/view/CMS/MuonReferenceEffsRun2#Muon_reconstruction_identificati
-		// -- SingleMu Triggers
-		// ??? https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDRecipesRun2#Efficiencies_and_scale_factors
-		// ??? -- Triggering electrons MVA-based WPs, scale factors for 76X
-		//
-		// in principle, one needs the electron/muon which triggered the HLT
-		// and according to its' pt, eta the scale factor is extracted
-		//
-		// then, how should one proceed?
-		// if there are both HLTs on, should both factors be applied?
+		// one should run it on the fired trigger objects,
+		// I run it on selection candidates now
+		// which is done below, when the candidates are selected
 
 		// double HLT_efficiency_sf = 1.0;
 
@@ -2460,15 +2506,25 @@ for(size_t f=0; f<urls.size();++f)
 		isSingleE  = selMuons.size() == 0 && selElectrons.size() == 1 && clean_lep_conditions;
 
 
-		if (isSingleMu) fill_pt_e( string("singlemu_muons_pt"),     selMuons[0].pt(), weight);
-		if (isSingleE)  fill_pt_e( string("singleel_electrons_pt"), selElectrons[0].pt(), weight);
+		if (isSingleE)
+			{
+			fill_pt_e( string("singleel_electrons_pt"), selElectrons[0].pt(), weight);
+			fill_pt_e( string("met0_singleel_slimmed_pt"), met.pt(), weight);
+			// TODO: no HLT efficiency SF for electron HLT yet:
+			weight *= 1;
+			}
+		if (isSingleMu)
+			{
+			fill_pt_e( string("singlemu_muons_pt"),     selMuons[0].pt(), weight);
+			fill_pt_e( string("met0_singlemu_slimmed_pt"), met.pt(), weight);
+			// muon_HLTeff_TH2F->FindBin
+			Double_t muon_HLTeff_SF = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(fabs(leta), electron.pt()) );
+			weight *= muon_HLTeff_SF;
+			}
 
 		if(debug){
 			cout << "assigned lepton channel" << endl;
 			}
-
-		if (isSingleE)  fill_pt_e( string("met0_singleel_slimmed_pt"), met.pt(), weight);
-		if (isSingleMu) fill_pt_e( string("met0_singlemu_slimmed_pt"), met.pt(), weight);
 
 		// ------------------------------------- Propagate lepton energy scale to MET
 		// Propagate now (v13)
@@ -2559,18 +2615,30 @@ for(size_t f=0; f<urls.size();++f)
 				isDoubleE = true;
 				fill_pt_e( string("leptons_doublee_2leptons_pt"), selLeptons[0].pt(), weight);
 				fill_pt_e( string("leptons_doublee_2leptons_pt"), selLeptons[1].pt(), weight);
+
+				Double_t electron_HLTeff_SF = 1;
+
+				weight *= 1 - (1 - electron_HLTeff_SF)*(1 - electron_HLTeff_SF);
 				}
 			else if (fabs(dilep_ids) == 169 )
 				{
 				isDoubleMu = true;
 				fill_pt_e( string("leptons_doublemu_2leptons_pt"), selLeptons[0].pt(), weight);
 				fill_pt_e( string("leptons_doublemu_2leptons_pt"), selLeptons[1].pt(), weight);
+
+				// Double_t electron_HLTeff_SF = 1;
+				Double_t muon_HLTeff_SF = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(fabs(leta), electron.pt()) );
+				weight *= 1 - (1 - muon_HLTeff_SF)*(1 - muon_HLTeff_SF);
 				}
 			else
 				{
 				isEMu = true;
 				fill_pt_e( string("leptons_emu_2leptons_pt"), selLeptons[0].pt(), weight);
 				fill_pt_e( string("leptons_emu_2leptons_pt"), selLeptons[1].pt(), weight);
+
+				Double_t electron_HLTeff_SF = 1;
+				Double_t muon_HLTeff_SF = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(fabs(leta), electron.pt()) );
+				weight *= 1 - (1 - electron_HLTeff_SF)*(1 - muon_HLTeff_SF);
 				}
 			}
 
