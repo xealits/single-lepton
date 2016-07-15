@@ -536,8 +536,8 @@ int fill_n(string control_point_name, unsigned int value, double weight)
 		// particle counters are broken here
 		// trying TH1D for v13.5
 		// th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;N", 100, 0., 100.);
+		//cout << "creating " << mc_decay << " - " << control_point_name << endl;
 		th1d_distr_control.insert( std::make_pair(key, TH1D(control_point_name.c_str(), ";;N", 100, 0., 100.)) );
-		//cout << "creating " << control_point_name << endl;
 		}
 
 	// fill the distribution:
@@ -576,6 +576,7 @@ int fill_particle_ids(string control_point_name, int value, double weight)
 		// particle counters are broken here
 		// trying TH1D for v13.5
 		// th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;ID", 600, -300., 300.);
+		//cout << "creating " << mc_decay << " - " << control_point_name << endl;
 		th1d_distr_control.insert( std::make_pair(key, TH1D(control_point_name.c_str(), ";;ID", 600, -300., 300.)));
 		//cout << "creating " << control_point_name << endl;
 		}
@@ -608,6 +609,7 @@ int fill_pu(string control_point_name, double value, double weight)
 		// create it:
 		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
 		// th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;nVtx", 100, 0., 100.);
+		//cout << "creating " << mc_decay << " - " << control_point_name << endl;
 		th1d_distr_control.insert( std::make_pair(key, TH1D(control_point_name.c_str(), ";;nVtx", 100, 0., 100.)));
 		//cout << "creating " << control_point_name << endl;
 		}
@@ -639,6 +641,7 @@ int fill_pt_e(string control_point_name, double value, double weight)
 		// create it:
 		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
 		// th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 400.);
+		//cout << "creating " << mc_decay << " - " << control_point_name << endl;
 		th1d_distr_control.insert( std::make_pair(key, TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 400.)));
 		//cout << "creating " << control_point_name << endl;
 		}
@@ -1438,10 +1441,15 @@ for(size_t f=0; f<urls.size();++f)
 
 	for (ev.toBegin(); !ev.atEnd(); ++ev)
 		{
-		if(debug && iev == 2){
-			cout << "Finished processing the " << iev << " event in the file, exiting" << endl;
-			//return 0;
-			break;
+		if(debug)
+			{
+			cout << "Processing event " << iev << "\n\n" ;
+			if(iev == 5)
+				{
+				cout << "Got to the event " << iev << " in the file, exiting" << endl;
+				//return 0;
+				break;
+				}
 			}
 
 		// mc_decay = string("");
