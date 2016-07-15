@@ -537,7 +537,7 @@ int fill_n(string control_point_name, unsigned int value, double weight)
 		// trying TH1D for v13.5
 		// th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;N", 100, 0., 100.);
 		//cout << "creating " << mc_decay << " - " << control_point_name << endl;
-		th1d_distr_control.insert( std::make_pair(key, TH1D(control_point_name.c_str(), ";;N", 100, 0., 100.)) );
+		th1d_distr_control.insert( std::make_pair(key, TH1D((mc_decay + control_point_name).c_str(), ";;N", 100, 0., 100.)) );
 		}
 
 	// fill the distribution:
@@ -577,7 +577,7 @@ int fill_particle_ids(string control_point_name, int value, double weight)
 		// trying TH1D for v13.5
 		// th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;ID", 600, -300., 300.);
 		//cout << "creating " << mc_decay << " - " << control_point_name << endl;
-		th1d_distr_control.insert( std::make_pair(key, TH1D(control_point_name.c_str(), ";;ID", 600, -300., 300.)));
+		th1d_distr_control.insert( std::make_pair(key, TH1D((mc_decay + control_point_name).c_str(), ";;ID", 600, -300., 300.)));
 		//cout << "creating " << control_point_name << endl;
 		}
 
@@ -610,7 +610,7 @@ int fill_pu(string control_point_name, double value, double weight)
 		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
 		// th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;nVtx", 100, 0., 100.);
 		//cout << "creating " << mc_decay << " - " << control_point_name << endl;
-		th1d_distr_control.insert( std::make_pair(key, TH1D(control_point_name.c_str(), ";;nVtx", 100, 0., 100.)));
+		th1d_distr_control.insert( std::make_pair(key, TH1D((mc_decay + control_point_name).c_str(), ";;nVtx", 100, 0., 100.)));
 		//cout << "creating " << control_point_name << endl;
 		}
 
@@ -642,7 +642,7 @@ int fill_pt_e(string control_point_name, double value, double weight)
 		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
 		// th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 400.);
 		//cout << "creating " << mc_decay << " - " << control_point_name << endl;
-		th1d_distr_control.insert( std::make_pair(key, TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 400.)));
+		th1d_distr_control.insert( std::make_pair(key, TH1D((mc_decay + control_point_name).c_str(), ";;Pt/E(GeV)", 400, 0., 400.)));
 		//cout << "creating " << control_point_name << endl;
 		}
 
@@ -673,7 +673,7 @@ int fill_eta(string control_point_name, double value, double weight)
 		// create it:
 		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.);
 		// th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.);
-		th1d_distr_control.insert( std::make_pair(key, TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.)));
+		th1d_distr_control.insert( std::make_pair(key, TH1D((mc_decay + control_point_name).c_str(), ";;Eta", 200, -4., 4.)));
 		}
 
 	// fill the distribution:
