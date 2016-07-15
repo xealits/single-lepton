@@ -2539,7 +2539,8 @@ for(size_t f=0; f<urls.size();++f)
 			// Double_t muon_HLTeff_SF2 = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(l2_eta, l2_pt) );
 			Double_t electron_HLTeff_SF = 1;
 
-			weight *= electron_HLTeff_SF;
+			// HLTeff are off in 13.13_1
+			//weight *= electron_HLTeff_SF;
 			}
 		if (isSingleMu)
 			{
@@ -2552,7 +2553,8 @@ for(size_t f=0; f<urls.size();++f)
 			// Double_t muon_HLTeff_SF1 = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(l1_eta, l1_pt) );
 			// Double_t muon_HLTeff_SF2 = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(l2_eta, l2_pt) );
 			Double_t muon_HLTeff_SF = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(mu_eta, mu_pt) );
-			weight *= muon_HLTeff_SF;
+			// HLTeff are off in 13.13_1
+			//weight *= muon_HLTeff_SF;
 			}
 
 		if(debug){
@@ -2659,7 +2661,8 @@ for(size_t f=0; f<urls.size();++f)
 				Double_t electron_HLTeff_SF1 = 1;
 				Double_t electron_HLTeff_SF2 = 1;
 
-				weight *= 1 - (1 - electron_HLTeff_SF1)*(1 - electron_HLTeff_SF2);
+				// HLTeff are off in 13.13_1
+				//weight *= 1 - (1 - electron_HLTeff_SF1)*(1 - electron_HLTeff_SF2);
 				}
 			else if (fabs(dilep_ids) == 169 )
 				{
@@ -2675,7 +2678,8 @@ for(size_t f=0; f<urls.size();++f)
 
 				Double_t muon_HLTeff_SF1 = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(l1_eta, l1_pt) );
 				Double_t muon_HLTeff_SF2 = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(l2_eta, l2_pt) );
-				weight *= 1 - (1 - muon_HLTeff_SF1)*(1 - muon_HLTeff_SF2);
+				// HLTeff are off in 13.13_1
+				//weight *= 1 - (1 - muon_HLTeff_SF1)*(1 - muon_HLTeff_SF2);
 				}
 			else
 				{
@@ -2690,7 +2694,8 @@ for(size_t f=0; f<urls.size();++f)
 
 				Double_t electron_HLTeff_SF = 1;
 				Double_t muon_HLTeff_SF = muon_HLTeff_TH2F->GetBinContent( muon_HLTeff_TH2F->FindBin(mu_eta, mu_pt) );
-				weight *= 1 - (1 - electron_HLTeff_SF)*(1 - muon_HLTeff_SF);
+				// HLTeff are off in 13.13_1
+				//weight *= 1 - (1 - electron_HLTeff_SF)*(1 - muon_HLTeff_SF);
 				}
 			}
 
