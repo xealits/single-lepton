@@ -1433,7 +1433,8 @@ for(size_t f=0; f<urls.size();++f)
 			break;
 			}
 
-		mc_decay = string("");
+		// mc_decay = string("");
+		mc_decay.clear();
 
 		reco::GenParticleCollection gen;
 		fwlite::Handle<reco::GenParticleCollection> genHandle;
