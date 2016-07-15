@@ -535,7 +535,8 @@ int fill_n(string control_point_name, unsigned int value, double weight)
 		//th1i_distr_control[key] = TH1I(control_point_name.c_str(), ";;N", 100, 0., 100.);
 		// particle counters are broken here
 		// trying TH1D for v13.5
-		th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;N", 100, 0., 100.);
+		// th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;N", 100, 0., 100.);
+		th1d_distr_control.insert( std::make_pair(key, TH1D(control_point_name.c_str(), ";;N", 100, 0., 100.)) );
 		//cout << "creating " << control_point_name << endl;
 		}
 
@@ -551,7 +552,8 @@ int fill_n(string control_point_name, unsigned int value, double weight)
 	//	}
 	if (th1d_distr_control_headers.find(string("n")) == th1d_distr_control_headers.end() )
 		{
-		th1d_distr_control_headers[string("n")] = TH1D("Header of particle counter distributions", ";;N", 100, 0., 100.);
+		// th1d_distr_control_headers[string("n")] = TH1D("Header of particle counter distributions", ";;N", 100, 0., 100.);
+		th1d_distr_control_headers.insert( std::make_pair(string("n"), TH1D("Header of particle counter distributions", ";;N", 100, 0., 100.)));
 		}
 
 	// return success:
@@ -573,7 +575,8 @@ int fill_particle_ids(string control_point_name, int value, double weight)
 		//th1i_distr_control[key] = TH1I(control_point_name.c_str(), ";;N", 100, 0., 100.);
 		// particle counters are broken here
 		// trying TH1D for v13.5
-		th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;ID", 600, -300., 300.);
+		// th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;ID", 600, -300., 300.);
+		th1d_distr_control.insert( std::make_pair(key, TH1D(control_point_name.c_str(), ";;ID", 600, -300., 300.)));
 		//cout << "creating " << control_point_name << endl;
 		}
 
@@ -585,7 +588,8 @@ int fill_particle_ids(string control_point_name, int value, double weight)
 
 	if (th1d_distr_control_headers.find(string("p_id")) == th1d_distr_control_headers.end() )
 		{
-		th1d_distr_control_headers[string("p_id")] = TH1D("Header of particle ID distributions", ";;ID", 600, -300., 300.);
+		// th1d_distr_control_headers[string("p_id")] = TH1D("Header of particle ID distributions", ";;ID", 600, -300., 300.);
+		th1d_distr_control_headers.insert( std::make_pair(string("p_id"), TH1D("Header of particle ID distributions", ";;ID", 600, -300., 300.)));
 		}
 
 	// return success:
@@ -603,7 +607,8 @@ int fill_pu(string control_point_name, double value, double weight)
 		// the control point distr has not been created/initialized
 		// create it:
 		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
-		th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;nVtx", 100, 0., 100.);
+		// th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;nVtx", 100, 0., 100.);
+		th1d_distr_control.insert( std::make_pair(key, TH1D(control_point_name.c_str(), ";;nVtx", 100, 0., 100.)));
 		//cout << "creating " << control_point_name << endl;
 		}
 
@@ -614,7 +619,8 @@ int fill_pu(string control_point_name, double value, double weight)
 
 	if (th1d_distr_control_headers.find(string("pu")) == th1d_distr_control_headers.end() )
 		{
-		th1d_distr_control_headers[string("pu")] = TH1D("Header of pile up distributions", ";;nVtx", 100, 0., 100.);
+		// th1d_distr_control_headers[string("pu")] = TH1D("Header of pile up distributions", ";;nVtx", 100, 0., 100.);
+		th1d_distr_control_headers.insert( std::make_pair(string("pu"), TH1D("Header of pile up distributions", ";;nVtx", 100, 0., 100.)));
 		}
 
 	// return success:
@@ -632,7 +638,8 @@ int fill_pt_e(string control_point_name, double value, double weight)
 		// the control point distr has not been created/initialized
 		// create it:
 		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 200.);
-		th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 400.);
+		// th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 400.);
+		th1d_distr_control.insert( std::make_pair(key, TH1D(control_point_name.c_str(), ";;Pt/E(GeV)", 400, 0., 400.)));
 		//cout << "creating " << control_point_name << endl;
 		}
 
@@ -643,7 +650,8 @@ int fill_pt_e(string control_point_name, double value, double weight)
 
 	if (th1d_distr_control_headers.find(string("pt_e")) == th1d_distr_control_headers.end() )
 		{
-		th1d_distr_control_headers[string("pt_e")] = TH1D("Header of Pt/E distributions", ";;Pt/E(GeV)", 400, 0., 400.);
+		// th1d_distr_control_headers[string("pt_e")] = TH1D("Header of Pt/E distributions", ";;Pt/E(GeV)", 400, 0., 400.);
+		th1d_distr_control_headers.insert( std::make_pair(string("pt_e"), TH1D("Header of Pt/E distributions", ";;Pt/E(GeV)", 400, 0., 400.)));
 		}
 
 	// return success:
@@ -661,7 +669,8 @@ int fill_eta(string control_point_name, double value, double weight)
 		// the control point distr has not been created/initialized
 		// create it:
 		//th1d_distr_control[control_point_name] = (TH1D*) new TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.);
-		th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.);
+		// th1d_distr_control[key] = TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.);
+		th1d_distr_control.insert( std::make_pair(key, TH1D(control_point_name.c_str(), ";;Eta", 200, -4., 4.)));
 		}
 
 	// fill the distribution:
@@ -669,7 +678,8 @@ int fill_eta(string control_point_name, double value, double weight)
 
 	if (th1d_distr_control_headers.find(string("eta")) == th1d_distr_control_headers.end() )
 		{
-		th1d_distr_control_headers[string("eta")] = TH1D("Header of Eta distributions", ";;Eta", 200, -4., 4.);
+		// th1d_distr_control_headers[string("eta")] = TH1D("Header of Eta distributions", ";;Eta", 200, -4., 4.);
+			th1d_distr_control_headers.insert( std::make_pair(string("eta"), TH1D("Header of Eta distributions", ";;Eta", 200, -4., 4.)));
 		}
 
 	// return success:
@@ -689,7 +699,8 @@ int increment(string control_point_name, double weight)
 		{
 		// the control point distr has not been created/initialized
 		// create it:
-		weight_flow_control[key] = 0.;
+		// weight_flow_control[key] = 0.;
+		weight_flow_control.insert( std::make_pair(key, 0.));
 		}
 
 	// fill the distribution:
@@ -1856,9 +1867,9 @@ for(size_t f=0; f<urls.size();++f)
 
 		if(debug){
 			cout << "Printing HLT trigger list" << endl;
-			//cout << "-- Commented out --" << endl;
-			for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
-				cout << *trnames << endl;
+			cout << "-- Commented out --" << endl;
+			// for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
+				// cout << *trnames << endl;
 			cout << "----------- End of trigger list ----------" << endl;
 			//return 0;
 		}
