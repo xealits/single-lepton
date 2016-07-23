@@ -1466,7 +1466,7 @@ for(size_t f=0; f<urls.size();++f)
 		fwlite::Handle < LHEEventProduct > lheEPHandle;
 		lheEPHandle.getByLabel (ev, "externalLHEProducer");
 
-		if (debug)
+		if (debug && isMC)
 			{
 			cout << "number of gen particles = " << gen.size() << "\n";
 
